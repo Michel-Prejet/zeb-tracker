@@ -5,50 +5,63 @@ The following is a class diagram for the ZEB tracker application.
 ```mermaid
 classDiagram
     class Fleet {
-        -List~Bus~ buses
+        -Dictionary~int, Bus~ buses
         
-        +numRuns() int
-        +getBus(trackingNum) Bus
-        +addBus(bus) void
+        +num_runs() int
+        +get_bus(tracking_num) Bus
+        +add_bus(bus) void
     }
+    
+    note for Fleet"Invariant properties:
+    * buses != None
+    * for bus in buses, bus != None
+    "
     
     Fleet --* Bus
     
     class Bus {
-        -int trackingNumber
+        -int tracking_num
         -int year
         -String model
         -List~Run~ runs
         
-        +addRun(run) void
-        +numRuns() int
+        +add_run(run) void
+        +num_runs() int
         +routes() List~String~
-        +firstRun() Run
-        +lastRun() Run
+        +first_run() Run
+        +last_run() Run
     }
 
     note for Bus "Invariant properties:
-    * trackingNumber >= 100
-    * trackingNumber <= 999
+    * tracking_num != None
+    * 100 <= tracking_num <= 999
+    * year != None
     * year >= 2000
+    * model != None
     * model.length >= 1
+    * runs != None
+    * for run in runs, run != None
     "
     
     Bus --* Run
     
     class Run {
-        -String blockID
-        -DateTime start
-        -DateTime end
-        -List~String~ routes
+        -String block_id
+        -datetime start
+        -datetime end
+        -Set~String~ routes
         
         +date() String
     }
     
     note for Run"Invariant properties:
-    * blockID.length >= 1
-    * start.date == end.date
+    * block_id != None
+    * block_id.length >= 1
+    * start != None
+    * end != None
     * start < end
+    * routes != None
+    * for route in routes, route != None
     * routes.length >= 1
     "
 ```

@@ -17,10 +17,10 @@ class Fleet:
         for key in self.buses.keys():
             require_state(Bus.MIN_TRACKING_NUM <= key <= Bus.MAX_TRACKING_NUM,
                           "Key should contain exactly 3 digits.")
-        for bus in self.buses:
+        for bus in self.buses.values():
             require_not_none(bus, "Bus in bus list should not be None.")
 
-    def get_bus(self, tracking_num: int) -> Bus | None:
+    def get_bus(self, tracking_num: int) -> Bus:
         """
         Searches for a bus in this fleet with a given 3-digit tracking number.
 
@@ -28,13 +28,11 @@ class Fleet:
         :return: the bus in this fleet with the given tracking number, or `None`
         if no such bus exists.
         """
+        require_not_none(tracking_num, "Tracking number should not be None.")
         require_state(Bus.MIN_TRACKING_NUM <= tracking_num <= Bus.MAX_TRACKING_NUM,
                       "Tracking number should contain exactly 3 digits.")
 
-        if tracking_num in self.buses.keys():
-            return self.buses[tracking_num]
-        else:
-            return None
+        return self.buses.get(tracking_num)
 
     def add_bus(self, bus: Bus) -> None:
         """
@@ -43,6 +41,7 @@ class Fleet:
 
         :param bus: the bus to add to this fleet.
         """
+        require_not_none(bus, "Bus should not be None.")
         require_state(bus.tracking_num not in self.buses.keys(),
                       "Should not add bus with duplicate tracking number.")
         self.buses[bus.tracking_num] = bus

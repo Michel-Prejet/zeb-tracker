@@ -42,6 +42,8 @@ class Bus:
 
         :param run: the run completed by this bus.
         """
+        require_not_none(run, "Run should not be None.")
+
         bisect.insort(self.runs, run)
 
         self._check_bus()

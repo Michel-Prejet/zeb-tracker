@@ -47,8 +47,7 @@ classDiagram
     
     class Run {
         -String block_id
-        -datetime start
-        -datetime end
+        -date run_date
         -Set~String~ routes
         
         +date() String
@@ -57,9 +56,7 @@ classDiagram
     note for Run"Invariant properties:
     * block_id != None
     * block_id.length >= 1
-    * start != None
-    * end != None
-    * start < end
+    * run_date != None
     * routes != None
     * for route in routes, route != None
     * routes.length >= 1

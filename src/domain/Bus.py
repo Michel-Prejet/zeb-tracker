@@ -38,7 +38,7 @@ class Bus:
     def add_run(self, run: Run) -> None:
         """
         Adds a new run to the list of runs for this bus, maintaining sorted
-        order so that the list is ordered by increasing start dates/times.
+        order so that the list is ordered by increasing start dates.
 
         :param run: the run completed by this bus.
         """

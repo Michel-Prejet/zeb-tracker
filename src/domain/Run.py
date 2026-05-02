@@ -11,7 +11,7 @@ class Run:
 
     def __init__(self, block_id: str, run_date: date, routes: set[str]):
         self.block_id = block_id
-        self.run_date = date
+        self.run_date = run_date
         self.routes = routes
 
         self._check_run()
@@ -25,5 +25,8 @@ class Run:
             require_not_none(route, "Route in route list should not be None.")
         require_state(len(self.routes) >= 1, "Run should contain at least one route.")
 
+    def __eq__(self, other) -> bool:
+        return isinstance(other, Run) and self.run_date == other.run_date and self.block_id == other.block_id
+
     def __lt__(self, other) -> bool:
-        return self.run_date < other.run_date
+        return self.run_date <= other.run_date

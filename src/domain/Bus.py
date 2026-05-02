@@ -1,4 +1,5 @@
 from domain.Run import Run
+from domain.validation.exceptions.BusError import DuplicateRunError
 from utilities.InvariantHelper import require_not_none, require_state
 import bisect
 
@@ -38,11 +39,15 @@ class Bus:
     def add_run(self, run: Run) -> None:
         """
         Adds a new run to the list of runs for this bus, maintaining sorted
-        order so that the list is ordered by increasing start dates.
+        order so that the list is ordered by increasing start dates. Raises
+        an exception if the run already exists for this bus.
 
         :param run: the run completed by this bus.
         """
         require_not_none(run, "Run should not be None.")
+
+        if run in self.runs:
+            raise DuplicateRunError()
 
         bisect.insort(self.runs, run)
 

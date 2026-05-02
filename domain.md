@@ -23,7 +23,7 @@ classDiagram
         -int tracking_num
         -int year
         -String model
-        -List~Run~ runs
+        -Set~Run~ runs
         
         +add_run(run) void
         +num_runs() int

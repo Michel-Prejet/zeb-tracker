@@ -1,4 +1,5 @@
 from domain.Bus import Bus
+from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateBusError
 from utilities.InvariantHelper import require_not_none, require_state
 
 
@@ -23,25 +24,32 @@ class Fleet:
     def get_bus(self, tracking_num: int) -> Bus:
         """
         Searches for a bus in this fleet with a given 3-digit tracking number.
+        Raises an exception if no such bus was found.
 
         :param tracking_num: the 3-digit tracking number of the bus to retrieve.
-        :return: the bus in this fleet with the given tracking number, or `None`
-        if no such bus exists.
+        :return: the bus in this fleet with the given tracking number.
         """
         require_not_none(tracking_num, "Tracking number should not be None.")
         require_state(Bus.MIN_TRACKING_NUM <= tracking_num <= Bus.MAX_TRACKING_NUM,
                       "Tracking number should contain exactly 3 digits.")
 
-        return self.buses.get(tracking_num)
+        result = self.buses.get(tracking_num)
+
+        if result is None:
+            raise BusNotFoundError()
+        else:
+            return result
 
     def add_bus(self, bus: Bus) -> None:
         """
-        Adds a bus to this fleet if no bus already exists with the same
-        tracking number.
+        Adds a given bus to this fleet. Raises an exception if a bus already
+        exists with the same tracking number.
 
         :param bus: the bus to add to this fleet.
         """
         require_not_none(bus, "Bus should not be None.")
-        require_state(bus.tracking_num not in self.buses.keys(),
-                      "Should not add bus with duplicate tracking number.")
+
+        if bus.tracking_num in self.buses.keys():
+            raise DuplicateBusError()
+
         self.buses[bus.tracking_num] = bus

@@ -1,4 +1,5 @@
 from domain.Bus import Bus
+from domain.Listener import Listener
 from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateBusError
 from utilities.InvariantHelper import require_not_none, require_state
 
@@ -10,6 +11,7 @@ class Fleet:
 
     def __init__(self):
         self.buses: dict[int, Bus] = {}
+        self.listeners: list[Listener] = []
 
         self._check_fleet()
 
@@ -20,6 +22,14 @@ class Fleet:
                           "Key should contain exactly 3 digits.")
         for bus in self.buses.values():
             require_not_none(bus, "Bus in bus list should not be None.")
+
+    def sorted_buses(self) -> list[Bus]:
+        """
+        :return: a list containing all buses in this fleet, sorted by tracking
+        number in increasing order.
+        """
+        return sorted(self.buses.values())
+
 
     def get_bus(self, tracking_num: int) -> Bus:
         """
@@ -53,3 +63,24 @@ class Fleet:
             raise DuplicateBusError()
 
         self.buses[bus.tracking_num] = bus
+        self._notify_all()
+
+    def remove_bus(self, bus: Bus) -> None:
+        """
+        Removes a given bus from this fleet. Assumes that the bus exists
+        in the fleet.
+
+        :param bus: the bus to remove from this fleet.
+        """
+        require_state(bus in self.buses.values(), "Bus to remove should be in fleet.")
+
+        self.buses.pop(bus.tracking_num)
+        self._notify_all()
+
+    def _notify_all(self) -> None:
+        for listener in self.listeners:
+            listener.notify()
+
+    def register_listener(self, l: Listener) -> None:
+        require_not_none(l, "Listener should not be None.")
+        self.listeners.append(l)

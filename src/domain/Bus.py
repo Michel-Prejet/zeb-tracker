@@ -82,3 +82,6 @@ class Bus:
             return None
         return self.runs[len(self.runs) - 1]
 
+    def __lt__(self, other) -> bool:
+        return self.tracking_num < other.tracking_num
+

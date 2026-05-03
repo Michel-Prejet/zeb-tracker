@@ -7,9 +7,11 @@ classDiagram
     class Fleet {
         -Dictionary~int, Bus~ buses
         
+        +sorted_buses() List~Bus~
         +num_runs() int
         +get_bus(tracking_num) Bus
         +add_bus(bus) void
+        +remove_bus(bus) void
     }
     
     note for Fleet"Invariant properties:
@@ -27,9 +29,9 @@ classDiagram
         
         +add_run(run) void
         +num_runs() int
-        +routes() List~String~
         +first_run() Run
         +last_run() Run
+        +last_run_as_str() String
     }
 
     note for Bus "Invariant properties:
@@ -48,17 +50,11 @@ classDiagram
     class Run {
         -String block_id
         -date run_date
-        -Set~String~ routes
-        
-        +date() String
     }
     
     note for Run"Invariant properties:
     * block_id != None
     * block_id.length >= 1
     * run_date != None
-    * routes != None
-    * for route in routes, route != None
-    * routes.length >= 1
     "
 ```

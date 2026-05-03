@@ -30,6 +30,28 @@ class Fleet:
         """
         return sorted(self.buses.values())
 
+    def num_runs(self) -> int:
+        """
+        :return: the total number of runs completed by all buses in this fleet.
+        """
+        total_runs = 0
+
+        for bus in self.buses.values():
+            total_runs += bus.num_runs()
+
+        return total_runs
+
+    def percent_of_runs(self, bus: Bus) -> float:
+        """
+        :param bus: the bus for which to calculate the percentage of runs
+        completed in this fleet.
+        :return: a float representing the percentage of runs completed by
+        the given bus in this fleet.
+        """
+        if self.num_runs() == 0:
+            return 0
+        return round(bus.num_runs() / self.num_runs(), 2)
+
 
     def get_bus(self, tracking_num: int) -> Bus:
         """

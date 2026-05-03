@@ -13,6 +13,7 @@ class Bus:
     MIN_TRACKING_NUM = 100
     MAX_TRACKING_NUM = 999
     MIN_YEAR = 2000
+    UNKNOWN_DATE_PLACEHOLDER = "never"
 
     def __init__(self, tracking_num: int, year: int, model: str):
         self.tracking_num = tracking_num
@@ -56,16 +57,6 @@ class Bus:
     def num_runs(self) -> int:
         return len(self.runs)
 
-    def routes(self) -> set[str]:
-        """
-        :return: a set of strings containing all routes served by this bus.
-        """
-        routes = set()
-        for run in self.runs:
-            for route in run.routes:
-                routes.add(route)
-        return routes
-
     def first_run(self) -> Run | None:
         """
         :return: the first run completed by this bus.
@@ -81,6 +72,16 @@ class Bus:
         if len(self.runs) == 0:
             return None
         return self.runs[len(self.runs) - 1]
+
+    def last_run_as_str(self) -> str:
+        """
+        :return: the last run completed by this bus as a string of the form
+        MONTH DAY, YEAR (e.g. May 2, 2026) or "Never" if this bus hasn't
+        completed any runs.
+        """
+        if self.last_run() is None:
+            return Bus.UNKNOWN_DATE_PLACEHOLDER
+        return self.last_run().run_date.strftime("%B %-d, %Y")
 
     def __lt__(self, other) -> bool:
         return self.tracking_num < other.tracking_num

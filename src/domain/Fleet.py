@@ -4,9 +4,10 @@ from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateB
 from utilities.InvariantHelper import require_not_none, require_state
 
 
-class Fleet:
+class Fleet(Listener):
     """
     Represents a ZEB fleet consisting of buses with unique tracking numbers.
+    Listens for changes in the state of its buses.
     """
 
     def __init__(self):
@@ -48,9 +49,11 @@ class Fleet:
         :return: a float representing the percentage of runs completed by
         the given bus in this fleet.
         """
+        require_not_none(bus, "Bus should not be None.")
+
         if self.num_runs() == 0:
             return 0
-        return round(bus.num_runs() / self.num_runs(), 2)
+        return round(100 * bus.num_runs() / self.num_runs(), 2)
 
 
     def get_bus(self, tracking_num: int) -> Bus:
@@ -85,6 +88,7 @@ class Fleet:
             raise DuplicateBusError()
 
         self.buses[bus.tracking_num] = bus
+        bus.register_listener(self)
         self._notify_all()
 
     def remove_bus(self, bus: Bus) -> None:
@@ -106,3 +110,6 @@ class Fleet:
     def register_listener(self, l: Listener) -> None:
         require_not_none(l, "Listener should not be None.")
         self.listeners.append(l)
+
+    def notify(self):
+        self._notify_all()

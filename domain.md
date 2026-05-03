@@ -31,7 +31,6 @@ classDiagram
         +num_runs() int
         +first_run() Run
         +last_run() Run
-        +last_run_as_str() String
     }
 
     note for Bus "Invariant properties:

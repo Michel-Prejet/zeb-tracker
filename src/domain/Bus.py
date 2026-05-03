@@ -1,3 +1,4 @@
+from domain.Listener import Listener
 from domain.Run import Run
 from domain.validation.exceptions.BusError import DuplicateRunError
 from utilities.InvariantHelper import require_not_none, require_state
@@ -20,6 +21,7 @@ class Bus:
         self.year = year
         self.model = model
         self.runs: list[Run] = []
+        self.listeners: list[Listener] = []
 
         self._check_bus()
 
@@ -52,6 +54,7 @@ class Bus:
 
         bisect.insort(self.runs, run)
 
+        self._notify_all()
         self._check_bus()
 
     def num_runs(self) -> int:
@@ -73,16 +76,14 @@ class Bus:
             return None
         return self.runs[len(self.runs) - 1]
 
-    def last_run_as_str(self) -> str:
-        """
-        :return: the last run completed by this bus as a string of the form
-        MONTH DAY, YEAR (e.g. May 2, 2026) or "Never" if this bus hasn't
-        completed any runs.
-        """
-        if self.last_run() is None:
-            return Bus.UNKNOWN_DATE_PLACEHOLDER
-        return self.last_run().run_date.strftime("%B %-d, %Y")
-
     def __lt__(self, other) -> bool:
         return self.tracking_num < other.tracking_num
+
+    def register_listener(self, l: Listener) -> None:
+        require_not_none(l, "Listener should not be None.")
+        self.listeners.append(l)
+
+    def _notify_all(self) -> None:
+        for listener in self.listeners:
+            listener.notify()
 

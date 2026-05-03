@@ -1,9 +1,12 @@
 import customtkinter as ctk
 
+from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
 from utilities.InvariantHelper import require_not_none
 
+
+UNKNOWN_DATE_PLACEHOLDER = "never"
 
 class ViewFleetFrame(ctk.CTkFrame, Listener):
     """
@@ -23,12 +26,12 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
 
         # Header
         ctk.CTkLabel(self,
-                     text="View Fleet",
+                     text="Fleet",
                      font=("Arial", 20, "bold")
                      ).pack()
 
         # Initialize scrollable list
-        self.bus_list = ctk.CTkScrollableFrame(self, width=400, height=200)
+        self.bus_list = ctk.CTkScrollableFrame(self, width=600, height=200)
         self.bus_list.pack()
 
         self.notify()
@@ -58,7 +61,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
             runs_label = ctk.CTkLabel(curr_row, text=f"{bus.num_runs()} runs ({self.fleet.percent_of_runs(bus)} %)")
             runs_label.pack(side="left", padx=5)
 
-            last_seen_label = ctk.CTkLabel(curr_row, text=f"Last seen: {bus.last_run_as_str()}")
+            last_seen_label = ctk.CTkLabel(curr_row, text=f"Last seen: {last_run_date_to_str(bus)}")
             last_seen_label.pack(side="left", padx=5)
 
             # "Remove" button
@@ -68,5 +71,17 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
                           width=60,
                           command=lambda b=bus: self.controller.remove_bus(b))
              .pack(side="right", padx=5))
+
+def last_run_date_to_str(bus: Bus) -> str:
+    """
+    :bus: the bus for which to get the last run date as a string.
+    :return: the last run completed by the given bus as a string of the form
+    MONTH DAY, YEAR (e.g. May 2, 2026) or "never" if the given bus hasn't
+    completed any runs.
+    """
+    if bus.last_run() is None:
+        return UNKNOWN_DATE_PLACEHOLDER
+    d = bus.last_run().run_date
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
 
 

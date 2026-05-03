@@ -22,7 +22,7 @@ class AddBusFrame(ctk.CTkFrame):
 
         # Header
         ctk.CTkLabel(self,
-                            text="Add Bus to Fleet",
+                            text="Add Bus",
                             font=("Arial", 20, "bold")
                      ).grid(row=0, column=0, columnspan=2)
 
@@ -47,10 +47,10 @@ class AddBusFrame(ctk.CTkFrame):
         self.msg = ctk.CTkLabel(self, text="", padx=10)
         self.msg.grid(row=5, column=0, columnspan=2)
 
-    def submit(self):
+    def submit(self) -> None:
         """"
         Attempts to create a new bus based on the input provided in the fields.
-        If successful, the bus is added to the fleet and a success message is
+        If successful, the bus is added to the fleet,  a success message is
         displayed and the fields are cleared. Otherwise, an error message is
         displayed.
         """

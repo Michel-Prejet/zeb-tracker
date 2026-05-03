@@ -3,6 +3,7 @@ from domain.Fleet import Fleet
 import customtkinter as ctk
 from domain.Run import Run
 from ui.AddBusFrame import AddBusFrame
+from ui.AddRunFrame import AddRunFrame
 from ui.ViewFleetFrame import ViewFleetFrame
 from utilities.InvariantHelper import require_not_none, require_state
 
@@ -18,11 +19,13 @@ class FleetController:
 
         self.fleet = Fleet()
 
-        self.add_bus_frame = AddBusFrame(app, self.fleet, self)
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
+        self.add_bus_frame = AddBusFrame(app, self.fleet, self)
+        self.add_run_frame = AddRunFrame(app, self.fleet, self)
 
-        self.add_bus_frame.pack(anchor="nw")
         self.view_fleet_frame.pack(anchor="nw")
+        self.add_bus_frame.pack(anchor="nw", side="left")
+        self.add_run_frame.pack(anchor="nw")
 
     def add_bus(self, bus: Bus) -> None:
         """

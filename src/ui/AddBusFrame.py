@@ -50,7 +50,7 @@ class AddBusFrame(ctk.CTkFrame):
     def submit(self) -> None:
         """"
         Attempts to create a new bus based on the input provided in the fields.
-        If successful, the bus is added to the fleet,  a success message is
+        If successful, the bus is added to the fleet, a success message is
         displayed and the fields are cleared. Otherwise, an error message is
         displayed.
         """

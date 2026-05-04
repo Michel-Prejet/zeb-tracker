@@ -12,6 +12,7 @@ class Run:
     def __init__(self, block_id: str, run_date: date):
         self.block_id = block_id
         self.run_date = run_date
+        self.id: int | None = None
 
         self._check_run()
 

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from controller.FleetController import FleetController
 
-DIMENSIONS = '1280x720'
+DIMENSIONS = '600x450'
 TITLE = 'ZEB Tracker'
 
 # Initialize window

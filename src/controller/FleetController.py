@@ -6,6 +6,7 @@ from ui.AddBusFrame import AddBusFrame
 from ui.AddRunFrame import AddRunFrame
 from ui.ViewFleetFrame import ViewFleetFrame
 from utilities.InvariantHelper import require_not_none, require_state
+from persistence import BusPersistence, RunPersistence
 
 
 class FleetController:
@@ -18,6 +19,8 @@ class FleetController:
         require_not_none(app, "App should not be None.")
 
         self.fleet = Fleet()
+        for bus in BusPersistence.load_all_buses():
+            self.fleet.add_bus(bus)
 
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
         self.add_bus_frame = AddBusFrame(app, self.fleet, self)
@@ -34,7 +37,10 @@ class FleetController:
         :param bus: the bus to add to this fleet.
         """
         require_not_none(bus, "Bus should not be None.")
+
         self.fleet.add_bus(bus)
+
+        BusPersistence.save_bus(bus)
 
     def remove_bus(self, bus: Bus) -> None:
         """
@@ -43,7 +49,10 @@ class FleetController:
         :param bus: the bus to remove from this fleet.
         """
         require_not_none(bus, "Bus should not be None.")
+
         self.fleet.remove_bus(bus)
+
+        BusPersistence.delete_bus(bus)
 
     def add_run_to_bus(self, bus: Bus, run: Run) -> None:
         """
@@ -56,4 +65,7 @@ class FleetController:
         require_not_none(bus, "Bus should not be None.")
         require_not_none(run, "Run should not be None.")
         require_state(bus in self.fleet.buses.values(), "Bus should be in the fleet.")
+
         bus.add_run(run)
+
+        RunPersistence.save_run(run, bus)

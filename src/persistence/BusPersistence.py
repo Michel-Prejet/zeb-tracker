@@ -14,14 +14,14 @@ def save_bus(bus: Bus) -> None:
     require_not_none(bus, "Bus should not be None.")
 
     with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute(
-                """
-                insert into bus(tracking_num, year, model) values(%s, %s, %s)
-                on conflict do nothing
-                """,
-                (bus.tracking_num, bus.year, bus.model)
-            )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            insert into bus(tracking_num, year, model) values(?, ?, ?)
+            on conflict do nothing
+            """,
+            (bus.tracking_num, bus.year, bus.model)
+        )
         db.commit()
 
 def delete_bus(bus: Bus) -> None:
@@ -34,13 +34,13 @@ def delete_bus(bus: Bus) -> None:
     require_not_none(bus, "Bus should not be None.")
 
     with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute(
-                """
-                delete from bus where tracking_num=%s
-                """,
-                (bus.tracking_num,)
-            )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            delete from bus where tracking_num=?
+            """,
+            (bus.tracking_num,)
+        )
         db.commit()
 
 def load_all_buses() -> list[Bus]:
@@ -53,20 +53,20 @@ def load_all_buses() -> list[Bus]:
     buses: list[Bus] = []
 
     with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute(
-                """
-                select tracking_num, year, model from bus
-                """
-            )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            select tracking_num, year, model from bus
+            """
+        )
 
-            for row in cursor.fetchall():
-                tracking_num, year, model = row
-                curr_bus = Bus(tracking_num, year, model)
+        for row in cursor.fetchall():
+            tracking_num, year, model = row
+            curr_bus = Bus(tracking_num, year, model)
 
-                for curr_run in load_runs_for_bus(curr_bus):
-                    curr_bus.add_run(curr_run)
+            for curr_run in load_runs_for_bus(curr_bus):
+                curr_bus.add_run(curr_run)
 
-                buses.append(curr_bus)
+            buses.append(curr_bus)
 
     return buses

@@ -1,3 +1,5 @@
+from datetime import date
+
 from domain.Bus import Bus
 from persistence.Connection import connection
 from domain.Run import Run
@@ -16,15 +18,15 @@ def save_run(run: Run, bus: Bus) -> None:
     require_not_none(run, "Run should not be None.")
 
     with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute(
-                """
-                insert into run(id, block_id, run_date, bus) values(default, %s, %s, %s)
-                on conflict do nothing returning id
-                """,
-                (run.block_id, run.run_date, bus.tracking_num)
-            )
-            row = cursor.fetchone()
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            insert into run(block_id, run_date, bus) values(?, ?, ?)
+            on conflict do nothing returning id
+            """,
+            (run.block_id, run.run_date.isoformat(), bus.tracking_num)
+        )
+        row = cursor.fetchone()
         db.commit()
 
         if row is not None:
@@ -42,13 +44,13 @@ def delete_run(run: Run) -> None:
     require_not_none(run.id, "Run ID should not be None.")
 
     with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute(
-                """
-                delete from run where id=%s
-                """,
-                (run.id,)
-            )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            delete from run where id=?
+            """,
+            (run.id,)
+        )
         db.commit()
 
 def load_runs_for_bus(bus: Bus) -> list[Run]:
@@ -65,19 +67,19 @@ def load_runs_for_bus(bus: Bus) -> list[Run]:
     runs: list[Run] = []
 
     with connection() as db:
-        with db.cursor() as cursor:
-            cursor.execute(
-                """
-                select id, block_id, run_date from run where bus=%s
-                """,
-                (bus.tracking_num,)
-            )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            select id, block_id, run_date from run where bus=?
+            """,
+            (bus.tracking_num,)
+        )
 
-            for row in cursor.fetchall():
-                run_id, block_id, run_date = row
-                curr_run = Run(block_id, run_date)
-                curr_run.id = run_id
+        for row in cursor.fetchall():
+            run_id, block_id, run_date = row
+            curr_run = Run(block_id, date.fromisoformat(run_date))
+            curr_run.id = run_id
 
-                runs.append(curr_run)
+            runs.append(curr_run)
 
     return runs

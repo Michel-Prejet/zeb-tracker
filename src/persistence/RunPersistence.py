@@ -5,6 +5,7 @@ from persistence.Connection import connection
 from domain.Run import Run
 from utilities.InvariantHelper import require_not_none
 
+
 def save_run(run: Run, bus: Bus) -> None:
     """
     Saves a given run completed by a given bus to the database. Takes no action
@@ -31,6 +32,43 @@ def save_run(run: Run, bus: Bus) -> None:
 
         if row is not None:
             run.id = row[0]
+
+def save_runs(runs: list[tuple[Run, Bus]]) -> None:
+    """
+    Saves a given list of (Run, Bus) tuples to the database. Skips any run
+    that already exists in the database with the same block ID, date, and
+    bus. If the run is saved, its ID attribute will be updated to the ID
+    assigned by the database.
+
+    :param runs: a list of (Run, Bus) tuples each containing a run to save
+    to the database along with its respective bus.
+    """
+    RUN_INDEX = 0
+    BUS_INDEX = 1
+
+    require_not_none(runs, "(Run, Bus) tuple list should not be None.")
+    for run in runs:
+        require_not_none(run[RUN_INDEX], "Run in tuple should not be None.")
+        require_not_none(run[BUS_INDEX], "Bus in tuple should not be None.")
+
+    with connection() as db:
+        cursor = db.cursor()
+        for run in runs:
+            cursor.execute(
+                """
+                insert into run(block_id, run_date, bus) values(?, ?, ?)
+                    on conflict do nothing returning id
+                """,
+                (run[RUN_INDEX].block_id,
+                 run[RUN_INDEX].run_date.isoformat(),
+                 run[BUS_INDEX].tracking_num)
+            )
+            row = cursor.fetchone()
+
+            if row is not None:
+                run[RUN_INDEX].id = row[0]
+
+        db.commit()
 
 def delete_run(run: Run) -> None:
     """

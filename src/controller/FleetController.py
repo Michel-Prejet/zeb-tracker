@@ -4,6 +4,7 @@ import customtkinter as ctk
 from domain.Run import Run
 from ui.AddBusFrame import AddBusFrame
 from ui.AddRunFrame import AddRunFrame
+from ui.MenuFrame import MenuFrame
 from ui.ViewFleetFrame import ViewFleetFrame
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
@@ -22,13 +23,24 @@ class FleetController:
         for bus in BusPersistence.load_all_buses():
             self.fleet.add_bus(bus)
 
+        self.menu_frame = MenuFrame(app, self)
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
         self.add_bus_frame = AddBusFrame(app, self.fleet, self)
         self.add_run_frame = AddRunFrame(app, self.fleet, self)
 
-        self.view_fleet_frame.pack(anchor="nw")
-        self.add_bus_frame.pack(anchor="nw", side="left")
-        self.add_run_frame.pack(anchor="nw")
+        self.curr_frame = self.view_fleet_frame
+
+        self.menu_frame.pack(pady=5)
+        self.curr_frame.pack(anchor="nw")
+
+    def switch_to_add_bus_frame(self):
+        self._switch_main_frame(self.add_bus_frame)
+
+    def switch_to_add_run_frame(self):
+        self._switch_main_frame(self.add_run_frame)
+
+    def switch_to_view_fleet_frame(self):
+        self._switch_main_frame(self.view_fleet_frame)
 
     def add_bus(self, bus: Bus) -> None:
         """
@@ -69,5 +81,15 @@ class FleetController:
         bus.add_run(run)
 
         RunPersistence.save_run(run, bus)
+
+    def _switch_main_frame(self, next_frame: ctk.CTkFrame):
+        """
+        Sets the main frame in the application's window.
+
+        :param next_frame: the frame to display as the main frame.
+        """
+        self.curr_frame.pack_forget()
+        self.curr_frame = next_frame
+        self.curr_frame.pack(anchor="n")
 
 

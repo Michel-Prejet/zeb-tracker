@@ -25,9 +25,9 @@ class SearchFilterType(Enum):
     MODEL = "Model"
 
 FILTER_ACTIONS = {
-    SearchFilterType.TRACKING_NUM: lambda bus_list, search_filter: [b for b in bus_list if str(b.tracking_num).find(search_filter) != -1],
-    SearchFilterType.YEAR: lambda bus_list, search_filter: [b for b in bus_list if str(b.year).find(search_filter) != -1],
-    SearchFilterType.MODEL: lambda bus_list, search_filter: [b for b in bus_list if b.model.find(search_filter) != -1]
+    SearchFilterType.TRACKING_NUM: lambda bus_list, search_filter: [b for b in bus_list if search_filter in str(b.tracking_num)],
+    SearchFilterType.YEAR: lambda bus_list, search_filter: [b for b in bus_list if search_filter in str(b.year)],
+    SearchFilterType.MODEL: lambda bus_list, search_filter: [b for b in bus_list if search_filter in b.model]
 }
 
 class ViewFleetFrame(ctk.CTkFrame, Listener):
@@ -96,13 +96,14 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
                 lambda buses: FILTER_ACTIONS[search_filter_type](buses, search_filter)
             )
 
-        self.search_entry.delete(0, "end")
-
     def reset_search(self) -> None:
         """
         Reconstructs the bus list with all filters removed.
         """
-        self._display_list(lambda fleet: fleet)
+        self._display_list(lambda buses: buses)
+
+        self.search_entry.delete(0, "end")
+        self.search_filter_menu.set(SearchFilterType.DEFAULT.value)
 
     def notify(self) -> None:
         """

@@ -20,6 +20,8 @@ class AddBusFrame(ctk.CTkFrame):
         super().__init__(app)
         self.controller = controller
 
+        self.configure(fg_color="transparent")
+
         # Header
         ctk.CTkLabel(self,
                             text="Add Bus",

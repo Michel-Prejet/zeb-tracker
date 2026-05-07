@@ -31,7 +31,7 @@ def add_runs_to_fleet_from_csv(input_file: str, fleet: Fleet) -> None:
 
     print("*** Starting CSV import ***")
 
-    line_num = 1
+    line_num = 0
     lines_skipped = 0
     added_runs: list[tuple[Run, Bus]] = []
 
@@ -48,7 +48,7 @@ def add_runs_to_fleet_from_csv(input_file: str, fleet: Fleet) -> None:
                 added_runs.append(_add_run_from_tokens(row, fleet))
             except Exception as e:
                 lines_skipped += 1
-                print(f"{RED}Error on line {line_num}: {type(e).__name__}")
+                print(f"\n{RED}Error on line {line_num}: {type(e).__name__}")
         print()
 
     save_runs(added_runs)

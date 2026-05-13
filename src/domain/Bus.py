@@ -54,6 +54,25 @@ class Bus:
 
         bisect.insort(self.runs, run)
 
+        require_state(run in self.runs, "Run should have been added.")
+
+        self._notify_all()
+        self._check_bus()
+
+    def remove_run(self, run: Run) -> None:
+        """
+        Removes a given run from the list of runs for this bus. Assumes that
+        the run exists in the list.
+
+        :param run: the run to remove from this bus's list of runs.
+        """
+        require_not_none(run, "Run should not be None.")
+        require_state(run in self.runs, "Run to remove should exist for this Bus.")
+
+        self.runs.remove(run)
+
+        require_state(run not in self.runs, "Run should have been removed.")
+
         self._notify_all()
         self._check_bus()
 

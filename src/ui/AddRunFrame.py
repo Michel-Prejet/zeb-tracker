@@ -73,10 +73,15 @@ class AddRunFrame(ctk.CTkFrame):
             bus_input = validate_tracking_number(self.bus_entry.get())
             bus = self.fleet.get_bus(bus_input)
             date_input = validate_date(self.date_entry.get())
-            block_input = validate_block_id(self.block_entry.get())
 
-            self.controller.add_run_to_bus(bus, Run(block_input, date_input))
-            self.msg.configure(text="Run added successfully.", text_color="green")
+            block_input_list_raw = self.block_entry.get().split(",")
+            block_input_list = []
+            for block_input in block_input_list_raw:
+                block_input_list.append(validate_block_id(block_input))
+
+            for block_input in block_input_list:
+                self.controller.add_run_to_bus(bus, Run(block_input, date_input))
+                self.msg.configure(text="Run added successfully.", text_color="green")
 
             self.bus_entry.delete(0, "end")
             self.date_entry.delete(0, "end")

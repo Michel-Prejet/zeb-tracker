@@ -8,6 +8,7 @@ classDiagram
         -Dictionary~int, Bus~ buses
         
         +sorted_buses() List~Bus~
+        +sorted_runs() List~Run~
         +num_runs() int
         +get_bus(tracking_num) Bus
         +add_bus(bus) void
@@ -28,6 +29,7 @@ classDiagram
         -Set~Run~ runs
         
         +add_run(run) void
+        +remove_run(run) void
         +num_runs() int
         +first_run() Run
         +last_run() Run

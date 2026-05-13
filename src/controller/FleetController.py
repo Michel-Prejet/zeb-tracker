@@ -6,6 +6,7 @@ from ui.AddBusFrame import AddBusFrame
 from ui.AddRunFrame import AddRunFrame
 from ui.MenuFrame import MenuFrame
 from ui.ViewFleetFrame import ViewFleetFrame
+from ui.ViewRunsFrame import ViewRunsFrame
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
 
@@ -25,6 +26,7 @@ class FleetController:
 
         self.menu_frame = MenuFrame(app, self)
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
+        self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
         self.add_bus_frame = AddBusFrame(app, self.fleet, self)
         self.add_run_frame = AddRunFrame(app, self.fleet, self)
 
@@ -41,6 +43,9 @@ class FleetController:
 
     def switch_to_view_fleet_frame(self):
         self._switch_main_frame(self.view_fleet_frame)
+
+    def switch_to_view_runs_frame(self):
+        self._switch_main_frame(self.view_runs_frame)
 
     def add_bus(self, bus: Bus) -> None:
         """
@@ -81,6 +86,22 @@ class FleetController:
         bus.add_run(run)
 
         RunPersistence.save_run(run, bus)
+
+    def remove_run_from_bus(self, bus: Bus, run: Run) -> None:
+        """
+        Removes a given run from a given bus in response to a UI event. Assumes
+        that the run exists for the given bus.
+
+        :param bus: the bus to which to remove a run.
+        :param run: the run to remove from the given bus.
+        """
+        require_not_none(bus, "Bus should not be None.")
+        require_not_none(run, "Run should not be None.")
+        require_state(bus in self.fleet.buses.values(), "Bus should be in the fleet.")
+
+        bus.remove_run(run)
+
+        RunPersistence.delete_run(run)
 
     def _switch_main_frame(self, next_frame: ctk.CTkFrame):
         """

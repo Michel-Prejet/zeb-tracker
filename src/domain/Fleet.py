@@ -1,5 +1,6 @@
 from domain.Bus import Bus
 from domain.Listener import Listener
+from domain.Run import Run
 from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateBusError
 from utilities.InvariantHelper import require_not_none, require_state
 
@@ -30,6 +31,19 @@ class Fleet(Listener):
         number in increasing order.
         """
         return sorted(self.buses.values())
+
+    def sorted_runs(self) -> list[tuple[Run, Bus]]:
+        """
+        :return: a list of tuples containing all runs completed by buses in this fleet,
+        sorted by date in decreasing order. Each tuple is of the form RUN, BUS,
+        where the second element represents the bus that completed the run.
+        """
+        runs: list[tuple[Run, Bus]] = []
+        for bus in self.buses.values():
+            for run in bus.runs:
+                runs.append((run, bus))
+
+        return sorted(runs, key=lambda r: r[0].run_date, reverse=True)
 
     def num_runs(self) -> int:
         """
@@ -88,6 +102,9 @@ class Fleet(Listener):
             raise DuplicateBusError()
 
         self.buses[bus.tracking_num] = bus
+
+        require_not_none(self.buses[bus.tracking_num], "Bus should have been added.")
+
         bus.register_listener(self)
         self._notify_all()
 
@@ -98,9 +115,13 @@ class Fleet(Listener):
 
         :param bus: the bus to remove from this fleet.
         """
+        require_not_none(bus, "Bus should not be None.")
         require_state(bus in self.buses.values(), "Bus to remove should be in fleet.")
 
         self.buses.pop(bus.tracking_num)
+
+        require_state(self.buses[bus.tracking_num] is None, "Bus should have been removed.")
+
         self._notify_all()
 
     def _notify_all(self) -> None:

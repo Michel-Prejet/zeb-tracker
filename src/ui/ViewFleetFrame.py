@@ -152,7 +152,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
              .pack(side="right", padx=5))
 
         if len(list_to_display) == 0:
-            no_results_label = ctk.CTkLabel(self.bus_list, text="No results.")
+            no_results_label = ctk.CTkLabel(self.bus_list, text="No buses to display.")
             no_results_label.pack(anchor="nw")
 
 def last_run_date_to_str(bus: Bus) -> str:

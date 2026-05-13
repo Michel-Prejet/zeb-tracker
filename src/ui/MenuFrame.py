@@ -20,6 +20,9 @@ class MenuFrame(ctk.CTkFrame):
         self.view_fleet_button = ctk.CTkButton(self, text="View fleet", command=controller.switch_to_view_fleet_frame)
         self.view_fleet_button.pack(anchor="nw", side="left", padx=5, pady=10)
 
+        self.view_runs_button = ctk.CTkButton(self, text="View runs", command=controller.switch_to_view_runs_frame)
+        self.view_runs_button.pack(anchor="nw", side="left", padx=5, pady=10)
+
         self.add_bus_button = ctk.CTkButton(self, text="Add bus", command=controller.switch_to_add_bus_frame)
         self.add_bus_button.pack(anchor="nw", side="left", padx=5, pady=10)
 

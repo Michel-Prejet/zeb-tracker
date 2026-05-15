@@ -28,3 +28,6 @@ class MenuFrame(ctk.CTkFrame):
 
         self.add_run_button = ctk.CTkButton(self, text="Add run", command=controller.switch_to_add_run_frame)
         self.add_run_button.pack(anchor="nw", side="left", padx=5, pady=10)
+
+        self.csv_export_dialog = ctk.CTkButton(self, text="Export to CSV", command=controller.show_csv_export_dialog)
+        self.csv_export_dialog.pack(anchor="nw", side="left", padx=5, pady=10)

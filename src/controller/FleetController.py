@@ -4,6 +4,7 @@ import customtkinter as ctk
 from domain.Run import Run
 from ui.AddBusFrame import AddBusFrame
 from ui.AddRunFrame import AddRunFrame
+from ui.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
 from ui.ViewFleetFrame import ViewFleetFrame
 from ui.ViewRunsFrame import ViewRunsFrame
@@ -20,6 +21,7 @@ class FleetController:
     def __init__(self, app: ctk.CTk):
         require_not_none(app, "App should not be None.")
 
+        self.app = app
         self.fleet = Fleet()
         for bus in BusPersistence.load_all_buses():
             self.fleet.add_bus(bus)
@@ -29,6 +31,7 @@ class FleetController:
         self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
         self.add_bus_frame = AddBusFrame(app, self.fleet, self)
         self.add_run_frame = AddRunFrame(app, self.fleet, self)
+        self.csv_export_dialog = None
 
         self.curr_frame = self.view_fleet_frame
 
@@ -46,6 +49,15 @@ class FleetController:
 
     def switch_to_view_runs_frame(self):
         self._switch_main_frame(self.view_runs_frame)
+
+    def show_csv_export_dialog(self):
+        if self.csv_export_dialog is None:
+            self.csv_export_dialog = CSVExportDialog(self.app, self.fleet)
+        else:
+            self.csv_export_dialog.deiconify()
+
+        self.csv_export_dialog.lift()
+        self.csv_export_dialog.focus_force()
 
     def add_bus(self, bus: Bus) -> None:
         """

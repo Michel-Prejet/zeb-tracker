@@ -1,14 +1,46 @@
 import math
-from typing import Callable
+from enum import Enum
 import customtkinter as ctk
 from domain.Fleet import Fleet
 from domain.Listener import Listener
-from domain.Run import Run
 from utilities.InvariantHelper import require_not_none
 
 
+PAGE_SIZE = 20
+
+class SearchFilterType(Enum):
+    """
+    Represents different filters that can be applied to the list of runs during
+    a search. Each filter (except for DEFAULT) is associated with a lambda
+    function taking as arguments a list of (Run, Bus) tuples and a string, where
+    the string is used to filter the run list based on whether it is contained
+    in the string representation of the selected attribute (except for block IDs,
+    which require an exact match).
+    For example, when DATE is selected with filter "2026-05", all runs in
+    May 2026 will be displayed.
+    """
+    DEFAULT = "Search by..."
+    DATE = "Date"
+    BLOCK_ID = "Block ID"
+    BUS_TRACKING_NUM = "Bus"
+
+FILTER_ACTIONS = {
+    SearchFilterType.DATE: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[0].run_date)],
+    SearchFilterType.BLOCK_ID: lambda run_list, search_filter: [r for r in run_list if search_filter == r[0].block_id],
+    SearchFilterType.BUS_TRACKING_NUM: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[1].tracking_num)]
+}
+
 class ViewRunsFrame(ctk.CTkFrame, Listener):
-    PAGE_SIZE = 20
+    """
+    Frame displaying the list of runs in a given fleet, including the run
+    date, the block ID, and the tracking number of the bus that completed the
+    run. A search function and page information are displayed above the scrollable
+    list. The search function includes an input field in which the user can enter
+    a filter string, as well as a dropdown menu to select a filter and a button
+    to submit the search. The page information section shows the current
+    page, the total number of pages, and buttons to navigate to the next,
+    previous, first, or last pages.
+    """
 
     def __init__(self, app: ctk.CTk, fleet: Fleet, controller):
         require_not_none(app, "App should not be None.")
@@ -17,14 +49,36 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         super().__init__(app)
         self.controller = controller
         self.fleet = fleet
-        self.fleet.register_listener(self)
+        fleet.register_listener(self)
+        self.curr_run_list = fleet.sorted_runs()
         self.curr_page = 1
+        self.curr_search_filter = lambda run_list: run_list
 
         # Header
         ctk.CTkLabel(self,
                      text="Runs",
                      font=("Arial", 20, "bold")
                      ).pack()
+
+        # Search frame
+        search_frame = ctk.CTkFrame(self, fg_color="transparent")
+        search_frame.pack(anchor="w", padx=10, pady=5)
+
+        # Search entry
+        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="Search...", width=250)
+        self.search_entry.grid(row=0, column=0, sticky="w")
+
+        # Submit search button
+        search_button = ctk.CTkButton(search_frame, text="🔎", width=20, command=self.submit_search)
+        search_button.grid(row=0, column=1, sticky="w", padx=5)
+
+        # Dropdown menu of filter types for the search
+        self.search_filter_menu = ctk.CTkOptionMenu(search_frame, values=[f.value for f in SearchFilterType])
+        self.search_filter_menu.grid(row=0, column=2, sticky="w", padx=5)
+
+        # Button to reset search
+        search_reset_button = ctk.CTkButton(search_frame, text="Reset", width=50, command=self.reset_search)
+        search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
 
         # Page information
         page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -52,17 +106,46 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
 
         self.notify()
 
+    def reset_search(self) -> None:
+        """
+        Reconstructs the run list with all filters removed and goes back
+        to page 1.
+        """
+        self.curr_page = 1
+        self.curr_search_filter = lambda run_list: run_list
+        self.notify()
+
+        self.search_entry.delete(0, "end")
+        self.search_filter_menu.set(SearchFilterType.DEFAULT.value)
+
+    def submit_search(self) -> None:
+        """
+        Filters the run list based on the input provided in the search entry
+        field and the search filter type menu, and goes back to page 1. Takes
+        no action if the filter type is DEFAULT or the search entry is empty or
+        only whitespace. Does not validate input; invalid search filters will
+        simply result in zero results.
+        """
+        search_filter: str = self.search_entry.get().strip()
+        search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
+
+        self.curr_page = 1
+
+        if search_filter_type != SearchFilterType.DEFAULT and len(search_filter) > 0:
+            self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, search_filter)
+        self.notify()
+
     def _num_pages(self) -> int:
         """
-        :return: the number of pages needed to display every run in the fleet
-        (minimum of 1 page).
+        :return: the number of pages for the current number of runs to
+        display (any search filters will be considered).
         """
-        num_runs = len(self.fleet.sorted_runs())
+        num_runs = len(self.curr_run_list)
 
         if num_runs == 0:
             return 1
 
-        return math.ceil(num_runs / self.PAGE_SIZE)
+        return math.ceil(num_runs / PAGE_SIZE)
 
     def _next_page(self) -> None:
         """
@@ -102,18 +185,29 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         self.run_list._parent_canvas.yview_moveto(0)
 
     def notify(self) -> None:
-        # Update page info
-        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()}")
+        """
+        Refreshes the list of runs and the page information in response to a
+        change in the state of the buses within the fleet. Clears the old
+        scrollable list of runs and reconstructs it, applying the current search
+        filter and  appending all necessary labels and buttons.
+        """
 
         # Clear the old list
         for child in self.run_list.winfo_children():
             child.destroy()
 
-        # Create the new list
-        start_run_index = (self.curr_page - 1) * self.PAGE_SIZE
-        end_run_index = start_run_index + self.PAGE_SIZE
+        # Apply the search filter to the run list
+        all_runs = self.fleet.sorted_runs()
+        self.curr_run_list = self.curr_search_filter(all_runs)
 
-        for run in self.fleet.sorted_runs()[start_run_index:end_run_index]:
+        # Update page info
+        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()}")
+
+        # Create the new list
+        start_run_index = (self.curr_page - 1) * PAGE_SIZE
+        end_run_index = start_run_index + PAGE_SIZE
+
+        for run in self.curr_run_list[start_run_index:end_run_index]:
             curr_row = ctk.CTkFrame(self.run_list)
             curr_row.pack(fill="x", padx=5, pady=5)
 
@@ -138,3 +232,6 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
                            command=lambda r=run: self.controller.remove_run_from_bus(r[1], r[0]))
              .pack(side="right", padx=5))
 
+        if len(self.curr_run_list) == 0:
+            no_results_label = ctk.CTkLabel(self.run_list, text="No runs to display.")
+            no_results_label.pack(anchor="nw")

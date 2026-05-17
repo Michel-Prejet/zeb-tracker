@@ -1,4 +1,7 @@
 from datetime import date
+from pathlib import Path
+from tkinter import filedialog
+
 import customtkinter as ctk
 from domain.Fleet import Fleet
 from utilities.InvariantHelper import require_not_none
@@ -30,15 +33,22 @@ class CSVExportDialog(ctk.CTkToplevel):
         inputs_frame = ctk.CTkFrame(self, fg_color="transparent")
         inputs_frame.pack(anchor="nw", pady=10)
 
+        # File path entry
+        ctk.CTkLabel(inputs_frame, text="File path").grid(row=1, column=0, sticky="w", padx=5)
+        self.folder_path_entry = ctk.CTkEntry(inputs_frame)
+        self.folder_path_entry.grid(row=1, column=1, sticky="w", padx=5)
+        browse_button = ctk.CTkButton(inputs_frame, text="📂", command=self.browse_for_folder_path, width=5)
+        browse_button.grid(row=1, column=2, sticky="w", padx=5)
+
         # Output file name entry
-        ctk.CTkLabel(inputs_frame, text="Output file name").grid(row=1, column=0, sticky="w", padx=5)
+        ctk.CTkLabel(inputs_frame, text="Output file name").grid(row=2, column=0, sticky="w", padx=5)
         self.output_file_name = ctk.CTkEntry(inputs_frame, placeholder_text="e.g. runs.csv")
-        self.output_file_name.grid(row=1, column=1, sticky="w", padx=5)
+        self.output_file_name.grid(row=2, column=1, sticky="w", padx=5)
 
         # Start date entry
-        ctk.CTkLabel(inputs_frame, text="Start date (optional)").grid(row=2, column=0, sticky="w", padx=5)
+        ctk.CTkLabel(inputs_frame, text="Start date (optional)").grid(row=3, column=0, sticky="w", padx=5)
         self.start_date_entry = ctk.CTkEntry(inputs_frame, placeholder_text="e.g. 2026-05-01")
-        self.start_date_entry.grid(row=2, column=1, sticky="w", padx=5)
+        self.start_date_entry.grid(row=3, column=1, sticky="w", padx=5)
 
         # Submit button and error message
         ctk.CTkButton(self, text="Export", command=self.submit).pack()
@@ -47,31 +57,46 @@ class CSVExportDialog(ctk.CTkToplevel):
 
     def submit(self) -> None:
         """
-        Attempts to create a CSV file with the name provided in the input field
-        containing all run data for this fleet. Prints an error message if the
-        file name is empty. Otherwise, a success message is displayed.
+        Attempts to create a CSV file containing all run data for this fleet with
+        the folder path, name, and (optionally) the start date provided in the
+        input fields. Prints an error message if the folder path or the file
+        name are empty, if the folder path is invalid or doesn't exist, or if
+        the start date is non-empty and not of the form YYYY-MM-DD. Otherwise,
+        a success message is displayed.
         """
         try:
-            fleet_to_export = self.fleet
+            fleet_to_export = self.fleet.sorted_runs()
+
+            if not self.folder_path_entry.get().strip():
+                raise InvalidFolderPathError()
 
             file_name_input = self.output_file_name.get().strip()
-
             if len(file_name_input) == 0:
                 raise EmptyFileNameError()
             elif not file_name_input.endswith(".csv"):
                 file_name_input = file_name_input + ".csv"
+
+            try:
+                file_path = Path(self.folder_path_entry.get() + "/" + file_name_input)
+            except TypeError:
+                raise InvalidFolderPathError()
 
             start_date_input = self.start_date_entry.get().strip()
             if len(start_date_input) > 0:
                 start_date = date.fromisoformat(start_date_input)
                 fleet_to_export = self.fleet.runs_starting_at_date(start_date)
 
-            create_csv_from_fleet(file_name_input, fleet_to_export)
+            try:
+                create_csv_from_fleet(str(file_path), fleet_to_export)
+            except FileNotFoundError:
+                raise InvalidFolderPathError()
 
             self.msg.configure(text=f"Run data successfully exported to {file_name_input}.",
                                text_color="green")
             self.output_file_name.delete(0, "end")
             self.start_date_entry.delete(0, "end")
+        except InvalidFolderPathError:
+            self.msg.configure(text="Invalid folder path. Try using the browse feature.", text_color="red")
         except EmptyFileNameError:
             self.msg.configure(text="File name cannot be empty.", text_color="red")
         except ValueError:
@@ -79,8 +104,21 @@ class CSVExportDialog(ctk.CTkToplevel):
         except Exception as e:
             print("Unexpected error: " + str(e))
 
+    def browse_for_folder_path(self) -> None:
+        folder_path = filedialog.askdirectory()
+
+        if folder_path:
+            self.folder_path_entry.delete(0, "end")
+            self.folder_path_entry.insert(0, folder_path)
+
 class EmptyFileNameError(Exception):
     """
     Exception thrown when a file name is left empty or blank in an input field.
+    """
+    pass
+
+class InvalidFolderPathError(Exception):
+    """
+    Exception thrown when a folder path is left empty or blank in an input field.
     """
     pass

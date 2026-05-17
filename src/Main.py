@@ -12,6 +12,7 @@ initialize_database(connection())
 app = ctk.CTk()
 app.geometry(DIMENSIONS)
 app.title(TITLE)
+app.iconbitmap("../icon.ico")
 
 # Start controller
 FleetController(app)

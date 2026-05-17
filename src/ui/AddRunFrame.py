@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from datetime import date
+from datetime import date, timedelta
 from domain.Fleet import Fleet
 from domain.Run import Run
 from domain.validation.ValidateBus import validate_tracking_number
@@ -47,6 +47,10 @@ class AddRunFrame(ctk.CTkFrame):
                                               fg_color="transparent",
                                               command=self.autofill_todays_date)
         today_autofill_button.grid(row=2, column=2, padx=5, sticky="w")
+        yesterday_autofill_button = ctk.CTkButton(self, text="Yesterday", width=30,
+                                                  fg_color="transparent",
+                                                  command=self.autofill_yesterdays_date)
+        yesterday_autofill_button.grid(row=2, column=3, padx=5, sticky="w")
 
         # Block ID
         ctk.CTkLabel(self, text="Block ID").grid(row=3, column=0, padx=10, sticky="w")
@@ -61,6 +65,10 @@ class AddRunFrame(ctk.CTkFrame):
     def autofill_todays_date(self) -> None:
         self.date_entry.delete(0, "end")
         self.date_entry.insert(0, date.today().strftime("%Y-%m-%d"))
+
+    def autofill_yesterdays_date(self) -> None:
+        self.date_entry.delete(0, "end")
+        self.date_entry.insert(0, (date.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
 
     def submit(self) -> None:
         """

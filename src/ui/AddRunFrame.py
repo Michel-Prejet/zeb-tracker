@@ -33,34 +33,49 @@ class AddRunFrame(ctk.CTkFrame):
                      font=("Arial", 20, "bold")
                      ).grid(row=0, column=0, columnspan=2)
 
+        # "Hold value" buttons header
+        ctk.CTkLabel(self, text="Hold value").grid(row=1, column=4, sticky="w")
+
         # Bus tracking number
-        ctk.CTkLabel(self, text="Bus").grid(row=1, column=0, padx=10, sticky="w")
+        ctk.CTkLabel(self, text="Bus").grid(row=2, column=0, padx=10, sticky="w")
         self.bus_entry = ctk.CTkEntry(self, placeholder_text="e.g. 971")
-        self.bus_entry.grid(row=1, column=1, padx=10, sticky="w")
+        self.bus_entry.grid(row=2, column=1, padx=10, sticky="w")
+
+        self.bus_hold_value = ctk.CTkCheckBox(self, text="", checkbox_width=18,
+                                              checkbox_height=18, border_width=2)
+        self.bus_hold_value.grid(row=2, column=4, padx=5)
 
         # Date
-        ctk.CTkLabel(self, text="Date (YYYY-MM-DD)").grid(row=2, column=0, padx=10, sticky="w")
+        ctk.CTkLabel(self, text="Date (YYYY-MM-DD)").grid(row=3, column=0, padx=10, sticky="w")
         self.date_entry = ctk.CTkEntry(self, placeholder_text="e.g. 2025-12-01")
-        self.date_entry.grid(row=2, column=1, padx=10, sticky="w")
+        self.date_entry.grid(row=3, column=1, padx=10, sticky="w")
+
+        self.date_hold_value = ctk.CTkCheckBox(self, text="", checkbox_width=18,
+                                               checkbox_height=18, border_width=2)
+        self.date_hold_value.grid(row=3, column=4, padx=5)
 
         today_autofill_button = ctk.CTkButton(self, text="Today", width=30,
                                               fg_color="transparent",
                                               command=self.autofill_todays_date)
-        today_autofill_button.grid(row=2, column=2, padx=5, sticky="w")
+        today_autofill_button.grid(row=3, column=2, padx=5, sticky="w")
         yesterday_autofill_button = ctk.CTkButton(self, text="Yesterday", width=30,
                                                   fg_color="transparent",
                                                   command=self.autofill_yesterdays_date)
-        yesterday_autofill_button.grid(row=2, column=3, padx=5, sticky="w")
+        yesterday_autofill_button.grid(row=3, column=3, padx=5, sticky="w")
 
         # Block ID
-        ctk.CTkLabel(self, text="Block ID").grid(row=3, column=0, padx=10, sticky="w")
+        ctk.CTkLabel(self, text="Block ID").grid(row=4, column=0, padx=10, sticky="w")
         self.block_entry = ctk.CTkEntry(self, placeholder_text="e.g. 8-22")
-        self.block_entry.grid(row=3, column=1, padx=10, sticky="w")
+        self.block_entry.grid(row=4, column=1, padx=10, sticky="w")
+
+        self.block_id_hold_value = ctk.CTkCheckBox(self, text="", checkbox_width=18,
+                                                   checkbox_height=18, border_width=2)
+        self.block_id_hold_value.grid(row=4, column=4, padx=5)
 
         # Submit button and error message
-        ctk.CTkButton(self, text="Add", command=self.submit).grid(row=4, column=1, pady=10)
+        ctk.CTkButton(self, text="Add", command=self.submit).grid(row=5, column=1, pady=10)
         self.msg = ctk.CTkLabel(self, text="", padx=10)
-        self.msg.grid(row=5, column=0, columnspan=2)
+        self.msg.grid(row=6, column=0, columnspan=2)
 
     def autofill_todays_date(self) -> None:
         self.date_entry.delete(0, "end")
@@ -91,9 +106,12 @@ class AddRunFrame(ctk.CTkFrame):
                 self.controller.add_run_to_bus(bus, Run(block_input, date_input))
                 self.msg.configure(text="Run added successfully.", text_color="green")
 
-            self.bus_entry.delete(0, "end")
-            self.date_entry.delete(0, "end")
-            self.block_entry.delete(0, "end")
+            if not self.bus_hold_value.get():
+                self.bus_entry.delete(0, "end")
+            if not self.date_hold_value.get():
+                self.date_entry.delete(0, "end")
+            if not self.block_id_hold_value.get():
+                self.block_entry.delete(0, "end")
         except InvalidTrackingNumberError:
             self.msg.configure(text="Tracking number should contain exactly three digits.", text_color="red")
         except BusNotFoundError:

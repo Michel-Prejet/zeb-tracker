@@ -9,6 +9,7 @@ classDiagram
         
         +sorted_buses() List~Bus~
         +sorted_runs() List~Run~
+        +runs_starting_at_date() List~Run~
         +num_runs() int
         +get_bus(tracking_num) Bus
         +add_bus(bus) void

@@ -3,6 +3,7 @@ from domain.Listener import Listener
 from domain.Run import Run
 from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateBusError
 from utilities.InvariantHelper import require_not_none, require_state
+from datetime import date
 
 
 class Fleet(Listener):
@@ -44,6 +45,14 @@ class Fleet(Listener):
                 runs.append((run, bus))
 
         return sorted(runs, key=lambda r: r[0].run_date, reverse=True)
+
+    def runs_starting_at_date(self, run_date: date) -> list[tuple[Run, Bus]]:
+        """
+        :param run_date: the start date by which to filter the result.
+        :return: a list of tuples containing all runs completed by buses in this
+        fleet starting at a given date. Each tuple is of the form RUN, BUS.
+        """
+        return [r for r in self.sorted_runs() if r[0].run_date >= run_date]
 
     def num_runs(self) -> int:
         """

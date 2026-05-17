@@ -1,3 +1,4 @@
+from datetime import date
 import customtkinter as ctk
 from domain.Fleet import Fleet
 from utilities.InvariantHelper import require_not_none
@@ -19,7 +20,7 @@ class CSVExportDialog(ctk.CTkToplevel):
         self.fleet = fleet
 
         self.title("Export to CSV")
-        self.geometry("400x250")
+        self.geometry("500x250")
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
         self.transient(app)
 
@@ -34,6 +35,11 @@ class CSVExportDialog(ctk.CTkToplevel):
         self.output_file_name = ctk.CTkEntry(inputs_frame, placeholder_text="e.g. runs.csv")
         self.output_file_name.grid(row=1, column=1, sticky="w", padx=5)
 
+        # Start date entry
+        ctk.CTkLabel(inputs_frame, text="Start date (optional)").grid(row=2, column=0, sticky="w", padx=5)
+        self.start_date_entry = ctk.CTkEntry(inputs_frame, placeholder_text="e.g. 2026-05-01")
+        self.start_date_entry.grid(row=2, column=1, sticky="w", padx=5)
+
         # Submit button and error message
         ctk.CTkButton(self, text="Export", command=self.submit).pack()
         self.msg = ctk.CTkLabel(self, text="")
@@ -46,6 +52,8 @@ class CSVExportDialog(ctk.CTkToplevel):
         file name is empty. Otherwise, a success message is displayed.
         """
         try:
+            fleet_to_export = self.fleet
+
             file_name_input = self.output_file_name.get().strip()
 
             if len(file_name_input) == 0:
@@ -53,13 +61,21 @@ class CSVExportDialog(ctk.CTkToplevel):
             elif not file_name_input.endswith(".csv"):
                 file_name_input = file_name_input + ".csv"
 
-            create_csv_from_fleet(file_name_input, self.fleet)
+            start_date_input = self.start_date_entry.get().strip()
+            if len(start_date_input) > 0:
+                start_date = date.fromisoformat(start_date_input)
+                fleet_to_export = self.fleet.runs_starting_at_date(start_date)
+
+            create_csv_from_fleet(file_name_input, fleet_to_export)
 
             self.msg.configure(text=f"Run data successfully exported to {file_name_input}.",
                                text_color="green")
             self.output_file_name.delete(0, "end")
+            self.start_date_entry.delete(0, "end")
         except EmptyFileNameError:
             self.msg.configure(text="File name cannot be empty.", text_color="red")
+        except ValueError:
+            self.msg.configure(text="Invalid start date. Any non-empty input should be of the form YYYY-MM-DD.", text_color="red")
         except Exception as e:
             print("Unexpected error: " + str(e))
 

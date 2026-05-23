@@ -6,7 +6,7 @@ from utilities.live_tracker.StopScanner import get_live_bus_locations
 
 load_dotenv()
 
-DIMENSIONS = '800x535'
+DIMENSIONS = '900x650'
 TITLE = 'ZEB Tracker'
 
 # Create tables for the database

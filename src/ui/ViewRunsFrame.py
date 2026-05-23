@@ -15,15 +15,14 @@ PAGE_SIZE = 20
 class SearchFilterType(Enum):
     """
     Represents different filters that can be applied to the list of runs during
-    a search. Each filter (except for DEFAULT) is associated with a lambda
-    function taking as arguments a list of (Run, Bus) tuples and a string, where
-    the string is used to filter the run list based on whether it is contained
-    in the string representation of the selected attribute (except for block IDs,
-    which require an exact match).
+    a search. Each filter is associated with a lambda function taking as an
+    argument a list of (Run, Bus) tuples and a string, where the string is used
+    to filter the run list based on whether it is contained in the string
+    representation of the selected attribute (except for block IDs, which
+    require an exact match).
     For example, when DATE is selected with filter "2026-05", all runs in
     May 2026 will be displayed.
     """
-    DEFAULT = "Search by..."
     DATE = "Date"
     BLOCK_ID = "Block ID"
     BUS_TRACKING_NUM = "Bus"
@@ -33,6 +32,8 @@ FILTER_ACTIONS = {
     SearchFilterType.BLOCK_ID: lambda run_list, search_filter: [r for r in run_list if search_filter == r[0].block_id],
     SearchFilterType.BUS_TRACKING_NUM: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[1].tracking_num)]
 }
+
+INITIAL_FILTER = SearchFilterType.DATE
 
 class ViewRunsFrame(ctk.CTkFrame, Listener):
     """
@@ -105,7 +106,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         last_page_button.pack(anchor="nw", padx=2)
 
         # Initialize scrollable list
-        self.run_list = ctk.CTkScrollableFrame(self, width=800, height=400)
+        self.run_list = ctk.CTkScrollableFrame(self, width=900, height=650)
         self.run_list.pack()
 
         self.notify()
@@ -120,22 +121,22 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         self.notify()
 
         self.search_entry.delete(0, "end")
-        self.search_filter_menu.set(SearchFilterType.DEFAULT.value)
+        self.search_filter_menu.set(INITIAL_FILTER.value)
 
     def submit_search(self) -> None:
         """
         Filters the run list based on the input provided in the search entry
         field and the search filter type menu, and goes back to page 1. Takes
-        no action if the filter type is DEFAULT or the search entry is empty or
-        only whitespace. Does not validate input; invalid search filters will
-        simply result in zero results.
+        no action if the search entry is empty or only whitespace. Does not
+        validate input; invalid search filters will simply result in zero
+        results.
         """
         search_filter: str = self.search_entry.get().strip()
         search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
 
         self.curr_page = 1
 
-        if search_filter_type != SearchFilterType.DEFAULT and len(search_filter) > 0:
+        if len(search_filter) > 0:
             self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, search_filter)
         self.notify()
 
@@ -214,7 +215,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         Refreshes the list of runs and the page information in response to a
         change in the state of the buses within the fleet. Clears the old
         scrollable list of runs and reconstructs it, applying the current search
-        filter and  appending all necessary labels and buttons.
+        filter and appending all necessary labels and buttons.
         """
 
         # Clear the old list

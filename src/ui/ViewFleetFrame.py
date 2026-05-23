@@ -1,6 +1,6 @@
+import math
 from enum import Enum
 from tkinter import messagebox
-from typing import Callable
 import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
@@ -10,17 +10,18 @@ from utilities.InvariantHelper import require_not_none
 
 UNKNOWN_DATE_PLACEHOLDER = "never"
 
+PAGE_SIZE = 15
+
 class SearchFilterType(Enum):
     """
     Represents different filters that can be applied to the fleet during a
-    search. Each filter (except for DEFAULT) is associated with a lambda
-    function taking as arguments a bus list and a string, where the string
-    is used to filter the bus list based on whether it is contained in the
-    string representation of the selected attribute.
+    search. Each filter is associated with a lambda function taking as an
+    argument a bus list and a string, where the string is used to filter the bus
+    list based on whether it is contained in the string representation of the
+    selected attribute.
     For example, when TRACKING_NUM is selected with filter "2", all buses
     whose tracking number contains the digit "2" will be displayed.
     """
-    DEFAULT = "Search by..."
     TRACKING_NUM = "Tracking number"
     YEAR = "Year"
     MODEL = "Model"
@@ -30,6 +31,8 @@ FILTER_ACTIONS = {
     SearchFilterType.YEAR: lambda bus_list, search_filter: [b for b in bus_list if search_filter in str(b.year)],
     SearchFilterType.MODEL: lambda bus_list, search_filter: [b for b in bus_list if search_filter in b.model]
 }
+
+INITIAL_FILTER = SearchFilterType.TRACKING_NUM
 
 class ViewFleetFrame(ctk.CTkFrame, Listener):
     """
@@ -48,6 +51,9 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         self.controller = controller
         self.fleet = fleet
         self.fleet.register_listener(self)
+        self.curr_bus_list = fleet.sorted_buses()
+        self.curr_page = 1
+        self.curr_search_filter = lambda bus_list: bus_list
 
         # Header
         ctk.CTkLabel(self,
@@ -75,36 +81,59 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         search_reset_button = ctk.CTkButton(search_frame, text="Reset", width=50, command=self.reset_search)
         search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
 
+        # Page information
+        page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
+        page_control_frame.pack(anchor="nw", padx=5)
+
+        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()}")
+        self.page_info.pack(anchor="nw", padx=5)
+
+        first_page_button = ctk.CTkButton(page_control_frame,
+                                          text="<<", width=20, command=self._first_page)
+        first_page_button.pack(anchor="nw", side="left", padx=2)
+        prev_page_button = ctk.CTkButton(page_control_frame,
+                                         text="<", width=20, command=self._prev_page)
+        prev_page_button.pack(anchor="nw", side="left", padx=2)
+        next_page_button = ctk.CTkButton(page_control_frame,
+                                         text=">", width=20, command=self._next_page)
+        next_page_button.pack(anchor="nw", side="left", padx=2)
+        last_page_button = ctk.CTkButton(page_control_frame,
+                                         text=">>", width=20, command=self._last_page)
+        last_page_button.pack(anchor="nw", padx=2)
+
         # Initialize scrollable list
-        self.bus_list = ctk.CTkScrollableFrame(self, width=800, height=400)
+        self.bus_list = ctk.CTkScrollableFrame(self, width=900, height=650)
         self.bus_list.pack()
 
         self.notify()
 
+    def reset_search(self) -> None:
+        """
+        Reconstructs the bus list with all filters removed and goes back
+        to page 1.
+        """
+        self.curr_page = 1
+        self.curr_search_filter = lambda bus_list: bus_list
+        self.notify()
+
+        self.search_entry.delete(0, "end")
+        self.search_filter_menu.set(INITIAL_FILTER.value)
+
     def submit_search(self) -> None:
         """
         Filters the bus list based on the input provided in the search entry
-        field and the search filter type menu. Takes no action if the filter
-        type is DEFAULT or the search entry is empty or only whitespace. Does
-        not validate input; invalid search filters will simply result in zero
-        results.
+        field and the search filter type menu. Takes no action if the search
+        entry is empty or only whitespace. Does not validate input; invalid
+        search filters will simply result in zero results.
         """
         search_filter: str = self.search_entry.get().strip()
         search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
 
-        if search_filter_type != SearchFilterType.DEFAULT and len(search_filter) > 0:
-            self._display_list(
-                lambda buses: FILTER_ACTIONS[search_filter_type](buses, search_filter)
-            )
+        self.curr_page = 1
 
-    def reset_search(self) -> None:
-        """
-        Reconstructs the bus list with all filters removed.
-        """
-        self._display_list(lambda buses: buses)
-
-        self.search_entry.delete(0, "end")
-        self.search_filter_menu.set(SearchFilterType.DEFAULT.value)
+        if len(search_filter) > 0:
+            self.curr_search_filter = lambda bus_list: FILTER_ACTIONS[search_filter_type](bus_list, search_filter)
+        self.notify()
 
     def confirm_remove_bus(self, bus: Bus) -> None:
         """
@@ -122,28 +151,79 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         if confirmed:
             self.controller.remove_bus(bus)
 
+    def _num_pages(self) -> int:
+        """
+        :return: the number of pages for the current number of buses to
+        display (any search filters will be considered).
+        """
+        num_runs = len(self.curr_bus_list)
+
+        if num_runs == 0:
+            return 1
+
+        return math.ceil(num_runs / PAGE_SIZE)
+
+    def _next_page(self) -> None:
+        """
+        Increments the current page number if it does not exceed the total
+        number of pages, then refreshes the bus list.
+        """
+        if self.curr_page + 1 <= self._num_pages():
+            self.curr_page += 1
+            self.notify()
+            self.bus_list._parent_canvas.yview_moveto(0)
+
+    def _prev_page(self) -> None:
+        """
+        Decrements the current page number if it is greater than 1, then
+        refreshes the bus list.
+        """
+        if self.curr_page > 1:
+            self.curr_page -= 1
+            self.notify()
+            self.bus_list._parent_canvas.yview_moveto(0)
+
+    def _first_page(self) -> None:
+        """
+        Sets the current page number to 1, then refreshes the bus list.
+        """
+        self.curr_page = 1
+        self.notify()
+        self.bus_list._parent_canvas.yview_moveto(0)
+
+    def _last_page(self) -> None:
+        """
+        Sets the current page number to the last page, then refreshes the
+        bus list.
+        """
+        self.curr_page = self._num_pages()
+        self.notify()
+        self.bus_list._parent_canvas.yview_moveto(0)
+
     def notify(self) -> None:
         """
-        Refreshes the list of buses in response to a change in the state of the
-        fleet.
-        """
-        self._display_list(lambda buses: buses)
-
-    def _display_list(self, bus_filterer: Callable) -> None:
-        """
-        Populates the scrollable list of buses in the fleet. The list is filtered
-        using a given lambda function. Clears the old list and reconstructs it,
+        Refreshes the list of buses and the page information in response to a
+        change in the state of the fleet. Clears the old scrollable list of
+        buses and reconstructs it, applying the current search filter and
         appending all necessary labels and buttons.
-
-        :param bus_filterer: the function by which to filter the bus list.
         """
+
         # Clear the old list
         for child in self.bus_list.winfo_children():
             child.destroy()
 
-        # Create the new, filtered list
-        list_to_display = bus_filterer(self.fleet.sorted_buses())
-        for bus in list_to_display:
+        # Apply the search filter to the bus list
+        all_buses = self.fleet.sorted_buses()
+        self.curr_bus_list = self.curr_search_filter(all_buses)
+
+        # Update page info
+        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()}")
+
+        # Create the new list
+        start_bus_index = (self.curr_page - 1) * PAGE_SIZE
+        end_bus_index = start_bus_index + PAGE_SIZE
+
+        for bus in self.curr_bus_list[start_bus_index:end_bus_index]:
             curr_row = ctk.CTkFrame(self.bus_list)
             curr_row.pack(fill="x", padx=5, pady=5)
 
@@ -168,7 +248,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
                            command=lambda b=bus: self.confirm_remove_bus(b))
              .pack(side="right", padx=5))
 
-        if len(list_to_display) == 0:
+        if len(self.curr_bus_list) == 0:
             no_results_label = ctk.CTkLabel(self.bus_list, text="No buses to display.")
             no_results_label.pack(anchor="nw")
 

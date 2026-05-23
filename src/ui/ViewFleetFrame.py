@@ -1,4 +1,5 @@
 from enum import Enum
+from tkinter import messagebox
 from typing import Callable
 import customtkinter as ctk
 from domain.Bus import Bus
@@ -105,6 +106,22 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         self.search_entry.delete(0, "end")
         self.search_filter_menu.set(SearchFilterType.DEFAULT.value)
 
+    def confirm_remove_bus(self, bus: Bus) -> None:
+        """
+        Displays a pop-up window asking the user to confirm that they would
+        like to remove a bus from the fleet. Removes the bus if the user
+        selects Yes.
+
+        :param bus: the bus to remove from the fleet if the user selects Yes.
+        """
+        confirmed = messagebox.askyesno(
+            "Remove bus",
+            f"Are you sure you want to delete bus {bus.tracking_num}?"
+        )
+
+        if confirmed:
+            self.controller.remove_bus(bus)
+
     def notify(self) -> None:
         """
         Refreshes the list of buses in response to a change in the state of the
@@ -148,7 +165,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
                            text="Remove",
                            height=20,
                            width=60,
-                           command=lambda b=bus: self.controller.remove_bus(b))
+                           command=lambda b=bus: self.confirm_remove_bus(b))
              .pack(side="right", padx=5))
 
         if len(list_to_display) == 0:

@@ -2,7 +2,7 @@ import customtkinter as ctk
 from controller.FleetController import FleetController
 from persistence.Connection import initialize_database, connection
 from dotenv import load_dotenv
-
+from utilities.live_tracker.StopScanner import get_live_bus_locations
 
 load_dotenv()
 
@@ -22,3 +22,9 @@ app.iconbitmap("../icon.ico")
 FleetController(app)
 
 app.mainloop()
+
+# locations = get_live_bus_locations()
+# for bus in locations.keys():
+#     info = locations[bus]
+#     print(f"Bus {bus} on route {info["route"]} to {info["destination"]} "
+#           f"approaching {info["stop_name"]}.")

@@ -129,7 +129,7 @@ class Fleet(Listener):
 
         self.buses.pop(bus.tracking_num)
 
-        require_state(self.buses[bus.tracking_num] is None, "Bus should have been removed.")
+        require_state(bus.tracking_num not in self.buses, "Bus should have been removed.")
 
         self._notify_all()
 

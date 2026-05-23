@@ -1,8 +1,12 @@
 import math
 from enum import Enum
+from tkinter import messagebox
+
 import customtkinter as ctk
+from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
+from domain.Run import Run
 from utilities.InvariantHelper import require_not_none
 
 
@@ -135,6 +139,27 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
             self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, search_filter)
         self.notify()
 
+    def confirm_remove_run(self, run: tuple[Run, Bus]) -> None:
+        """
+        Displays a pop-up window asking the user to confirm that they would
+        like to remove a run for a bus in the fleet. Removes the run if the user
+        selects Yes.
+
+        :param run: a RUN, BUS tuple containing the run to remove and the bus
+        to remove it from if the user selects Yes.
+        """
+        d = run[0].run_date
+        run_date = f"{d.strftime('%B')} {d.day}, {d.year}"
+
+        confirmed = messagebox.askyesno(
+            "Remove run",
+            f"Are you sure you want to remove this run?\n"
+            f"{run_date} | Block {run[0].block_id} | Bus {run[1].tracking_num}"
+        )
+
+        if confirmed:
+            self.controller.remove_run_from_bus(run[1], run[0])
+
     def _num_pages(self) -> int:
         """
         :return: the number of pages for the current number of runs to
@@ -229,7 +254,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
                            text="Remove",
                            height=20,
                            width=60,
-                           command=lambda r=run: self.controller.remove_run_from_bus(r[1], r[0]))
+                           command=lambda r=run: self.confirm_remove_run(r))
              .pack(side="right", padx=5))
 
         if len(self.curr_run_list) == 0:

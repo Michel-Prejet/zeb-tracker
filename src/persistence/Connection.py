@@ -9,10 +9,6 @@ def connection() -> sqlite3.Connection:
     db = sqlite3.connect("../zeb-tracker.db")
     db.execute("PRAGMA foreign_keys = ON")
 
-    ddl_path = Path(__file__).parent.parent.parent / "sql" / "create-tables.ddl"
-    with open(ddl_path, "r") as ddl:
-        db.executescript(ddl.read())
-
     return db
 
 def initialize_database(db: sqlite3.Connection) -> None:

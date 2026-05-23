@@ -1,6 +1,10 @@
 import customtkinter as ctk
 from controller.FleetController import FleetController
 from persistence.Connection import initialize_database, connection
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 DIMENSIONS = '800x535'
 TITLE = 'ZEB Tracker'

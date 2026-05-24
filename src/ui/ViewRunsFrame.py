@@ -1,13 +1,13 @@
 import math
 from enum import Enum
 from tkinter import messagebox
-
 import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
 from domain.Run import Run
 from utilities.InvariantHelper import require_not_none
+from datetime import date
 
 
 PAGE_SIZE = 20
@@ -26,11 +26,13 @@ class SearchFilterType(Enum):
     DATE = "Date"
     BLOCK_ID = "Block ID"
     BUS_TRACKING_NUM = "Bus"
+    BUS_MODEL = "Model"
 
 FILTER_ACTIONS = {
-    SearchFilterType.DATE: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[0].run_date)],
+    SearchFilterType.DATE: lambda run_list, start_date, end_date: [r for r in run_list if start_date <= r[0].run_date <= end_date],
     SearchFilterType.BLOCK_ID: lambda run_list, search_filter: [r for r in run_list if search_filter == r[0].block_id],
-    SearchFilterType.BUS_TRACKING_NUM: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[1].tracking_num)]
+    SearchFilterType.BUS_TRACKING_NUM: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[1].tracking_num)],
+    SearchFilterType.BUS_MODEL: lambda run_list, search_filter: [r for r in run_list if search_filter in r[1].model]
 }
 
 INITIAL_FILTER = SearchFilterType.DATE
@@ -66,24 +68,32 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
                      ).pack()
 
         # Search frame
-        search_frame = ctk.CTkFrame(self, fg_color="transparent")
-        search_frame.pack(anchor="w", padx=10, pady=5)
+        self.search_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.search_frame.pack(anchor="w", padx=10, pady=5)
 
-        # Search entry
-        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="Search...", width=250)
-        self.search_entry.grid(row=0, column=0, sticky="w")
+        self.search_inputs_frame = ctk.CTkFrame(self.search_frame, fg_color="transparent")
+        self.search_inputs_frame.grid(row=0, column=0, sticky="w")
+
+        # Search field(s)
+        self.search_entry_1 = ctk.CTkEntry(self.search_inputs_frame)
+        self.search_entry_2 = ctk.CTkEntry(self.search_inputs_frame)
 
         # Submit search button
-        search_button = ctk.CTkButton(search_frame, text="🔎", width=20, command=self.submit_search)
+        search_button = ctk.CTkButton(self.search_frame, text="🔎", width=20, command=self.submit_search)
         search_button.grid(row=0, column=1, sticky="w", padx=5)
 
         # Dropdown menu of filter types for the search
-        self.search_filter_menu = ctk.CTkOptionMenu(search_frame, values=[f.value for f in SearchFilterType])
+        self.search_filter_menu = ctk.CTkOptionMenu(self.search_frame,
+                                                    values=[f.value for f in SearchFilterType],
+                                                    command=lambda _: self.refresh_search_inputs_frame())
         self.search_filter_menu.grid(row=0, column=2, sticky="w", padx=5)
 
         # Button to reset search
-        search_reset_button = ctk.CTkButton(search_frame, text="Reset", width=50, command=self.reset_search)
+        search_reset_button = ctk.CTkButton(self.search_frame, text="Reset", width=50, command=self.reset_search)
         search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
+
+        # Error message for search filters
+        self.search_err_msg = ctk.CTkLabel(self.search_frame, text="")
 
         # Page information
         page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -109,6 +119,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         self.run_list = ctk.CTkScrollableFrame(self, width=900, height=650)
         self.run_list.pack()
 
+        self.refresh_search_inputs_frame()
         self.notify()
 
     def reset_search(self) -> None:
@@ -120,25 +131,68 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         self.curr_search_filter = lambda run_list: run_list
         self.notify()
 
-        self.search_entry.delete(0, "end")
+        self.search_entry_1.delete(0, "end")
+        self.search_entry_2.delete(0, "end")
         self.search_filter_menu.set(INITIAL_FILTER.value)
 
     def submit_search(self) -> None:
         """
         Filters the run list based on the input provided in the search entry
-        field and the search filter type menu, and goes back to page 1. Takes
+        field(s) and the search filter type menu, and goes back to page 1. Takes
         no action if the search entry is empty or only whitespace. Does not
-        validate input; invalid search filters will simply result in zero
-        results.
+        validate input (except dates); invalid search filters will simply result
+        in zero results. For the DATE filter, an error message is displayed if
+        the dates provided are not in YYYY-MM-DD format.
         """
-        search_filter: str = self.search_entry.get().strip()
         search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
+        if search_filter_type == SearchFilterType.DATE:
+            start_date_raw = self.search_entry_1.get().strip()
+            end_date_raw = self.search_entry_2.get().strip()
+
+            try:
+                start_date = date.fromisoformat(start_date_raw)
+                end_date = date.fromisoformat(end_date_raw)
+                self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, start_date, end_date)
+                self.notify()
+
+                self.search_err_msg.grid_forget()
+                self.search_entry_1.delete(0, "end")
+                self.search_entry_2.delete(0, "end")
+            except ValueError:
+                self.search_err_msg.configure(text="Dates should be in YYYY-MM-DD format.", text_color="red")
+                self.search_err_msg.grid(row=1, columnspan=3, sticky="w")
+        else:
+            search_filter = self.search_entry_1.get().strip()
+
+            if len(search_filter) > 0:
+                self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, search_filter)
+            self.notify()
+
+            self.search_entry_1.delete(0, "end")
 
         self.curr_page = 1
 
-        if len(search_filter) > 0:
-            self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, search_filter)
-        self.notify()
+    def refresh_search_inputs_frame(self) -> None:
+        """
+        Updates and resets the search input fields based on the current
+        search filter type. If DATE is selected, two input fields are provided
+        for start and end dates. Otherwise, a single input field is provided
+        for the search filter.
+        """
+        self.search_entry_1.delete(0, "end")
+        self.search_entry_2.delete(0, "end")
+        self.search_err_msg.grid_forget()
+        self.search_inputs_frame.focus_set()
+
+        if self.search_filter_menu.get() == SearchFilterType.DATE.value:
+            self.search_entry_1.configure(placeholder_text="Start date", width=125)
+            self.search_entry_2.configure(placeholder_text="End date", width=125)
+            self.search_entry_1.pack(anchor="w", side="left")
+            self.search_entry_2.pack(anchor="w", padx=5)
+        else:
+            self.search_entry_2.pack_forget()
+            self.search_entry_1.configure(placeholder_text="Search...", width=250)
+            self.search_entry_1.pack(anchor="w")
 
     def confirm_remove_run(self, run: tuple[Run, Bus]) -> None:
         """

@@ -9,7 +9,6 @@ from utilities.InvariantHelper import require_not_none
 
 
 UNKNOWN_DATE_PLACEHOLDER = "never"
-
 PAGE_SIZE = 15
 
 class SearchFilterType(Enum):

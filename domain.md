@@ -14,6 +14,7 @@ classDiagram
         +get_bus(tracking_num) Bus
         +add_bus(bus) void
         +remove_bus(bus) void
+        +update_bus_locations(locations) void
     }
     
     note for Fleet"Invariant properties:
@@ -28,6 +29,7 @@ classDiagram
         -int year
         -String model
         -Set~Run~ runs
+        -dict location_info
         
         +add_run(run) void
         +remove_run(run) void

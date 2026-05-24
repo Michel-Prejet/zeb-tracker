@@ -22,6 +22,7 @@ class Bus:
         self.model = model
         self.runs: list[Run] = []
         self.listeners: list[Listener] = []
+        self.location_info: dict | None = None
 
         self._check_bus()
 

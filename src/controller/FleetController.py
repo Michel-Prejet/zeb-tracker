@@ -10,6 +10,8 @@ from ui.ViewFleetFrame import ViewFleetFrame
 from ui.ViewRunsFrame import ViewRunsFrame
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
+from utilities.live_tracker.StopScanner import get_live_bus_locations
+from threading import Thread
 
 
 class FleetController:
@@ -114,6 +116,24 @@ class FleetController:
         bus.remove_run(run)
 
         RunPersistence.delete_run(run)
+
+    def update_bus_locations(self) -> None:
+        """
+        Fetches location information from the Winnipeg Transit API
+        concurrently and then updates the location information of all
+        buses in this fleet for which information was found.
+        """
+        self.view_fleet_frame.show_fetching_location()
+        thread = Thread(target=self._update_bus_locations_background, daemon=True)
+        thread.start()
+
+    def _update_bus_locations_background(self) -> None:
+        locations = get_live_bus_locations()
+        self.app.after(0, self._apply_bus_locations, locations)
+
+    def _apply_bus_locations(self, locations: dict[int, dict]) -> None:
+        self.fleet.update_bus_locations(locations)
+        self.view_fleet_frame.show_not_fetching_location()
 
     def _switch_main_frame(self, next_frame: ctk.CTkFrame):
         """

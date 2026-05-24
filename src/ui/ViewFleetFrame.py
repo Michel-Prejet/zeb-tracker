@@ -9,6 +9,7 @@ from utilities.InvariantHelper import require_not_none
 
 
 UNKNOWN_DATE_PLACEHOLDER = "never"
+UNKNOWN_LOCATION_PLACEHOLDER = "No location information"
 PAGE_SIZE = 15
 
 class SearchFilterType(Enum):
@@ -80,6 +81,16 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         search_reset_button = ctk.CTkButton(search_frame, text="Reset", width=50, command=self.reset_search)
         search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
 
+        # Fetch location frame
+        location_fetch_frame = ctk.CTkFrame(self, fg_color="transparent")
+        location_fetch_frame.pack(anchor="w", padx=10, pady=5)
+        self.location_fetch_button = ctk.CTkButton(location_fetch_frame,
+                                                   text="Fetch location information",
+                                                   command=self.controller.update_bus_locations)
+        self.location_fetch_button.pack(anchor="nw", side="left")
+        self.location_fetch_feedback = ctk.CTkLabel(location_fetch_frame, text="")
+        self.location_fetch_feedback.pack(anchor="nw", padx=10, side="left")
+
         # Page information
         page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
         page_control_frame.pack(anchor="nw", padx=5)
@@ -98,7 +109,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         next_page_button.pack(anchor="nw", side="left", padx=2)
         last_page_button = ctk.CTkButton(page_control_frame,
                                          text=">>", width=20, command=self._last_page)
-        last_page_button.pack(anchor="nw", padx=2)
+        last_page_button.pack(anchor="nw", padx=2, side="left")
 
         # Initialize scrollable list
         self.bus_list = ctk.CTkScrollableFrame(self, width=900, height=650)
@@ -149,6 +160,14 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
 
         if confirmed:
             self.controller.remove_bus(bus)
+
+    def show_not_fetching_location(self) -> None:
+        self.location_fetch_button.configure(state="enabled")
+        self.location_fetch_feedback.configure(text="")
+
+    def show_fetching_location(self) -> None:
+        self.location_fetch_button.configure(state="disabled")
+        self.location_fetch_feedback.configure(text="Fetching bus locations (this may take a few minutes)...")
 
     def _num_pages(self) -> int:
         """
@@ -238,6 +257,13 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
 
             last_seen_label = ctk.CTkLabel(curr_row, text=f"Last seen: {last_run_date_to_str(bus)}")
             last_seen_label.pack(side="left", padx=5)
+
+            location_info_label = ctk.CTkLabel(curr_row)
+            if bus.location_info is None:
+                location_info_label.configure(text=UNKNOWN_LOCATION_PLACEHOLDER, text_color="grey")
+            else:
+                location_info_label.configure(text=f"🟢 {bus.location_info['route']}", text_color="green")
+            location_info_label.pack(side="left", padx=10)
 
             # "Remove" button
             (ctk.CTkButton(curr_row,

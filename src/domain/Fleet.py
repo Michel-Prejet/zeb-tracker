@@ -133,6 +133,22 @@ class Fleet(Listener):
 
         self._notify_all()
 
+    def update_bus_locations(self, locations: dict[int, dict]) -> None:
+        """
+        Updates location information for buses in this fleet using the given
+        dictionary. If there is an entry in the dictionary corresponding to
+        a bus's tracking number, that bus will be assigned the associated
+        value (another dictionary) as its location information.
+
+        :param locations: a dictionary in which the keys are bus tracking
+        numbers and the values are dictionaries containing location information
+        for that bus.
+        """
+        for bus in self.buses.values():
+            if bus.tracking_num in locations:
+                bus.location_info = locations[bus.tracking_num]
+        self._notify_all()
+
     def _notify_all(self) -> None:
         for listener in self.listeners:
             listener.notify()

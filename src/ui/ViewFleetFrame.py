@@ -81,6 +81,15 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         search_reset_button = ctk.CTkButton(search_frame, text="Reset", width=50, command=self.reset_search)
         search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
 
+        # Show only active button
+        self.show_only_active_checkbox = ctk.CTkCheckBox(search_frame,
+                                                    text="Active buses only",
+                                                    checkbox_width=18,
+                                                    checkbox_height=18,
+                                                    border_width=2,
+                                                    command=self.show_only_active)
+        self.show_only_active_checkbox.grid(row=0, column=4, sticky="w", padx=5)
+
         # Fetch location frame
         location_fetch_frame = ctk.CTkFrame(self, fg_color="transparent")
         location_fetch_frame.pack(anchor="w", padx=10, pady=5)
@@ -95,7 +104,8 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
         page_control_frame.pack(anchor="nw", padx=5)
 
-        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()}")
+        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()} "
+                                                               f"({len(self.curr_bus_list)} buses)")
         self.page_info.pack(anchor="nw", padx=5)
 
         first_page_button = ctk.CTkButton(page_control_frame,
@@ -128,22 +138,39 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
 
         self.search_entry.delete(0, "end")
         self.search_filter_menu.set(INITIAL_FILTER.value)
+        self.show_only_active_checkbox.deselect()
 
     def submit_search(self) -> None:
         """
         Filters the bus list based on the input provided in the search entry
-        field and the search filter type menu. Takes no action if the search
-        entry is empty or only whitespace. Does not validate input; invalid
-        search filters will simply result in zero results.
+        field, the search filter type menu, and the "Active buses only"
+        checkbox. Takes no action if the search entry is empty or only whitespace.
+        Does not validate input; invalid search filters will simply result in
+        zero results.
         """
         search_filter: str = self.search_entry.get().strip()
         search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
 
         self.curr_page = 1
 
-        if len(search_filter) > 0:
-            self.curr_search_filter = lambda bus_list: FILTER_ACTIONS[search_filter_type](bus_list, search_filter)
+        def apply_filter(bus_list):
+            filtered_list = bus_list
+
+            if len(search_filter) > 0:
+                filtered_list = FILTER_ACTIONS[search_filter_type](filtered_list, search_filter)
+
+            if self.show_only_active_checkbox.get():
+                filtered_list = [b for b in filtered_list if b.location_info is not None]
+
+            return filtered_list
+
+        self.curr_search_filter = apply_filter
+
         self.notify()
+
+    def show_only_active(self) -> None:
+        self.curr_page = 1
+        self.submit_search()
 
     def confirm_remove_bus(self, bus: Bus) -> None:
         """
@@ -235,7 +262,8 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         self.curr_bus_list = self.curr_search_filter(all_buses)
 
         # Update page info
-        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()}")
+        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()} "
+                                      f"({len(self.curr_bus_list)} buses)")
 
         # Create the new list
         start_bus_index = (self.curr_page - 1) * PAGE_SIZE

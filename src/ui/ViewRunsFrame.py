@@ -99,7 +99,8 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
         page_control_frame.pack(anchor="nw", padx=5)
 
-        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()}")
+        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()} "
+                                                               f"({len(self.curr_run_list)} runs)")
         self.page_info.pack(anchor="nw", padx=5)
 
         first_page_button = ctk.CTkButton(page_control_frame,
@@ -281,7 +282,8 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         self.curr_run_list = self.curr_search_filter(all_runs)
 
         # Update page info
-        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()}")
+        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()} "
+                                      f"({len(self.curr_run_list)} runs)")
 
         # Create the new list
         start_run_index = (self.curr_page - 1) * PAGE_SIZE

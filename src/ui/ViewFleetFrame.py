@@ -290,7 +290,13 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
             if bus.location_info is None:
                 location_info_label.configure(text=UNKNOWN_LOCATION_PLACEHOLDER, text_color="grey")
             else:
-                location_info_label.configure(text=f"🟢 {bus.location_info['route']}", text_color="green")
+                if "block_id" in bus.location_info:
+                    location_info_label.configure(text=f"🟢 {bus.location_info['route']} "
+                                                       f"| {bus.location_info['block_id']} "
+                                                       f"| {bus.location_info['stop_id']} {bus.location_info['stop_name']}", text_color="green")
+                else:
+                    location_info_label.configure(text=f"🟢 {bus.location_info['route']} "
+                                                       f"| {bus.location_info['stop_id']} {bus.location_info['stop_name']}", text_color="green")
             location_info_label.pack(side="left", padx=10)
 
             # "Remove" button

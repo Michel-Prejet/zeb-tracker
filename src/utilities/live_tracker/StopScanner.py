@@ -1,9 +1,10 @@
+from utilities.live_tracker.BlockIDFinder import add_block_ids_to_bus_location_info
 from utilities.live_tracker.StopInfo import get_stop_info
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 STOP_LIST_FILE = "../gtfs/stops.txt"
-MAX_WORKERS = 10
+MAX_WORKERS = 15
 
 RED = "\033[31m"
 COLOUR_RESET = "\033[0m"
@@ -21,6 +22,7 @@ def get_live_bus_locations() -> dict[int, dict]:
     """
     locations: dict[int, dict] = dict()
     stops: list[int] = _get_all_stop_numbers()
+    location_observations: dict[int, list[tuple[timedelta, int]]] = {}
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
@@ -32,8 +34,45 @@ def get_live_bus_locations() -> dict[int, dict]:
             stop_info = future.result()
             if stop_info is not None:
                 _update_locations_from_stop_info(locations, stop_info)
+                _update_location_observations_from_stop_info(location_observations, stop_info)
+
+    add_block_ids_to_bus_location_info(locations, location_observations)
 
     return locations
+
+def _update_location_observations_from_stop_info(location_observations: dict[int, list[tuple[timedelta, int]]],
+                                                 stop_info: dict) -> None:
+    MAX_TIME_FROM_STOP = timedelta(minutes=30)
+    curr_time = datetime.now()
+
+    for bus in stop_info["buses"]:
+        arrival_time = datetime.fromisoformat(bus["arrival_time_est"])
+        time_until_arrival = arrival_time - curr_time
+
+        if timedelta(seconds=0) <= time_until_arrival <= MAX_TIME_FROM_STOP:
+            bus_tracking_num = int(bus["tracking_num"])
+
+            if bus_tracking_num not in location_observations:
+                location_observations[bus_tracking_num] = []
+            location_observations[bus_tracking_num].append(_create_location_observation(bus, stop_info))
+
+def _create_location_observation(bus_data: dict, stop_data: dict) -> tuple[timedelta, int]:
+    """
+    Creates an observation for a bus at a stop in the form of a
+    (SCHEDULED_ARRIVAL_TIME, STOP_ID) tuple.
+
+    :param bus_data: a dictionary containing data for the bus, including its
+    scheduled arrival time.
+    :param stop_data: a dictionary containing data for the stop, including its
+    5-digit ID.
+    :return: a (SCHEDULED_ARRIVAL_TIME, STOP_ID) tuple created from the given
+    data.
+    """
+    schedule_arrival_raw = bus_data["arrival_time_scheduled"].split("T")[1]
+    hours, minutes, seconds = map(int, schedule_arrival_raw.split(":"))
+    scheduled_arrival = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+    return scheduled_arrival, int(stop_data["id"])
 
 def _update_locations_from_stop_info(locations: dict[int, dict], stop_info: dict) -> None:
     """
@@ -57,16 +96,17 @@ def _update_locations_from_stop_info(locations: dict[int, dict], stop_info: dict
         arrival_time = datetime.fromisoformat(bus["arrival_time_est"])
         time_until_arrival = arrival_time - curr_time
 
-        if timedelta(seconds=0) <= time_until_arrival <= MAX_TIME_FROM_STOP:
-            bus_tracking_num = int(bus["tracking_num"])
+        bus_tracking_num = int(bus["tracking_num"])
 
+        if timedelta(seconds=0) <= time_until_arrival <= MAX_TIME_FROM_STOP:
             live_info = {
                 "stop_id": int(stop_info["id"]),
                 "stop_name": stop_info["name"],
                 "coordinates": stop_info["coordinates"],
                 "route": bus["route"],
                 "destination": bus["destination"],
-                "arrival_time_est": bus["arrival_time_est"]
+                "arrival_time_est": bus["arrival_time_est"],
+                "arrival_time_scheduled": bus["arrival_time_scheduled"]
             }
 
             if bus_tracking_num not in locations:

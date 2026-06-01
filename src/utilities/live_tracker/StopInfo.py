@@ -94,6 +94,7 @@ def _create_bus_entry_from_raw_data(bus_data: dict, route_name: str) -> dict | N
     arrival = times.get("arrival")
     if arrival is None:
         return None
+    arrival_time_scheduled = arrival.get("scheduled")
     arrival_time_est = arrival.get("estimated") or arrival.get("scheduled")
 
     variant = bus_data.get("variant")
@@ -103,6 +104,7 @@ def _create_bus_entry_from_raw_data(bus_data: dict, route_name: str) -> dict | N
 
     return {
         "tracking_num": int(tracking_num_raw),
+        "arrival_time_scheduled": arrival_time_scheduled,
         "arrival_time_est": arrival_time_est,
         "route": route_name,
         "destination": destination,

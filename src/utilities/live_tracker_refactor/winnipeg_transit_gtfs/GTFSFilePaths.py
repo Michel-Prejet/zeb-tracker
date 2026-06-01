@@ -1,0 +1,7 @@
+GTFS_PATH = "../gtfs"
+STOP_TIMES_INPUT_FILE = "stop_times.txt"
+TRIPS_INPUT_FILE = "trips.txt"
+CALENDAR_INPUT_FILE = "calendar.txt"
+CALENDAR_EXCEPTIONS_INPUT_FILE = "calendar_dates.txt"
+FEED_INFO_INPUT_FILE = "feed_info.txt"
+STOPS_INPUT_FILE = "stops.txt"

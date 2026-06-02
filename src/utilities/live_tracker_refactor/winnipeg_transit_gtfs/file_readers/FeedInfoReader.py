@@ -13,7 +13,6 @@ class FeedInfoReader:
     the start and end dates that define when the data is valid. Determines
     whether the GTFS data is out of date.
     """
-
     def __init__(self):
         try:
             with open(f"{GTFS_PATH}/{FEED_INFO_INPUT_FILE}", "r") as feed_info_file:

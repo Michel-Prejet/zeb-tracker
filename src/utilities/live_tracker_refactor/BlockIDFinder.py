@@ -1,7 +1,7 @@
 from utilities.InvariantHelper import require_not_none, require_state
 from utilities.live_tracker_refactor.domain.BusObservation import BusObservation
 from utilities.live_tracker_refactor.winnipeg_transit_gtfs.GTFSReader import GTFSReader
-from utilities.live_tracker_refactor.winnipeg_transit_gtfs.exceptions.TransitGTFSError import ArrivalTimeNotFoundError, \
+from utilities.live_tracker_refactor.winnipeg_transit_gtfs.exceptions.TransitGTFSError import DepartureTimeNotFoundError, \
     StopNotFoundError, TripIDNotFoundError
 
 
@@ -17,9 +17,9 @@ class BlockIDFinder:
     def infer_block_id_from_gtfs(self, observations: list[BusObservation]) -> str | None:
         """
         Uses GTFS data to infer the block ID based on a given list of observations
-        for a bus, using the stop ID and scheduled arrival time stored in each
+        for a bus, using the stop ID and scheduled departure time stored in each
         observation. Retrieves the list of trip IDs corresponding to each
-        stop ID/scheduled arrival time pair, converts them to block IDs, and
+        stop ID/scheduled departure time pair, converts them to block IDs, and
         counts the most commonly occurring block ID overall.
 
         :param observations: a list of observations for a given bus, from which
@@ -39,11 +39,11 @@ class BlockIDFinder:
 
         for obs in observations:
             stop_id = obs.stop.stop_id
-            scheduled_arrival_time = obs.scheduled_arrival
+            scheduled_departure_time = obs.scheduled_departure
 
             try:
-                trip_ids = self.gtfs.get_trip_ids(stop_id, scheduled_arrival_time)
-            except (StopNotFoundError, ArrivalTimeNotFoundError):
+                trip_ids = self.gtfs.get_trip_ids(stop_id, scheduled_departure_time)
+            except (StopNotFoundError, DepartureTimeNotFoundError):
                 continue
 
             for trip_id in trip_ids:

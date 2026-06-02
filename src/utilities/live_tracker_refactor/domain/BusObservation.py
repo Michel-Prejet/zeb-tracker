@@ -9,17 +9,17 @@ class BusObservation:
     """
     Represents an observation of a bus at a stop in the Winnipeg Transit API.
     Stores static information about the stop as well as bus's route, destination,
-    tracking number, and scheduled/estimated arrival times at the stop.
+    tracking number, and scheduled/estimated departure times at the stop.
     """
 
     def __init__(self, stop: Stop, route: str, destination: str, tracking_num: int,
-                 scheduled_arrival: timedelta, estimated_arrival: timedelta):
+                 scheduled_departure: timedelta, estimated_departure: timedelta):
         self.stop = stop
         self.route = route
         self.destination = destination
         self.tracking_num = tracking_num
-        self.scheduled_arrival = scheduled_arrival
-        self.estimated_arrival = estimated_arrival
+        self.scheduled_departure = scheduled_departure
+        self.estimated_departure = estimated_departure
 
         self._check_bus_observation()
 
@@ -27,18 +27,18 @@ class BusObservation:
         """
         Determines whether a given bus observation is equal to this bus
         observation. Two bus observations are equal if they have the same stop,
-        tracking number, and scheduled arrival time.
+        tracking number, and scheduled departure time.
 
         :param other: the bus observation to check for equality.
         :return: True if `other` has the same stop, tracking number, and scheduled
-        arrival time as this stop; False otherwise.
+        departure time as this stop; False otherwise.
         """
 
         require_not_none(other,
                          "Bus observation to check for equality should not be None.")
 
         return (self.stop == other.stop and self.tracking_num == other.tracking_num
-                and self.scheduled_arrival == other.scheduled_arrival)
+                and self.scheduled_departure == other.scheduled_departure)
 
     def _check_bus_observation(self) -> None:
         require_not_none(self.stop,
@@ -58,8 +58,8 @@ class BusObservation:
         require_state(len(str(self.tracking_num)) == BUS_TRACKING_NUM_LENGTH,
                       f"Tracking number for bus observation should contain exactly "
                       f"{BUS_TRACKING_NUM_LENGTH} digits.")
-        require_not_none(self.scheduled_arrival,
-                         "Scheduled arrival for bus observation should not be None.")
-        require_not_none(self.estimated_arrival,
-                         "Estimated arrival for bus observation should not be None.")
+        require_not_none(self.scheduled_departure,
+                         "Scheduled departure for bus observation should not be None.")
+        require_not_none(self.estimated_departure,
+                         "Estimated departure for bus observation should not be None.")
 

@@ -6,12 +6,12 @@ from utilities.live_tracker_refactor.winnipeg_transit_gtfs.file_readers.StopTime
 from utilities.live_tracker_refactor.winnipeg_transit_gtfs.file_readers.StopsReader import StopsReader
 from utilities.live_tracker_refactor.winnipeg_transit_gtfs.file_readers.TripsReader import TripsReader
 from utilities.live_tracker_refactor.winnipeg_transit_gtfs.exceptions.TransitGTFSError import StopNotFoundError, \
-    ArrivalTimeNotFoundError, TripIDNotFoundError
+    DepartureTimeNotFoundError, TripIDNotFoundError
 
 
 class GTFSReader:
     """
-    Uses the GTFS archive to map stop ID/scheduled arrival time pairs
+    Uses the GTFS archive to map stop ID/scheduled departure time pairs
     to trip IDs, and trip IDs to block IDs. The constructor raises an
     exception if the GTFS archive is out-of-date.
     """
@@ -40,31 +40,31 @@ class GTFSReader:
         """
         return self.stop_dictionary
 
-    def get_trip_ids(self, stop_id: int, scheduled_arrival_time: timedelta) -> list[int]:
+    def get_trip_ids(self, stop_id: int, scheduled_departure_time: timedelta) -> list[int]:
         """
-        Finds the list of trip IDs corresponding to a given arrival time at
+        Finds the list of trip IDs corresponding to a given departure time at
         a given stop. Raises an exception if the stop ID or the corresponding
-        arrival time weren't found in the GTFS archive.
+        departure time weren't found in the GTFS archive.
 
         :param stop_id: the 5-digit ID of the stop.
-        :param scheduled_arrival_time: a timedelta object representing an arrival
-        time at the given stop.
-        :return: a list of trip IDs for which there is an arrival at the given
+        :param scheduled_departure_time: a timedelta object representing a
+        departure time at the given stop.
+        :return: a list of trip IDs for which there is a departure at the given
         stop at the given time.
         """
         require_not_none(stop_id, "Stop ID should not be None.")
         require_state(len(str(stop_id)) == STOP_NUMBER_LENGTH,
                       f"Stop ID should contain exactly {STOP_NUMBER_LENGTH} digits.")
-        require_not_none(scheduled_arrival_time,
-                         "Scheduled arrival time should not be None.")
+        require_not_none(scheduled_departure_time,
+                         "Scheduled departure time should not be None.")
 
-        stop_arrival_times_dict = self.trip_id_finder.get(stop_id)
-        if stop_arrival_times_dict is None:
+        stop_departure_times_dict = self.trip_id_finder.get(stop_id)
+        if stop_departure_times_dict is None:
             raise StopNotFoundError(f"Stop {stop_id} doesn't exist in the trip ID finder.")
 
-        trip_ids = stop_arrival_times_dict.get(scheduled_arrival_time)
+        trip_ids = stop_departure_times_dict.get(scheduled_departure_time)
         if trip_ids is None:
-            raise ArrivalTimeNotFoundError(f"Arrival time {scheduled_arrival_time} doesn't "
+            raise DepartureTimeNotFoundError(f"Departure time {scheduled_departure_time} doesn't "
                                            f"exist in the trip ID finder for stop {stop_id}.")
 
         require_state(len(trip_ids) >= 1,

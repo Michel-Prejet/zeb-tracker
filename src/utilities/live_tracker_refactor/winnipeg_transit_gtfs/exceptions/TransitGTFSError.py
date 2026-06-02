@@ -17,7 +17,7 @@ class StopNotFoundError(TransitGTFSError):
     """
     pass
 
-class ArrivalTimeNotFoundError(TransitGTFSError):
+class DepartureTimeNotFoundError(TransitGTFSError):
     """
     Exception raised when an arrival time doesn't exist for a stop in the trip
     ID finder.
@@ -56,7 +56,7 @@ class MalformedTokenError(TransitGTFSError):
     """
     pass
 class InvalidStopIDError(MalformedTokenError): pass
-class InvalidArrivalTimeError(MalformedTokenError): pass
+class InvalidDepartureTimeError(MalformedTokenError): pass
 class InvalidTripIDError(MalformedTokenError): pass
 class InvalidStartDateError(MalformedTokenError): pass
 class InvalidEndDateError(MalformedTokenError): pass

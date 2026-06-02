@@ -4,7 +4,7 @@ import requests
 from requests import Timeout, ConnectionError, HTTPError, RequestException
 from utilities.InvariantHelper import require_not_none, require_state
 from dotenv import load_dotenv
-from datetime import datetime
+from utilities.live_tracker_refactor.TimeHelper import parse_api_time
 from utilities.live_tracker_refactor.domain.Stop import STOP_NUMBER_LENGTH
 from utilities.live_tracker_refactor.winnipeg_transit_api.exceptions.StopDataParsingError import StopDataParsingError
 from utilities.live_tracker_refactor.winnipeg_transit_api.exceptions.MissingAPIKeyError import MissingAPIKeyError
@@ -65,12 +65,12 @@ def get_stop_information_and_schedule(stop_number: int) -> dict:
 def _parse_raw_stop_data(raw_data: dict) -> dict:
     """
     Parses raw stop data from the Winnipeg Transit API. Extracts the stop's
-    name, ID, and coordinates, as well as the list of upcoming arrivals.
+    name, ID, and coordinates, as well as its schedule.
 
     :param raw_data: the raw stop data from the Winnipeg Transit API to parse.
     :return: a dictionary containing the stop ID ("id"), the stop name ("name"),
     the stop's coordinates ("coordinates"), and a list of upcoming arrivals
-    sorted by increasing estimated arrival time ("buses").
+    sorted by increasing estimated departure time ("buses").
     """
     stop_schedule = _try_key(raw_data, "stop-schedule")
     stop = _try_key(stop_schedule, "stop")
@@ -98,7 +98,7 @@ def _parse_raw_stop_data(raw_data: dict) -> dict:
     route_schedules = _try_key(stop_schedule, "route-schedules")
     if not isinstance(route_schedules, list):
         raise StopDataParsingError("route-schedules")
-    bus_arrivals = _parse_raw_arrival_list(route_schedules)
+    bus_arrivals = _parse_raw_schedule(route_schedules)
 
     return {
         "id": stop_id,
@@ -110,15 +110,15 @@ def _parse_raw_stop_data(raw_data: dict) -> dict:
         "buses": bus_arrivals
     }
 
-def _parse_raw_arrival_list(raw_data: list[dict]) -> list[dict]:
+def _parse_raw_schedule(raw_data: list[dict]) -> list[dict]:
     """
     Parses a raw list of bus arrivals at a stop from the Winnipeg Transit API.
     For each arrival, extracts the route name, the tracking number of the bus,
-    the destination, and the scheduled/estimated arrival times.
+    the destination, and the scheduled/estimated departure times.
 
-    :param raw_data: the raw arrival list from the Winnipeg Transit API to parse.
+    :param raw_data: the raw schedule from the Winnipeg Transit API to parse.
     :return: a list of dictionaries, each of which contains information for an
-    arrival at the stop. The list is sorted by increasing estimated arrival time.
+    arrival at the stop. The list is sorted by increasing estimated departure time.
     """
     bus_arrivals: list[dict] = []
 
@@ -130,25 +130,27 @@ def _parse_raw_arrival_list(raw_data: list[dict]) -> list[dict]:
         # Get the buses arriving at the stop
         scheduled_stops = _try_key(schedule, "scheduled-stops")
         for arrival in scheduled_stops:
-            arrival = _parse_raw_bus_arrival_data(arrival, route_name)
+            arrival = _parse_raw_arrival_data(arrival, route_name)
             if arrival is not None:
                 bus_arrivals.append(arrival)
 
-    bus_arrivals.sort(key=lambda b: datetime.fromisoformat(b["arrivals"]["estimated"]))
+    bus_arrivals.sort(
+        key=lambda b: parse_api_time(b["departures"]["estimated"])
+    )
 
     return bus_arrivals
 
-def _parse_raw_bus_arrival_data(raw_data: dict, route_name: str) -> dict | None:
+def _parse_raw_arrival_data(raw_data: dict, route_name: str) -> dict | None:
     """
     Parses raw arrival data from the Winnipeg Transit API for a bus at a stop.
     Extracts the tracking number of the bus, the route, the destination, and the
-    scheduled/estimated arrival times.
+    scheduled/estimated departure times.
 
-    :param raw_data: the arrival data from the Winnipeg Transit API to parse.
+    :param raw_data: the raw arrival data from the Winnipeg Transit API to parse.
     :param route_name: the name of the route under which the given data was found.
     :return: a dictionary containing the tracking number of the bus ("tracking_num"),
     the route ("route"), the destination ("destination"), and the scheduled/estimated
-    arrival times ("arrivals"); or None if the bus is cancelled.
+    departure times ("departures"); or None if the bus is cancelled.
     """
     # Return None if the bus is cancelled
     cancelled = _try_key(raw_data, "cancelled")
@@ -162,11 +164,11 @@ def _parse_raw_bus_arrival_data(raw_data: dict, route_name: str) -> dict | None:
     except (ValueError, TypeError):
         raise StopDataParsingError("key")
 
-    # Get estimated and scheduled arrival times
+    # Get estimated and scheduled departure times
     times = _try_key(raw_data, "times")
-    arrival = _try_key(times, "arrival")
-    scheduled_arrival = _try_key(arrival, "scheduled")
-    estimated_arrival = _try_key(arrival, "estimated")
+    departure = _try_key(times, "departure")
+    scheduled_departure = _try_key(departure, "scheduled")
+    estimated_departure = _try_key(departure, "estimated")
 
     # Get destination
     variant = _try_key(raw_data, "variant")
@@ -176,9 +178,9 @@ def _parse_raw_bus_arrival_data(raw_data: dict, route_name: str) -> dict | None:
         "tracking_num": tracking_num,
         "route": route_name,
         "destination": destination,
-        "arrivals": {
-            "scheduled": scheduled_arrival,
-            "estimated": estimated_arrival,
+        "departures": {
+            "scheduled": scheduled_departure,
+            "estimated": estimated_departure,
         }
     }
 

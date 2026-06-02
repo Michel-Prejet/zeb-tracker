@@ -5,6 +5,7 @@ from utilities.live_tracker_refactor.winnipeg_transit_gtfs.GTFSFilePaths import 
 from utilities.live_tracker_refactor.winnipeg_transit_gtfs.exceptions.TransitGTFSError import GTFSFileNotFoundError, \
     MissingColumnError, MissingTokenError, InvalidStopIDError, EmptyStopNameError, InvalidStopLongitudeError, \
     InvalidStopLatitudeError
+import csv
 
 
 STOP_ID_COLUMN_HEADER = "stop_id"
@@ -23,11 +24,10 @@ class StopsReader:
 
         try:
             with open(f"{GTFS_PATH}/{STOPS_INPUT_FILE}", "r") as stops_file:
-                self.input_file = stops_file
+                self.reader = csv.reader(stops_file)
 
                 # Find and validate the indices of each relevant column
-                header = stops_file.readline()
-                header_tokens = [t.strip() for t in header.split(",")]
+                header_tokens = [t.strip() for t in next(self.reader)]
 
                 try:
                     self.stop_id_col = header_tokens.index(STOP_ID_COLUMN_HEADER)
@@ -58,8 +58,7 @@ class StopsReader:
         ID, name, and coordinates are read from each row and a Stop object is
         created, then added to the dictionary with its ID as the key.
         """
-        for line in self.input_file:
-            tokens = line.split(",")
+        for tokens in self.reader:
             stop_id, stop_name, latitude, longitude = self._validate_and_parse_tokens(tokens)
 
             self.all_stops[stop_id] = Stop(stop_name, stop_id, Coordinates(latitude, longitude))

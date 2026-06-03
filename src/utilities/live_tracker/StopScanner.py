@@ -1,163 +1,71 @@
-from utilities.live_tracker.BlockIDFinder import add_block_ids_to_bus_location_info
-from utilities.live_tracker.StopInfo import get_stop_info
-from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed
+from concurrent.futures.thread import ThreadPoolExecutor
+from utilities.live_tracker.TimeHelper import parse_api_time
+from utilities.live_tracker.domain.BusObservation import BusObservation
+from utilities.live_tracker.domain.ObservationDict import ObservationDict
+from utilities.live_tracker.winnipeg_transit_api.WTClient import get_stop_information_and_schedule
+from utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader import GTFSReader
 
-STOP_LIST_FILE = "../gtfs/stops.txt"
+
 MAX_WORKERS = 15
 
-RED = "\033[31m"
-COLOUR_RESET = "\033[0m"
-
-
-def get_live_bus_locations() -> dict[int, dict]:
+class StopScanner:
     """
-    Scans all stops in the Winnipeg Transit API to determine the approximate
-    location of each active bus.
-
-    :return: a dictionary in which the keys are the bus tracking numbers and
-    the values are dictionaries containing live information about that bus,
-    including the current stop ID, name, and coordinates; the current route
-    and destination; and the estimated arrival time of the bus at the stop.
+    Scans stop information from the Winnipeg Transit API to populate an
+    observation dictionary.
     """
-    locations: dict[int, dict] = dict()
-    stops: list[int] = _get_all_stop_numbers()
-    location_observations: dict[int, list[tuple[timedelta, int]]] = {}
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {
-            executor.submit(_scan_stop, stop): stop
-            for stop in stops
-        }
+    def __init__(self, gtfs_reader: GTFSReader):
+        self.stops = gtfs_reader.get_all_stops()
+        self.observations = ObservationDict()
 
-        for future in as_completed(futures):
-            stop_info = future.result()
-            if stop_info is not None:
-                _update_locations_from_stop_info(locations, stop_info)
-                _update_location_observations_from_stop_info(location_observations, stop_info)
+    def scan_all_stops_and_record_observations(self) -> None:
+        """
+        Scans all stops in the Winnipeg Transit API and records bus observations
+        in this observation dictionary. The dictionary is cleared before the scan.
+        The scan is done concurrently.
+        """
+        self.observations = ObservationDict()
 
-    add_block_ids_to_bus_location_info(locations, location_observations)
-
-    return locations
-
-def _update_location_observations_from_stop_info(location_observations: dict[int, list[tuple[timedelta, int]]],
-                                                 stop_info: dict) -> None:
-    MAX_TIME_FROM_STOP = timedelta(minutes=30)
-    curr_time = datetime.now()
-
-    for bus in stop_info["buses"]:
-        arrival_time = datetime.fromisoformat(bus["arrival_time_est"])
-        time_until_arrival = arrival_time - curr_time
-
-        if timedelta(seconds=0) <= time_until_arrival <= MAX_TIME_FROM_STOP:
-            bus_tracking_num = int(bus["tracking_num"])
-
-            if bus_tracking_num not in location_observations:
-                location_observations[bus_tracking_num] = []
-            location_observations[bus_tracking_num].append(_create_location_observation(bus, stop_info))
-
-def _create_location_observation(bus_data: dict, stop_data: dict) -> tuple[timedelta, int]:
-    """
-    Creates an observation for a bus at a stop in the form of a
-    (SCHEDULED_ARRIVAL_TIME, STOP_ID) tuple.
-
-    :param bus_data: a dictionary containing data for the bus, including its
-    scheduled arrival time.
-    :param stop_data: a dictionary containing data for the stop, including its
-    5-digit ID.
-    :return: a (SCHEDULED_ARRIVAL_TIME, STOP_ID) tuple created from the given
-    data.
-    """
-    schedule_arrival_raw = bus_data["arrival_time_scheduled"].split("T")[1]
-    hours, minutes, seconds = map(int, schedule_arrival_raw.split(":"))
-    scheduled_arrival = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-
-    return scheduled_arrival, int(stop_data["id"])
-
-def _update_locations_from_stop_info(locations: dict[int, dict], stop_info: dict) -> None:
-    """
-    Uses the given API information for a stop to update the locations of buses
-    in the given dictionary. If a bus is within 15 minutes of the stop and an
-    earlier arrival hasn't been recorded for that bus in the dictionary, its
-    live information in the dictionary is updated. Live information includes
-    the current stop ID, coordinates, and name; the route and destination; and
-    the estimated arrival time of the bus at the stop.
-
-    :param locations: a dictionary in which the keys are bus tracking numbers
-    and the values are dictionaries containing live information for that bus.
-    :param stop_info: live information for a stop retrieved from the Winnipeg
-    Transit API, which should include the stop ID, name, and coordinates, as
-    well as a list of upcoming arrivals.
-    """
-    MAX_TIME_FROM_STOP = timedelta(minutes=15)
-    curr_time = datetime.now()
-
-    for bus in stop_info["buses"]:
-        arrival_time = datetime.fromisoformat(bus["arrival_time_est"])
-        time_until_arrival = arrival_time - curr_time
-
-        bus_tracking_num = int(bus["tracking_num"])
-
-        if timedelta(seconds=0) <= time_until_arrival <= MAX_TIME_FROM_STOP:
-            live_info = {
-                "stop_id": int(stop_info["id"]),
-                "stop_name": stop_info["name"],
-                "coordinates": stop_info["coordinates"],
-                "route": bus["route"],
-                "destination": bus["destination"],
-                "arrival_time_est": bus["arrival_time_est"],
-                "arrival_time_scheduled": bus["arrival_time_scheduled"]
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = {
+                executor.submit(get_stop_information_and_schedule, stop): stop
+                for stop in self.stops.keys()
             }
 
-            if bus_tracking_num not in locations:
-                locations[bus_tracking_num] = live_info
-            else:
-                prev_arrival_time = datetime.fromisoformat(
-                    locations[bus_tracking_num]["arrival_time_est"]
-                )
-                prev_time_until_arrival = prev_arrival_time - curr_time
+            for future in as_completed(futures):
+                stop_id = futures[future]
 
-                if time_until_arrival < prev_time_until_arrival:
-                    locations[bus_tracking_num] = live_info
+                try:
+                    stop_info = future.result()
+                    self._add_observations_from_stop_api_data(stop_info)
+                except Exception as e:
+                    print(f"Error scanning stop {stop_id}: {e}")
+                    continue
 
-def _scan_stop(stop_number: int) -> dict | None:
-    """
-    Attempts to retrieve information from the Winnipeg Transit API for a stop
-    with a given ID. If unsuccessful, the exception that occurred is printed.
+    def _add_observations_from_stop_api_data(self, stop_info: dict) -> None:
+        """
+        Creates a bus observation for each arrival in the given data and adds
+        it to the observation dictionary. Assumes that all data is properly
+        formatted.
 
-    :param stop_number: the 5-digit number of the stop for which to retrieve
-    information.
-    :return: a dictionary containing information for the given stop (such as
-    its ID, name, coordinates, and arrivals) or None if the information could
-    not be retrieved.
-    """
-    try:
-        return get_stop_info(stop_number)
-    except Exception as e:
-        print(f"{RED}Error scanning stop {stop_number}: {e}{COLOUR_RESET}")
-        return None
+        :param stop_info: a dictionary containing relevant stop info, including
+        the stop ID and a list of arrivals, each of which should contain the
+        bus tracking number, route, destination, and scheduled/estimated departure
+        times.
+        """
+        stop_id = stop_info["id"]
+        stop = self.stops[stop_id]
 
-def _get_all_stop_numbers() -> list[int]:
-    """
-    Reads all stops from the GTFS archive and creates a list containing each
-    5-digit stop ID.
-    :return: a list of integers containing every 5-digit stop ID in Winnipeg.
-    """
-    stops = []
+        for bus_obs in stop_info["buses"]:
+            tracking_num = bus_obs["tracking_num"]
+            route = str(bus_obs["route"])
+            destination = bus_obs["destination"]
+            scheduled_departure_time = parse_api_time(bus_obs["departures"]["scheduled"])
+            estimated_departure_time = parse_api_time(bus_obs["departures"]["estimated"])
 
-    curr_line_num = 1
-    with open(STOP_LIST_FILE, "r") as stops_input_file:
-        stops_input_file.readline() # Skip header
-        curr_line_num += 1
+            observation = BusObservation(stop, route, destination, tracking_num,
+                                         scheduled_departure_time, estimated_departure_time)
+            self.observations.add_observation(observation)
 
-        for line in stops_input_file:
-            next_stop_num_raw = line[:line.find(",")]
 
-            try:
-                stops.append(int(next_stop_num_raw))
-            except ValueError:
-                print(f"{RED}Could not convert {next_stop_num_raw} to int{COLOUR_RESET}")
-
-        curr_line_num += 1
-
-    return stops

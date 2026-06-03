@@ -191,10 +191,12 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
     def show_not_fetching_location(self) -> None:
         self.location_fetch_button.configure(state="enabled")
         self.location_fetch_feedback.configure(text="")
+        self.notify()
 
     def show_fetching_location(self) -> None:
         self.location_fetch_button.configure(state="disabled")
         self.location_fetch_feedback.configure(text="Fetching bus locations (this may take a few minutes)...")
+        self.notify()
 
     def _num_pages(self) -> int:
         """
@@ -290,13 +292,13 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
             if bus.location_info is None:
                 location_info_label.configure(text=UNKNOWN_LOCATION_PLACEHOLDER, text_color="grey")
             else:
-                if "block_id" in bus.location_info:
-                    location_info_label.configure(text=f"🟢 {bus.location_info['route']} "
-                                                       f"| {bus.location_info['block_id']} "
-                                                       f"| {bus.location_info['stop_id']} {bus.location_info['stop_name']}", text_color="green")
+                if bus.location_info.block_id is not None:
+                    location_info_label.configure(text=f"🟢 {bus.location_info.route} "
+                                                       f"| {bus.location_info.block_id} "
+                                                       f"| {bus.location_info.stop.stop_id} {bus.location_info.stop.name}", text_color="green")
                 else:
-                    location_info_label.configure(text=f"🟢 {bus.location_info['route']} "
-                                                       f"| {bus.location_info['stop_id']} {bus.location_info['stop_name']}", text_color="green")
+                    location_info_label.configure(text=f"🟢 {bus.location_info.route} "
+                                                       f"| {bus.location_info.stop.stop_id} {bus.location_info.stop.name}", text_color="green")
             location_info_label.pack(side="left", padx=10)
 
             # "Remove" button

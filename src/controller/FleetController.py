@@ -10,8 +10,9 @@ from ui.ViewFleetFrame import ViewFleetFrame
 from ui.ViewRunsFrame import ViewRunsFrame
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
-from utilities.live_tracker.StopScanner import get_live_bus_locations
 from threading import Thread
+from utilities.LocationInfoHelper import update_bus_locations
+from utilities.live_tracker.LiveBusTracker import LiveBusTracker
 
 
 class FleetController:
@@ -128,11 +129,12 @@ class FleetController:
         thread.start()
 
     def _update_bus_locations_background(self) -> None:
-        locations = get_live_bus_locations()
-        self.app.after(0, self._apply_bus_locations, locations)
+        tracker = LiveBusTracker()
+        tracker.scan_stops()
+        self.app.after(0, self._apply_bus_locations, tracker)
 
-    def _apply_bus_locations(self, locations: dict[int, dict]) -> None:
-        self.fleet.update_bus_locations(locations)
+    def _apply_bus_locations(self, tracker: LiveBusTracker) -> None:
+        update_bus_locations(self.fleet, tracker)
         self.view_fleet_frame.show_not_fetching_location()
 
     def _switch_main_frame(self, next_frame: ctk.CTkFrame):

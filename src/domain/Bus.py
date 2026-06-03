@@ -1,5 +1,6 @@
 from domain.Listener import Listener
 from domain.Run import Run
+from domain.location_info.LocationInfo import LocationInfo
 from domain.validation.exceptions.BusError import DuplicateRunError
 from utilities.InvariantHelper import require_not_none, require_state
 import bisect
@@ -22,7 +23,7 @@ class Bus:
         self.model = model
         self.runs: list[Run] = []
         self.listeners: list[Listener] = []
-        self.location_info: dict | None = None
+        self.location_info: LocationInfo | None = None
 
         self._check_bus()
 

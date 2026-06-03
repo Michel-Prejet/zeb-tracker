@@ -29,7 +29,7 @@ classDiagram
         -int year
         -String model
         -Set~Run~ runs
-        -dict location_info
+        -LocationInfo location_info
         
         +add_run(run) void
         +remove_run(run) void
@@ -60,5 +60,56 @@ classDiagram
     * block_id != None
     * block_id.length >= 1
     * run_date != None
+    "
+    
+    class LocationInfo {
+        -Stop stop
+        -string route
+        -string destination
+        -string block_id
+        -timedelta scheduled_departure
+        -timedelta scheduled_arrival
+    }
+    
+    Bus --* LocationInfo
+    
+    note for LocationInfo"Invariant properties:
+    * stop != None
+    * route != None
+    * route.length >= 1
+    * destination != None
+    * destination.length >= 1
+    * if block_id is not None: len(block_id) >= 1
+    * scheduled_departure != None
+    * scheduled_arrival != None
+    "
+    
+    class Stop {
+        -string name
+        -int stop_id
+        -Coordinates coordinates
+    }
+    
+    LocationInfo --* Stop
+    
+    note for Stop"Invariant properties:
+    * name != None
+    * len(name) >= 1
+    * len(stop_id) == 5
+    * coordinates != None    
+    "
+    
+    class Coordinates {
+        -float latitude
+        -float longitude
+    }
+    
+    Stop --* Coordinates
+    
+    note for Coordinates"Invariant properties:
+    * latitude != None
+    * longitude != None
+    * -90 <= latitude <= 90
+    * -180 <= longitude <= 180
     "
 ```

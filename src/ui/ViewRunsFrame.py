@@ -123,6 +123,33 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         self.refresh_search_inputs_frame()
         self.notify()
 
+    def handle_enter(self, event=None) -> None:
+        """
+        Event handler for when the user presses the Enter key. Submits the
+        current search filter.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+        self.submit_search()
+
+    def handle_left_arrow(self, event=None) -> None:
+        """
+        Event handler for when the user presses the left arrow key. Goes to
+        the previous page.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+        self._prev_page()
+
+    def handle_right_arrow(self, event=None) -> None:
+        """
+        Event handler for when the user presses the right arrow key. Goes to
+        the next page.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+        self._next_page()
+
     def reset_search(self) -> None:
         """
         Reconstructs the run list with all filters removed and goes back

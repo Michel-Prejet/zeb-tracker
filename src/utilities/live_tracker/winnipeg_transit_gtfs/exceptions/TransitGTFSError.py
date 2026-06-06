@@ -28,15 +28,24 @@ class TripIDNotFoundError(TransitGTFSError):
     """
     Exception raised when a trip ID doesn't exist in the block ID finder.
     """
+    def __init__(self, message: str, trip_id: int):
+        super().__init__(message)
+        self.trip_id = trip_id
     pass
 
 class GTFSFileNotFoundError(TransitGTFSError):
+    def __init__(self, message: str, filename: str) -> None:
+        super().__init__(message)
+        self.filename = filename
     """
     Exception raised when a GTFS file could not be opened.
     """
     pass
 
 class MissingColumnError(TransitGTFSError):
+    def __init__(self, message: str, filename: str) -> None:
+        super().__init__(message)
+        self.filename = filename
     """
     Exception raised when a column could not be found in a GTFS
     CSV file.
@@ -44,6 +53,10 @@ class MissingColumnError(TransitGTFSError):
     pass
 
 class MissingTokenError(TransitGTFSError):
+    def __init__(self, message: str, filename: str, row: int) -> None:
+        super().__init__(message)
+        self.filename = filename
+        self.row = row
     """
     Exception raised when a token is missing from a row in a GTFS
     CSV file.
@@ -51,6 +64,10 @@ class MissingTokenError(TransitGTFSError):
     pass
 
 class MalformedTokenError(TransitGTFSError):
+    def __init__(self, message:str, filename: str, row: int) -> None:
+        super().__init__(message)
+        self.filename = filename
+        self.row = row
     """
     Exception raised when a token read from a GTFS CSV line is malformed.
     """

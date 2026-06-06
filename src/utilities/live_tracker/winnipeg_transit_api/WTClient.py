@@ -1,4 +1,5 @@
 import os
+import time
 from typing import Any
 import requests
 from requests import Timeout, ConnectionError, HTTPError, RequestException
@@ -16,6 +17,8 @@ load_dotenv()
 
 WT_API_KEY = os.getenv("API_KEY")
 BASE_URL = "https://api.winnipegtransit.com/v4"
+REQUEST_DELAY = 0.2
+REQUEST_DELAY_ON_429 = 5
 
 def get_stop_information_and_schedule(stop_number: int) -> dict:
     """
@@ -43,6 +46,7 @@ def get_stop_information_and_schedule(stop_number: int) -> dict:
     }
 
     try:
+        time.sleep(REQUEST_DELAY)
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = _parse_raw_stop_data(response.json())
@@ -53,6 +57,8 @@ def get_stop_information_and_schedule(stop_number: int) -> dict:
     except HTTPError as e:
         if e.response.status_code == 401:
             raise TransitAuthenticationError()
+        elif e.response.status_code == 429:
+            time.sleep(REQUEST_DELAY_ON_429)
         else:
             raise TransitHTTPError(f"{e.response.status_code}")
     except ValueError:

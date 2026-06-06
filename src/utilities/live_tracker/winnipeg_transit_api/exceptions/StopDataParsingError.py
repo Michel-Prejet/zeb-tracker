@@ -5,3 +5,4 @@ class StopDataParsingError(Exception):
     """
     def __init__(self, missing_attribute_name: str) -> None:
         super().__init__(f"Missing attribute: {missing_attribute_name}")
+        self.missing_attribute_name = missing_attribute_name

@@ -7,7 +7,7 @@ from utilities.live_tracker.winnipeg_transit_api.WTClient import get_stop_inform
 from utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader import GTFSReader
 
 
-MAX_WORKERS = 15
+MAX_WORKERS = 10
 
 class StopScanner:
     """
@@ -67,5 +67,4 @@ class StopScanner:
             observation = BusObservation(stop, route, destination, tracking_num,
                                          scheduled_departure_time, estimated_departure_time)
             self.observations.add_observation(observation)
-
 

@@ -35,13 +35,15 @@ class StopsReader:
                     self.stop_latitude_col = header_tokens.index(STOP_LATITUDE_COLUMN_HEADER)
                     self.stop_longitude_col = header_tokens.index(STOP_LONGITUDE_COLUMN_HEADER)
                 except ValueError:
-                    raise MissingColumnError(f"Missing column in {STOPS_INPUT_FILE}.")
+                    raise MissingColumnError(f"Missing column in {STOPS_INPUT_FILE}.",
+                                             STOPS_INPUT_FILE)
 
                 # Parse and validate each row/token to populate the stop dictionary
                 self.curr_row = 2
                 self._parse_stops()
         except FileNotFoundError:
-            raise GTFSFileNotFoundError(f"{STOPS_INPUT_FILE} could not be opened.")
+            raise GTFSFileNotFoundError(f"{STOPS_INPUT_FILE} could not be opened.",
+                                        STOPS_INPUT_FILE)
 
     def get(self) -> dict[int, Stop]:
         """
@@ -81,7 +83,8 @@ class StopsReader:
         num_tokens = len(tokens)
         if (self.stop_id_col >= num_tokens or self.stop_name_col >= num_tokens
             or self.stop_latitude_col >= num_tokens or self.stop_longitude_col >= num_tokens):
-            raise MissingTokenError(f"Missing token in {STOPS_INPUT_FILE} on line {self.curr_row}.")
+            raise MissingTokenError(f"Missing token in {STOPS_INPUT_FILE} on line {self.curr_row}.",
+                                    STOPS_INPUT_FILE, self.curr_row)
 
         stop_id_raw = tokens[self.stop_id_col].strip()
         stop_name = tokens[self.stop_name_col].strip()
@@ -89,24 +92,30 @@ class StopsReader:
         stop_longitude_raw = tokens[self.stop_longitude_col].strip()
 
         if not stop_id_raw.isdigit() or len(stop_id_raw) != STOP_NUMBER_LENGTH:
-            raise InvalidStopIDError(f"Invalid stop ID in {STOPS_INPUT_FILE} on line {self.curr_row}.")
+            raise InvalidStopIDError(f"Invalid stop ID in {STOPS_INPUT_FILE} on line {self.curr_row}.",
+                                     STOPS_INPUT_FILE, self.curr_row)
         if len(stop_name) == 0:
-            raise EmptyStopNameError(f"Empty stop name in {STOPS_INPUT_FILE} on line {self.curr_row}.")
+            raise EmptyStopNameError(f"Empty stop name in {STOPS_INPUT_FILE} on line {self.curr_row}.",
+                                     STOPS_INPUT_FILE, self.curr_row)
 
         try:
             stop_latitude = float(stop_latitude_raw)
         except ValueError:
-            raise InvalidStopLatitudeError(f"Invalid stop latitude in {STOPS_INPUT_FILE} on line {self.curr_row}.")
+            raise InvalidStopLatitudeError(f"Invalid stop latitude in {STOPS_INPUT_FILE} on line {self.curr_row}.",
+                                           STOPS_INPUT_FILE, self.curr_row)
         if stop_latitude < MIN_LATITUDE or stop_latitude > MAX_LATITUDE:
             raise InvalidStopLatitudeError(f"Stop latitude in {STOPS_INPUT_FILE} is not "
-                                           f"in the interval [{MIN_LATITUDE}, {MAX_LATITUDE}].")
+                                           f"in the interval [{MIN_LATITUDE}, {MAX_LATITUDE}].",
+                                           STOPS_INPUT_FILE, self.curr_row)
 
         try:
             stop_longitude = float(stop_longitude_raw)
         except ValueError:
-            raise InvalidStopLongitudeError(f"Invalid stop longitude in {STOPS_INPUT_FILE} on line {self.curr_row}.")
+            raise InvalidStopLongitudeError(f"Invalid stop longitude in {STOPS_INPUT_FILE} on line {self.curr_row}.",
+                                            STOPS_INPUT_FILE, self.curr_row)
         if stop_longitude < MIN_LONGITUDE  or stop_longitude > MAX_LONGITUDE:
             raise InvalidStopLongitudeError(f"Stop longitude in {STOPS_INPUT_FILE} is not "
-                                           f"in the interval [{MIN_LONGITUDE}, {MAX_LONGITUDE}].")
+                                           f"in the interval [{MIN_LONGITUDE}, {MAX_LONGITUDE}].",
+                                            STOPS_INPUT_FILE, self.curr_row)
 
         return int(stop_id_raw), stop_name, stop_latitude, stop_longitude

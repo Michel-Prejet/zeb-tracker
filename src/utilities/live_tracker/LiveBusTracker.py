@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 from utilities.live_tracker.BlockIDFinder import BlockIDFinder
 from utilities.live_tracker.StopScanner import StopScanner
 from utilities.live_tracker.TimeHelper import get_curr_time_as_timedelta

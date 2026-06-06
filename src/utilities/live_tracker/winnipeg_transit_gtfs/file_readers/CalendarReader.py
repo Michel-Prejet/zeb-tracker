@@ -53,13 +53,15 @@ class CalendarReader:
                     self.saturday_col = header_tokens.index(SATURDAY_COLUMN_HEADER)
                     self.sunday_col = header_tokens.index(SUNDAY_COLUMN_HEADER)
                 except ValueError:
-                    raise MissingColumnError(f"Missing column in {CALENDAR_INPUT_FILE}.")
+                    raise MissingColumnError(f"Missing column in {CALENDAR_INPUT_FILE}.",
+                                             CALENDAR_INPUT_FILE)
 
                 # Parse and validate each row/token to populate the service ID finder
                 self.curr_row = 2
                 self._parse_gtfs_calendar()
         except FileNotFoundError:
-            raise GTFSFileNotFoundError(f"{CALENDAR_INPUT_FILE} could not be opened.")
+            raise GTFSFileNotFoundError(f"{CALENDAR_INPUT_FILE} could not be opened.",
+                                        CALENDAR_INPUT_FILE)
 
         # Find any exceptional days
         try:
@@ -75,13 +77,15 @@ class CalendarReader:
                     self.exceptional_date_col = header_tokens.index(EXCEPTIONAL_DATE_COLUMN_HEADER)
                     self.exception_type_col = header_tokens.index(EXCEPTION_TYPE_COLUMN_HEADER)
                 except ValueError:
-                    raise MissingColumnError(f"Missing column in {CALENDAR_EXCEPTIONS_INPUT_FILE}.")
+                    raise MissingColumnError(f"Missing column in {CALENDAR_EXCEPTIONS_INPUT_FILE}.",
+                                             CALENDAR_EXCEPTIONS_INPUT_FILE)
 
                 # Parse and validate each row/token to populate the exception days dictionary
                 self.curr_row = 2
                 self._parse_gtfs_exceptional_dates()
         except FileNotFoundError:
-            raise GTFSFileNotFoundError(f"{CALENDAR_EXCEPTIONS_INPUT_FILE} could not be opened.")
+            raise GTFSFileNotFoundError(f"{CALENDAR_EXCEPTIONS_INPUT_FILE} could not be opened.",
+                                        CALENDAR_EXCEPTIONS_INPUT_FILE)
     
     def get_current_service_id(self) -> int:
         """
@@ -130,7 +134,8 @@ class CalendarReader:
                     if key in self.service_id_finder:
                         raise DuplicateServiceIDError(f"Duplicate service ID in "
                                                       f"{CALENDAR_INPUT_FILE} for {key} "
-                                                      f"on line {self.curr_row}.")
+                                                      f"on line {self.curr_row}.",
+                                                      CALENDAR_INPUT_FILE, self.curr_row)
                     self.service_id_finder[key] = service_id
 
             self.curr_row += 1
@@ -147,7 +152,7 @@ class CalendarReader:
         ]
         for key in keys:
             if key not in self.service_id_finder:
-                raise MissingServiceIDError()
+                raise MissingServiceIDError("", CALENDAR_INPUT_FILE, self.curr_row)
 
     def _parse_gtfs_exceptional_dates(self) -> None:
         """
@@ -191,7 +196,8 @@ class CalendarReader:
             or self.tuesday_col >= num_tokens or self.wednesday_col >= num_tokens
             or self.thursday_col >= num_tokens or self.friday_col >= num_tokens
             or self.saturday_col >= num_tokens or self.sunday_col >= num_tokens):
-            raise MissingTokenError(f"Missing token in {CALENDAR_INPUT_FILE} on line {self.curr_row}.")
+            raise MissingTokenError(f"Missing token in {CALENDAR_INPUT_FILE} on line {self.curr_row}.",
+                                    CALENDAR_INPUT_FILE, self.curr_row)
 
         service_id_raw = tokens[self.service_id_col].strip()
         monday_raw = tokens[self.monday_col].strip()
@@ -203,12 +209,14 @@ class CalendarReader:
         sunday_raw = tokens[self.sunday_col].strip()
 
         if not service_id_raw.isdigit():
-            raise InvalidServiceIDError(f"Invalid service ID in {CALENDAR_INPUT_FILE} on line {self.curr_row}.")
+            raise InvalidServiceIDError(f"Invalid service ID in {CALENDAR_INPUT_FILE} on line {self.curr_row}.",
+                                        CALENDAR_INPUT_FILE, self.curr_row)
         if (monday_raw not in VALID_SERVICE_FLAGS or tuesday_raw not in VALID_SERVICE_FLAGS
                 or wednesday_raw not in VALID_SERVICE_FLAGS or thursday_raw not in VALID_SERVICE_FLAGS
                 or friday_raw not in VALID_SERVICE_FLAGS or saturday_raw not in VALID_SERVICE_FLAGS
                 or sunday_raw not in VALID_SERVICE_FLAGS):
-            raise InvalidServiceFlagError(f"Invalid flag in {CALENDAR_INPUT_FILE} on line {self.curr_row}.")
+            raise InvalidServiceFlagError(f"Invalid flag in {CALENDAR_INPUT_FILE} on line {self.curr_row}.",
+                                          CALENDAR_INPUT_FILE, self.curr_row)
 
         return (int(service_id_raw),
                 _parse_gtfs_bool(monday_raw),
@@ -239,7 +247,8 @@ class CalendarReader:
         if (self.service_id_col_exceptional >= num_tokens
                 or self.exceptional_date_col >= num_tokens
                 or self.exception_type_col >= num_tokens):
-            raise MissingTokenError(f"Missing token in {CALENDAR_EXCEPTIONS_INPUT_FILE} on line {self.curr_row}.")
+            raise MissingTokenError(f"Missing token in {CALENDAR_EXCEPTIONS_INPUT_FILE} on line {self.curr_row}.",
+                                    CALENDAR_EXCEPTIONS_INPUT_FILE, self.curr_row)
 
         service_id_raw = tokens[self.service_id_col_exceptional].strip()
         exceptional_date_raw = tokens[self.exceptional_date_col].strip()
@@ -247,13 +256,20 @@ class CalendarReader:
 
         if not service_id_raw.isdigit():
             raise InvalidServiceIDError(f"Invalid service ID in {CALENDAR_EXCEPTIONS_INPUT_FILE} "
-                                        f"on line {self.curr_row}.")
+                                        f"on line {self.curr_row}.",
+                                        CALENDAR_EXCEPTIONS_INPUT_FILE,
+                                        self.curr_row)
         if not exceptional_date_raw.isdigit() or len(exceptional_date_raw) != NUM_DIGITS_IN_DATE:
             raise InvalidExceptionalDateError(f"Invalid date in {CALENDAR_EXCEPTIONS_INPUT_FILE} "
-                                              f"on line {self.curr_row}.")
+                                              f"on line {self.curr_row}.",
+                                              CALENDAR_EXCEPTIONS_INPUT_FILE,
+                                              self.curr_row)
         if not exception_type_raw.isdigit():
-            raise InvalidExceptionTypeError(f"Invalid exception type in {CALENDAR_EXCEPTIONS_INPUT_FILE} "
-                                            f"on line {self.curr_row}.")
+            raise InvalidExceptionTypeError(f"Invalid exception type in "
+                                            f"{CALENDAR_EXCEPTIONS_INPUT_FILE} on "
+                                            f"line {self.curr_row}.",
+                                            CALENDAR_EXCEPTIONS_INPUT_FILE,
+                                            self.curr_row)
 
         return (int(service_id_raw),
                 datetime.strptime(exceptional_date_raw, "%Y%m%d").date(),

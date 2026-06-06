@@ -77,6 +77,15 @@ class AddRunFrame(ctk.CTkFrame):
         self.msg = ctk.CTkLabel(self, text="", padx=10)
         self.msg.grid(row=6, column=0, columnspan=2)
 
+    def handle_enter(self, event=None) -> None:
+        """
+        Event handler for when the user presses the Enter key. Submits the
+        current input to create a new run.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+        self.submit()
+
     def autofill_todays_date(self) -> None:
         self.date_entry.delete(0, "end")
         self.date_entry.insert(0, date.today().strftime("%Y-%m-%d"))

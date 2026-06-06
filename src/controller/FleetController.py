@@ -29,6 +29,7 @@ class FleetController:
         for bus in BusPersistence.load_all_buses():
             self.fleet.add_bus(bus)
 
+        # Initialize frames
         self.menu_frame = MenuFrame(app, self)
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
         self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
@@ -38,6 +39,12 @@ class FleetController:
 
         self.curr_frame = self.view_fleet_frame
 
+        # Bind hotkeys
+        self.app.bind("<Return>", self._handle_enter)
+        self.app.bind("<Left>", self._handle_left_arrow)
+        self.app.bind("<Right>", self._handle_right_arrow)
+
+        # Show the menu and the current frame
         self.menu_frame.pack(pady=5)
         self.curr_frame.pack(anchor="nw")
 
@@ -129,13 +136,13 @@ class FleetController:
         thread.start()
 
     def _update_bus_locations_background(self) -> None:
-        tracker = LiveBusTracker()
+        tracker = LiveBusTracker(self.view_fleet_frame.add_message_to_error_log_for_location_fetch)
         tracker.scan_stops()
         self.app.after(0, self._apply_bus_locations, tracker)
 
     def _apply_bus_locations(self, tracker: LiveBusTracker) -> None:
         update_bus_locations(self.fleet, tracker)
-        self.view_fleet_frame.show_not_fetching_location()
+        self.view_fleet_frame.show_location_fetch_finished()
 
     def _switch_main_frame(self, next_frame: ctk.CTkFrame):
         """
@@ -146,5 +153,51 @@ class FleetController:
         self.curr_frame.pack_forget()
         self.curr_frame = next_frame
         self.curr_frame.pack(anchor="n")
+
+    def _handle_enter(self, event=None) -> None:
+        """
+        Responds to the user pressing the Enter key. Calls an event handler
+        in the current frame, if such an event handler exists. Otherwise,
+        no action is taken.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+
+        if self.curr_frame is not None:
+            enter_handler = getattr(self.curr_frame, "handle_enter", None)
+
+            if callable(enter_handler):
+                self.curr_frame.handle_enter(event)
+
+    def _handle_left_arrow(self, event=None) -> None:
+        """
+        Responds to the user pressing the left arrow key. Calls an event handler
+        in the current frame, if such an event handler exists. Otherwise, no
+        action is taken.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+
+        if self.curr_frame is not None:
+            left_arrow_handler = getattr(self.curr_frame, "handle_left_arrow", None)
+
+            if callable(left_arrow_handler):
+                self.curr_frame.handle_left_arrow(event)
+
+    def _handle_right_arrow(self, event=None) -> None:
+        """
+        Responds to the user pressing the right arrow key. Calls an event handler
+        in the current frame, if such an event handler exists. Otherwise, no
+        action is taken.
+
+        :param event: the Tkinter event to handle (None by default).
+        """
+
+        if self.curr_frame is not None:
+            right_arrow_handler = getattr(self.curr_frame, "handle_right_arrow", None)
+
+            if callable(right_arrow_handler):
+                self.curr_frame.handle_right_arrow(event)
+
 
 

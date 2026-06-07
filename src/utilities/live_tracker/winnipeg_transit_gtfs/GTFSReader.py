@@ -83,7 +83,8 @@ class GTFSReader:
 
         block_id = self.block_id_finder.get(trip_id)
         if block_id is None:
-            raise TripIDNotFoundError(f"Trip ID {trip_id} doesn't exist in the block ID finder.")
+            raise TripIDNotFoundError(f"Trip ID {trip_id} doesn't exist in the block ID finder.",
+                                      trip_id)
 
         return block_id
 

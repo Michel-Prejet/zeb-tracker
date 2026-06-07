@@ -136,9 +136,13 @@ class FleetController:
         thread.start()
 
     def _update_bus_locations_background(self) -> None:
-        tracker = LiveBusTracker(self.view_fleet_frame.add_message_to_error_log_for_location_fetch)
-        tracker.scan_stops()
-        self.app.after(0, self._apply_bus_locations, tracker)
+        try:
+            tracker = LiveBusTracker()
+            tracker.scan_stops()
+            self.app.after(0, self._apply_bus_locations, tracker)
+        except Exception as e:
+            print(f"Error updating locations: {e}")
+            self.view_fleet_frame.show_location_fetch_finished()
 
     def _apply_bus_locations(self, tracker: LiveBusTracker) -> None:
         update_bus_locations(self.fleet, tracker)

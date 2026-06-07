@@ -5,6 +5,7 @@ import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
+from ui.LocationInfoDialog import LocationInfoDialog
 from utilities.InvariantHelper import require_not_none
 
 
@@ -48,6 +49,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         require_not_none(fleet, "Fleet should not be None.")
 
         super().__init__(app)
+        self.app = app
         self.controller = controller
         self.fleet = fleet
         self.fleet.register_listener(self)
@@ -315,18 +317,29 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
             last_seen_label = ctk.CTkLabel(curr_row, text=f"Last seen: {last_run_date_to_str(bus)}")
             last_seen_label.pack(side="left", padx=5)
 
+            # Bus location info
             location_info_label = ctk.CTkLabel(curr_row)
             if bus.location_info is None:
                 location_info_label.configure(text=UNKNOWN_LOCATION_PLACEHOLDER, text_color="grey")
             else:
+                location_info_label.configure(text=f"🟢 {bus.location_info.route} ",
+                                              text_color="green",
+                                              font=ctk.CTkFont(size=13))
                 if bus.location_info.block_id is not None:
                     location_info_label.configure(text=f"🟢 {bus.location_info.route} "
-                                                       f"| {bus.location_info.block_id} "
-                                                       f"| {bus.location_info.stop.stop_id} {bus.location_info.stop.name}", text_color="green")
-                else:
-                    location_info_label.configure(text=f"🟢 {bus.location_info.route} "
-                                                       f"| {bus.location_info.stop.stop_id} {bus.location_info.stop.name}", text_color="green")
-            location_info_label.pack(side="left", padx=10)
+                                                       f"({bus.location_info.block_id}) ",
+                                                  text_color="green")
+
+                # Button to show detailed location info in a pop-up
+                location_info_label.bind("<Button-1>", lambda e, b=bus: LocationInfoDialog(self.app, b))
+                location_info_label.bind("<Enter>", lambda e, l=location_info_label: l.configure(
+                    font=ctk.CTkFont(size=14)
+                ))
+                location_info_label.bind("<Leave>", lambda e, l=location_info_label: l.configure(
+                    font=ctk.CTkFont(size=13)
+                ))
+
+            location_info_label.pack(side="left", padx=5)
 
             # "Remove" button
             (ctk.CTkButton(curr_row,

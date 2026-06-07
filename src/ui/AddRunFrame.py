@@ -1,13 +1,16 @@
 import customtkinter as ctk
 from datetime import date, timedelta
 from domain.Fleet import Fleet
+from domain.InferredRunList import InferredRunList
 from domain.Run import Run
 from domain.validation.ValidateBus import validate_tracking_number
 from domain.validation.ValidateRun import validate_date, validate_block_id
 from domain.validation.exceptions.BusError import DuplicateRunError, InvalidTrackingNumberError
 from domain.validation.exceptions.FleetError import BusNotFoundError
 from domain.validation.exceptions.RunError import InvalidRunDateError, InvalidBlockIDError
+from ui.AutoAddRunsFrame import AutoAddRunsFrame
 from utilities.InvariantHelper import require_not_none
+
 
 class AddRunFrame(ctk.CTkFrame):
     """
@@ -17,8 +20,9 @@ class AddRunFrame(ctk.CTkFrame):
     validity of the input.
     """
 
-    def __init__(self, app: ctk.CTk, fleet: Fleet, controller):
+    def __init__(self, app: ctk.CTk, fleet: Fleet, inferred_runs: InferredRunList, controller):
         require_not_none(app, "App should not be None.")
+        require_not_none(inferred_runs, "Inferred run list should not be None.")
         require_not_none(controller, "Controller should not be None.")
 
         super().__init__(app)
@@ -27,54 +31,111 @@ class AddRunFrame(ctk.CTkFrame):
 
         self.configure(fg_color="transparent")
 
+        self.manual_adder_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.manual_adder_frame.pack()
+        self._build_manual_adder_frame()
+
+        self.auto_adder_frame = AutoAddRunsFrame(self, inferred_runs, controller)
+        self.auto_adder_frame.pack(anchor="nw")
+
+    def _build_manual_adder_frame(self) -> None:
         # Header
-        ctk.CTkLabel(self,
-                     text="Add Run",
-                     font=("Arial", 20, "bold")
-                     ).grid(row=0, column=0, columnspan=2)
+        ctk.CTkLabel(
+            self.manual_adder_frame,
+            text="Add Run",
+            font=("Arial", 20, "bold")
+        ).grid(row=0, column=1, columnspan=2)
 
         # "Hold value" buttons header
-        ctk.CTkLabel(self, text="Hold value").grid(row=1, column=4, sticky="w")
+        ctk.CTkLabel(
+            self.manual_adder_frame,
+            text="Hold value"
+        ).grid(row=1, column=4, sticky="w")
 
         # Bus tracking number
-        ctk.CTkLabel(self, text="Bus").grid(row=2, column=0, padx=10, sticky="w")
-        self.bus_entry = ctk.CTkEntry(self, placeholder_text="e.g. 971")
+        ctk.CTkLabel(
+            self.manual_adder_frame,
+            text="Bus"
+        ).grid(row=2, column=0, padx=10, sticky="w")
+        self.bus_entry = ctk.CTkEntry(
+            self.manual_adder_frame,
+            placeholder_text="e.g. 971"
+        )
         self.bus_entry.grid(row=2, column=1, padx=10, sticky="w")
 
-        self.bus_hold_value = ctk.CTkCheckBox(self, text="", checkbox_width=18,
-                                              checkbox_height=18, border_width=2)
+        self.bus_hold_value = ctk.CTkCheckBox(
+            self.manual_adder_frame,
+            text="",
+            checkbox_width=18,
+            checkbox_height=18,
+            border_width=2
+        )
         self.bus_hold_value.grid(row=2, column=4, padx=5)
 
         # Date
-        ctk.CTkLabel(self, text="Date (YYYY-MM-DD)").grid(row=3, column=0, padx=10, sticky="w")
-        self.date_entry = ctk.CTkEntry(self, placeholder_text="e.g. 2025-12-01")
+        ctk.CTkLabel(
+            self.manual_adder_frame,
+            text="Date (YYYY-MM-DD)"
+        ).grid(row=3, column=0, padx=10, sticky="w")
+        self.date_entry = ctk.CTkEntry(
+            self.manual_adder_frame,
+            placeholder_text="e.g. 2025-12-01"
+        )
         self.date_entry.grid(row=3, column=1, padx=10, sticky="w")
 
-        self.date_hold_value = ctk.CTkCheckBox(self, text="", checkbox_width=18,
-                                               checkbox_height=18, border_width=2)
+        self.date_hold_value = ctk.CTkCheckBox(
+            self.manual_adder_frame,
+            text="",
+            checkbox_width=18,
+            checkbox_height=18,
+            border_width=2
+        )
         self.date_hold_value.grid(row=3, column=4, padx=5)
 
-        today_autofill_button = ctk.CTkButton(self, text="Today", width=30,
-                                              fg_color="transparent",
-                                              command=self.autofill_todays_date)
+        today_autofill_button = ctk.CTkButton(
+            self.manual_adder_frame,
+            text="Today",
+            width=30,
+            fg_color="transparent",
+            command=self.autofill_todays_date
+        )
         today_autofill_button.grid(row=3, column=2, padx=5, sticky="w")
-        yesterday_autofill_button = ctk.CTkButton(self, text="Yesterday", width=30,
-                                                  fg_color="transparent",
-                                                  command=self.autofill_yesterdays_date)
+        yesterday_autofill_button = ctk.CTkButton(
+            self.manual_adder_frame,
+            text="Yesterday",
+            width=30,
+            fg_color="transparent",
+            command=self.autofill_yesterdays_date
+        )
         yesterday_autofill_button.grid(row=3, column=3, padx=5, sticky="w")
 
         # Block ID
-        ctk.CTkLabel(self, text="Block ID").grid(row=4, column=0, padx=10, sticky="w")
-        self.block_entry = ctk.CTkEntry(self, placeholder_text="e.g. 8-22")
+        ctk.CTkLabel(
+            self.manual_adder_frame,
+            text="Block ID"
+        ).grid(row=4, column=0, padx=10, sticky="w")
+        self.block_entry = ctk.CTkEntry(
+            self.manual_adder_frame,
+            placeholder_text="e.g. 8-22"
+        )
         self.block_entry.grid(row=4, column=1, padx=10, sticky="w")
 
-        self.block_id_hold_value = ctk.CTkCheckBox(self, text="", checkbox_width=18,
-                                                   checkbox_height=18, border_width=2)
+        self.block_id_hold_value = ctk.CTkCheckBox(
+            self.manual_adder_frame,
+            text="",
+            checkbox_width=18,
+            checkbox_height=18,
+            border_width=2
+        )
         self.block_id_hold_value.grid(row=4, column=4, padx=5)
 
         # Submit button and error message
-        ctk.CTkButton(self, text="Add", command=self.submit).grid(row=5, column=1, pady=10)
-        self.msg = ctk.CTkLabel(self, text="", padx=10)
+        ctk.CTkButton(
+            self.manual_adder_frame,
+            text="Add",
+            command=self.submit
+        ).grid(row=5, column=1, pady=10)
+        self.msg = ctk.CTkLabel(self.manual_adder_frame, text="", padx=10)
         self.msg.grid(row=6, column=0, columnspan=2)
 
     def handle_enter(self, event=None) -> None:
@@ -93,6 +154,9 @@ class AddRunFrame(ctk.CTkFrame):
     def autofill_yesterdays_date(self) -> None:
         self.date_entry.delete(0, "end")
         self.date_entry.insert(0, (date.today() - timedelta(days=1)).strftime("%Y-%m-%d"))
+
+    def populate_auto_adder(self, runs: dict[int, Run]) -> None:
+        self.auto_adder_frame.populate(runs)
 
     def submit(self) -> None:
         """

@@ -19,7 +19,10 @@ classDiagram
     
     note for Fleet"Invariant properties:
     * buses != None
-    * for bus in buses, bus != None
+    * for key in buses.keys(): 
+    *   key != None
+    *   100 <= key <= 999
+    *   buses[key] != None
     "
     
     Fleet --* Bus
@@ -36,6 +39,7 @@ classDiagram
         +num_runs() int
         +first_run() Run
         +last_run() Run
+        +contains(run) bool
     }
 
     note for Bus "Invariant properties:
@@ -50,6 +54,29 @@ classDiagram
     "
     
     Bus --* Run
+    
+    class InferredRunList {
+        -Dictionary~int, Run~ runs
+        -Fleet fleet
+        
+        +get(bus_tracking_num) Run
+        +add(bus_tracking_num, run) void
+        +remove(bus_tracking_num) void
+        +add_to_fleet(bus_tracking_num) tuple[Run, Bus] | None
+        +add_all_to_fleet(bus_tracking_num) list[tuple[Run, Bus]]
+    }
+    
+    note for InferredRunList"Invariant properties:
+    * fleet != None
+    * runs != None
+    * for key in runs.keys():
+    *   key != None
+    *   100 <= key <= 999
+    *   runs[key] != None
+    "
+    
+    InferredRunList --o Run
+    InferredRunList --o Fleet
     
     class Run {
         -String block_id

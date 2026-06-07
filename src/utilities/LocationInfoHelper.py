@@ -1,5 +1,4 @@
-from datetime import timedelta
-
+from datetime import timedelta, datetime
 from domain.Fleet import Fleet
 from domain.location_info.LocationInfo import LocationInfo
 from domain.location_info.Stop import Stop
@@ -30,7 +29,7 @@ def _create_location_info_record_from_dict(location_info_raw: dict) -> LocationI
     for a bus. Assumes that the data in the dictionary is properly structured
     and formatted. It should include the stop ID, name, and coordinates; the
     route and destination; the scheduled and estimated departure times as
-    strings of the form HH:MM:SS; and, optionally, a block ID.
+    strings of the form HH:MM:SS; the query time; and, optionally, a block ID.
 
     :param location_info_raw: a dictionary containing location information
     for a bus.
@@ -42,13 +41,10 @@ def _create_location_info_record_from_dict(location_info_raw: dict) -> LocationI
     stop_longitude: float = location_info_raw["stop"]["coordinates"]["longitude"]
     route = location_info_raw["route"]
     destination = location_info_raw["destination"]
-    scheduled_departure = _hhmmss_to_timedelta(location_info_raw["departures"]["scheduled"])
-    estimated_departure = _hhmmss_to_timedelta(location_info_raw["departures"]["estimated"])
+    scheduled_departure = location_info_raw["departures"]["scheduled"]
+    estimated_departure = location_info_raw["departures"]["estimated"]
     block_id = location_info_raw.get("block_id")
+    query_time = datetime.fromisoformat(location_info_raw.get("query_time"))
 
     stop = Stop(stop_name, stop_id, Coordinates(stop_latitude, stop_longitude))
-    return LocationInfo(stop, route, destination, block_id, scheduled_departure, estimated_departure)
-
-def _hhmmss_to_timedelta(time_raw: str) -> timedelta:
-    hours, minutes, seconds = map(int, time_raw.split(":"))
-    return timedelta(hours=hours, minutes=minutes, seconds=seconds)
+    return LocationInfo(stop, route, destination, block_id, scheduled_departure, estimated_departure, query_time)

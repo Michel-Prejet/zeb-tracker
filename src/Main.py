@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import customtkinter as ctk
 from controller.FleetController import FleetController
 from domain.location_info.Coordinates import Coordinates
@@ -28,8 +28,9 @@ ctrl.fleet.get_bus(288).location_info = LocationInfo(
     "BLUE",
     "Unicity Hub",
     "1-2",
-    timedelta(hours=17, minutes=11, seconds=2),
-    timedelta(hours=17, minutes=11, seconds=2)
+    timedelta(hours=26, minutes=11, seconds=2),
+    timedelta(hours=26, minutes=11, seconds=2),
+    datetime.now()
 )
 ctrl.view_fleet_frame.notify()
 

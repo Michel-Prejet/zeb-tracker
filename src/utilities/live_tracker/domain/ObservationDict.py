@@ -1,4 +1,5 @@
 from utilities.InvariantHelper import require_not_none, require_state
+from utilities.live_tracker.TimeHelper import get_curr_time_as_timedelta
 from utilities.live_tracker.domain.BusObservation import BusObservation
 import bisect
 
@@ -24,16 +25,25 @@ class ObservationDict:
             return self.bus_observations[bus_tracking_num]
         return []
 
-    def get_earliest_observation_for_bus(self, bus_tracking_num: int) -> BusObservation | None:
+    def get_most_current_observation_for_bus(self, bus_tracking_num: int) -> BusObservation | None:
         """
         :param bus_tracking_num: the tracking number of the bus for which to
-        retrieve the observation with the earliest estimated departure time.
-        :return: the observation with the earliest departure time for the given
-        bus, or None if no observations were found for that tracking number.
+        retrieve the observation with the earliest estimated departure time that
+        is greater than the current time.
+        :return: the observation with the earliest departure time that is greater
+        than the current time for the given bus, or None if no observations were
+        found for that tracking number.
         """
         all_observations = self.get_all_observations_for_bus(bus_tracking_num)
         if all_observations:
-            return all_observations[0]
+            curr_time = get_curr_time_as_timedelta()
+
+            for obs in all_observations:
+                if obs.estimated_departure >= curr_time:
+                    return obs
+
+            return all_observations[len(all_observations) - 1]
+
         return None
 
     def add_observation(self, observation: BusObservation) -> None:

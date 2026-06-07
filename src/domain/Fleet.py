@@ -19,12 +19,13 @@ class Fleet(Listener):
         self._check_fleet()
 
     def _check_fleet(self) -> None:
-        require_not_none(self.buses, "Bus list should not be None.")
+        require_not_none(self.buses, "Bus dictionary should not be None.")
         for key in self.buses.keys():
+            require_not_none(key, "Key in bus dictionary should not be None.")
             require_state(Bus.MIN_TRACKING_NUM <= key <= Bus.MAX_TRACKING_NUM,
                           "Key should contain exactly 3 digits.")
-        for bus in self.buses.values():
-            require_not_none(bus, "Bus in bus list should not be None.")
+            require_not_none(self.buses[key],
+                             "Bus in bus dictionary should not be None.")
 
     def sorted_buses(self) -> list[Bus]:
         """

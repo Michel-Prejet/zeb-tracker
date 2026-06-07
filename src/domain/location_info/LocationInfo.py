@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from domain.location_info.Stop import Stop
 from utilities.InvariantHelper import require_not_none, require_state
 
@@ -7,17 +7,20 @@ class LocationInfo:
     """
     Stores live location information recorded for a bus, including stop
     information; the current route, destination, and block ID; and the
-    scheduled/estimated departure times.
+    scheduled/estimated departure times. Stores the query time for the
+    location information.
     """
 
     def __init__(self, stop: Stop, route: str, destination: str, block_id: str | None,
-                 scheduled_departure: timedelta, estimated_departure: timedelta):
+                 scheduled_departure: timedelta, estimated_departure: timedelta,
+                 query_time: datetime):
         self.stop = stop
         self.route = route
         self.destination = destination
         self.block_id = block_id
         self.scheduled_departure = scheduled_departure
         self.estimated_departure = estimated_departure
+        self.query_time = query_time
 
         self._check_location_info()
 
@@ -31,3 +34,4 @@ class LocationInfo:
             require_state(len(self.block_id) >= 1, "Block ID should not be empty.")
         require_not_none(self.scheduled_departure, "Scheduled departure should not be None.")
         require_not_none(self.estimated_departure, "Estimated departure should not be None.")
+        require_not_none(self.query_time, "Query time should not be None.")

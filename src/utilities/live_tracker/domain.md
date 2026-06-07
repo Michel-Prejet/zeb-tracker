@@ -5,7 +5,7 @@ classDiagram
         -dict[tracking_num -> list~BusObservation~] bus_observations
         
         +get_all_observations_for_bus(tracking_num) list~BusObservation~
-        +get_earliest_observation_for_bus(tracking_num) BusObservation | None
+        +get_most_current_observation_for_bus(tracking_num) BusObservation | None
         +add_observation(observation) None
     }
 

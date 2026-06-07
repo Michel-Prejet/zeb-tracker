@@ -27,6 +27,9 @@ class Bus:
 
         self._check_bus()
 
+    def __lt__(self, other) -> bool:
+        return self.tracking_num < other.tracking_num
+
     def _check_bus(self) -> None:
         require_not_none(self.tracking_num,
                          "Tracking number should not be None.")
@@ -97,8 +100,16 @@ class Bus:
             return None
         return self.runs[len(self.runs) - 1]
 
-    def __lt__(self, other) -> bool:
-        return self.tracking_num < other.tracking_num
+    def contains(self, run: Run) -> bool:
+        """
+        :param run: the run to search for in this bus's run list.
+        :return: True if the given run exists in the bus's run list; False
+        otherwise.
+        """
+        for curr_run in self.runs:
+            if run == curr_run:
+                return True
+        return False
 
     def register_listener(self, l: Listener) -> None:
         require_not_none(l, "Listener should not be None.")

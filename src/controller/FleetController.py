@@ -1,8 +1,8 @@
 from datetime import datetime
-
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 import customtkinter as ctk
+from domain.InferredRunList import InferredRunList
 from domain.Run import Run
 from ui.AddBusFrame import AddBusFrame
 from ui.AddRunFrame import AddRunFrame
@@ -14,6 +14,7 @@ from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
 from threading import Thread
 from utilities.LocationInfoHelper import update_bus_locations
+from utilities.RunFinder import infer_runs_from_location_info
 from utilities.live_tracker.LiveBusTracker import LiveBusTracker
 
 
@@ -30,13 +31,15 @@ class FleetController:
         self.fleet = Fleet()
         for bus in BusPersistence.load_all_buses():
             self.fleet.add_bus(bus)
+        self.tracker = None
+        self.inferred_runs = InferredRunList(self.fleet)
 
         # Initialize frames
         self.menu_frame = MenuFrame(app, self)
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
         self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
         self.add_bus_frame = AddBusFrame(app, self.fleet, self)
-        self.add_run_frame = AddRunFrame(app, self.fleet, self)
+        self.add_run_frame = AddRunFrame(app, self.fleet, self.inferred_runs, self)
         self.csv_export_dialog = None
 
         self.curr_frame = self.view_fleet_frame
@@ -127,6 +130,31 @@ class FleetController:
 
         RunPersistence.delete_run(run)
 
+    def add_inferred_run_for_bus(self, tracking_num: int) -> None:
+        """
+        Adds a run to the fleet from the inferred run list in response to a UI
+        event. The run is retrieved from the given bus tracking number and
+        added to the corresponding bus.
+
+        :param tracking_num: the tracking number of the bus to which to add
+        an inferred run.
+        """
+        require_not_none(tracking_num, "Bus tracking number should not be None.")
+
+        added_run = self.inferred_runs.add_to_fleet(tracking_num)
+
+        if added_run is not None:
+            RunPersistence.save_run(added_run[0], added_run[1])
+
+    def add_all_inferred_runs(self) -> None:
+        """
+        Adds all inferred runs to the fleet in response to a UI event.
+        """
+        added_runs = self.inferred_runs.add_all_to_fleet()
+
+        for run in added_runs:
+            RunPersistence.save_run(run[0], run[1])
+
     def update_bus_locations(self) -> None:
         """
         Fetches location information from the Winnipeg Transit API
@@ -150,7 +178,8 @@ class FleetController:
         any exceptions that might occur and stops the scan early.
         """
         try:
-            self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
+            if self.tracker is None:
+                self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
             success = self.tracker.scan_stops()
             self.app.after(0, self._apply_bus_locations, success)
         except Exception as e:
@@ -167,6 +196,7 @@ class FleetController:
         """
         if success:
             update_bus_locations(self.fleet, self.tracker)
+            infer_runs_from_location_info(self.inferred_runs)
 
         self.view_fleet_frame.show_location_fetch_finished()
 

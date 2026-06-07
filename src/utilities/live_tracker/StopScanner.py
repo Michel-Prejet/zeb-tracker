@@ -1,5 +1,6 @@
 from concurrent.futures import as_completed
 from concurrent.futures.thread import ThreadPoolExecutor
+from typing import Callable
 from utilities.live_tracker.TimeHelper import parse_api_time
 from utilities.live_tracker.domain.BusObservation import BusObservation
 from utilities.live_tracker.domain.ObservationDict import ObservationDict
@@ -18,14 +19,25 @@ class StopScanner:
     def __init__(self, gtfs_reader: GTFSReader):
         self.stops = gtfs_reader.get_all_stops()
         self.observations = ObservationDict()
+        self.cancel_scan = False
 
-    def scan_all_stops_and_record_observations(self) -> None:
+    def scan_all_stops_and_record_observations(self,
+        progress_callback: Callable[[int, int], None] | None = None) -> bool:
         """
         Scans all stops in the Winnipeg Transit API and records bus observations
         in this observation dictionary. The dictionary is cleared before the scan.
         The scan is done concurrently.
+
+        :param progress_callback: optional callback accepting: completed_stops,
+        total_stops.
+        :return True if the scan was successful, False if the scan was cancelled.
         """
         self.observations = ObservationDict()
+
+        total_stops = len(self.stops)
+        completed_stops = 0
+        if progress_callback is not None:
+            progress_callback(completed_stops, total_stops)
 
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = {
@@ -34,6 +46,13 @@ class StopScanner:
             }
 
             for future in as_completed(futures):
+                # Cancel the scan if the flag was set
+                if self.cancel_scan:
+                    for remaining_future in futures:
+                        remaining_future.cancel()
+                    self.cancel_scan = False
+                    return False
+
                 stop_id = futures[future]
 
                 try:
@@ -42,6 +61,18 @@ class StopScanner:
                 except Exception as e:
                     print(f"Error scanning stop {stop_id}: {e}")
                     continue
+
+                completed_stops += 1
+
+                if progress_callback is not None:
+                    progress_callback(completed_stops, total_stops)
+        return True
+
+    def cancel_stop_scan(self) -> None:
+        """
+        Requests that the current stop scan be cancelled.
+        """
+        self.cancel_scan = True
 
     def _add_observations_from_stop_api_data(self, stop_info: dict) -> None:
         """

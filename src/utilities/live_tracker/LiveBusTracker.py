@@ -1,4 +1,6 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
+from typing import Callable
+
 from utilities.live_tracker.BlockIDFinder import BlockIDFinder
 from utilities.live_tracker.StopScanner import StopScanner
 from utilities.live_tracker.TimeHelper import get_curr_time_as_timedelta
@@ -14,15 +16,25 @@ class LiveBusTracker:
     then ask for location information for a bus with a given tracking number.
     """
 
-    def __init__(self):
+    def __init__(self, progress_callback: Callable[[int, int], None] | None = None):
         gtfs_reader = GTFSReader()
         self.stop_scanner = StopScanner(gtfs_reader)
         self.block_id_finder = BlockIDFinder(gtfs_reader)
-        self.query_time: timedelta | None = None
+        self.query_time_delta: timedelta | None = None
+        self.progress_callback = progress_callback
 
-    def scan_stops(self) -> None:
-        self.query_time = get_curr_time_as_timedelta()
-        self.stop_scanner.scan_all_stops_and_record_observations()
+    """
+    Gathers location information for arrivals at all stops in the Winnipeg
+    Transit API.
+    
+    :return True if the scan was successful, False if the scan was cancelled.
+    """
+    def scan_stops(self) -> bool:
+        self.query_time_delta = get_curr_time_as_timedelta()
+        return self.stop_scanner.scan_all_stops_and_record_observations(self.progress_callback)
+
+    def cancel_stop_scan(self) -> None:
+        self.stop_scanner.cancel_stop_scan()
 
     def get_location_info_for_bus(self, bus_tracking_num: int) -> dict | None:
         """
@@ -41,10 +53,10 @@ class LiveBusTracker:
         observations = self.stop_scanner.observations.get_all_observations_for_bus(bus_tracking_num)
         latest_observation = self.stop_scanner.observations.get_earliest_observation_for_bus(bus_tracking_num)
 
-        if self.query_time is None or latest_observation is None:
+        if self.query_time_delta is None or latest_observation is None:
             return None
 
-        time_until_departure = latest_observation.estimated_departure - self.query_time
+        time_until_departure = latest_observation.estimated_departure - self.query_time_delta
         if time_until_departure < timedelta(0) or time_until_departure > timedelta(minutes=MAX_MINUTES_FROM_STOP):
             return None
 

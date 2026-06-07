@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 import customtkinter as ctk
@@ -135,18 +137,41 @@ class FleetController:
         thread = Thread(target=self._update_bus_locations_background, daemon=True)
         thread.start()
 
+    def cancel_update_bus_locations(self) -> None:
+        """
+        Cancels any ongoing bus location scan.
+        """
+        if self.tracker is not None:
+            self.tracker.cancel_stop_scan()
+
     def _update_bus_locations_background(self) -> None:
+        """
+        Creates a live bus tracker object and starts the stop scan. Catches
+        any exceptions that might occur and stops the scan early.
+        """
         try:
-            tracker = LiveBusTracker()
-            tracker.scan_stops()
-            self.app.after(0, self._apply_bus_locations, tracker)
+            self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
+            success = self.tracker.scan_stops()
+            self.app.after(0, self._apply_bus_locations, success)
         except Exception as e:
             print(f"Error updating locations: {e}")
             self.view_fleet_frame.show_location_fetch_finished()
 
-    def _apply_bus_locations(self, tracker: LiveBusTracker) -> None:
-        update_bus_locations(self.fleet, tracker)
+    def _apply_bus_locations(self, success: bool) -> None:
+        """
+        Updates the UI to indicate that the stop scan has finished, and if
+        the scan was successful, updates all bus locations and displays the
+        query time.
+
+        :param success: whether the stop scan was successful.
+        """
+        if success:
+            update_bus_locations(self.fleet, self.tracker)
+
         self.view_fleet_frame.show_location_fetch_finished()
+
+        if success:
+            self.view_fleet_frame.update_location_fetch_query_time(datetime.now())
 
     def _switch_main_frame(self, next_frame: ctk.CTkFrame):
         """

@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from enum import Enum
 from tkinter import messagebox
 import customtkinter as ctk
@@ -93,14 +94,15 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         self.show_only_active_checkbox.grid(row=0, column=4, sticky="w", padx=5)
 
         # Fetch location frame
-        location_fetch_frame = ctk.CTkFrame(self, fg_color="transparent")
-        location_fetch_frame.pack(anchor="w", padx=10, pady=5)
-        self.location_fetch_button = ctk.CTkButton(location_fetch_frame,
+        self.location_fetch_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.location_fetch_frame.pack(anchor="w", padx=10, pady=5)
+        self.location_fetch_button = ctk.CTkButton(self.location_fetch_frame,
                                                    text="Fetch location information",
                                                    command=self.controller.update_bus_locations)
         self.location_fetch_button.pack(anchor="nw", side="left")
-        self.location_fetch_feedback = ctk.CTkLabel(location_fetch_frame, text="")
+        self.location_fetch_feedback = ctk.CTkLabel(self.location_fetch_frame, text="")
         self.location_fetch_feedback.pack(anchor="nw", padx=10, side="left")
+        self.cancel_scan_button = None
 
         # Page information
         page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -217,15 +219,61 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         if confirmed:
             self.controller.remove_bus(bus)
 
-    def show_location_fetch_finished(self) -> None:
-        self.location_fetch_button.configure(state="enabled")
-        self.location_fetch_feedback.configure(text="")
+    def show_fetching_location(self) -> None:
+        """
+        Updates the UI to show elements relevant to the location scan.
+        Shows a message telling the user that the system is fetching bus
+        locations, initializing the displayed progress of the scan to 0%.
+        Adds a button to the screen to cancel the scan.
+        """
+        self.location_fetch_button.configure(state="disabled")
+        self.location_fetch_feedback.configure(text="Fetching bus locations (0%)")
+
+        self.cancel_scan_button = ctk.CTkButton(
+            self.location_fetch_frame,
+            text="Cancel",
+            width=20,
+            fg_color="transparent",
+            command=self.controller.cancel_update_bus_locations
+        )
+        self.cancel_scan_button.pack(anchor="nw", side="left")
+
         self.notify()
 
-    def show_fetching_location(self) -> None:
-        self.location_fetch_button.configure(state="disabled")
-        self.location_fetch_feedback.configure(text="Fetching bus locations (this may take a few minutes)...")
+    def update_location_fetch_progress(self, completed_stops: int, total_stops: int) -> None:
+        """
+        Updates the progress of the location scan displayed in the UI based on
+        the given values. Progress is calculated by dividing the number of
+        completed stops by the total number of stops.
+
+        :param completed_stops: the number of stops that have been scanned.
+        :param total_stops: the total number of stops to scan.
+        """
+        progress = round(completed_stops / total_stops * 100)
+        self.location_fetch_feedback.configure(text=f"Fetching bus locations ({progress}%)")
+
+    def show_location_fetch_finished(self) -> None:
+        """
+        Updates the UI to remove elements used for the location scan. Removes
+        the 'Fetching location' message and the 'Cancel' button.
+        """
+        self.location_fetch_feedback.configure(text=f"")
+        self.location_fetch_button.configure(state="enabled")
+
+        if self.cancel_scan_button is not None:
+            self.cancel_scan_button.pack_forget()
+            self.cancel_scan_button = None
+
         self.notify()
+
+    def update_location_fetch_query_time(self, query_time: datetime) -> None:
+        """
+        Updates the query time of the last location scan to the given value.
+
+        :param query_time: a datetime object representing the query time of
+        the last location scan.
+        """
+        self.location_fetch_feedback.configure(text=f"Last fetch: {query_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
     def _num_pages(self) -> int:
         """

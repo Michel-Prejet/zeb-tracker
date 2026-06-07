@@ -21,7 +21,7 @@ class LocationInfoDialog(ctk.CTkToplevel):
         self.info = bus.location_info
 
         self.title(f"Location Info for Bus {bus.tracking_num}")
-        self.geometry("400x200")
+        self.geometry("450x200")
         self.transient(app)
 
         # Block ID

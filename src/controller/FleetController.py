@@ -38,7 +38,7 @@ class FleetController:
         self.menu_frame = MenuFrame(app, self)
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
         self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
-        self.add_bus_frame = AddBusFrame(app, self.fleet, self)
+        self.add_bus_frame = AddBusFrame(app, self)
         self.add_run_frame = AddRunFrame(app, self.fleet, self.inferred_runs, self)
         self.csv_export_dialog = None
 

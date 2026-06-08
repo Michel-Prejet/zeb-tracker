@@ -22,17 +22,6 @@ app.title(TITLE)
 app.iconbitmap("../icon.ico")
 
 # Start controller
-ctrl = FleetController(app)
-ctrl.fleet.get_bus(288).location_info = LocationInfo(
-    Stop("Northbound Pembina at Newdale North", 60032, Coordinates(1.0, 1.0)),
-    "BLUE",
-    "Unicity Hub",
-    "1-2",
-    timedelta(hours=26, minutes=11, seconds=2),
-    timedelta(hours=26, minutes=11, seconds=2),
-    datetime.now()
-)
-ctrl.view_fleet_frame.notify()
-
+FleetController(app)
 
 app.mainloop()

@@ -1,9 +1,24 @@
 import customtkinter as ctk
-
-from domain.Fleet import Fleet
-from domain.validation.ValidateBus import *
+from domain.Bus import Bus
+from domain.validation.ValidateBus import validate_tracking_number, validate_model, validate_year
+from domain.validation.exceptions.BusError import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
 from domain.validation.exceptions.FleetError import DuplicateBusError
+from utilities.InvariantHelper import require_not_none
 
+
+PAD_X = 10
+PAD_Y = 10
+TITLE_FONT = ("Arial", 20, "bold")
+
+LABEL_COL = 0
+INPUT_FIELD_COL = 1
+
+ERR_MESSAGES = {
+    InvalidTrackingNumberError: "Tracking number should contain exactly three digits.",
+    InvalidYearError: "Year should be an integer greater than or equal to 2000.",
+    EmptyModelError: "Model should contain at least one character.",
+    DuplicateBusError: "A bus already exists with that tracking number."
+}
 
 class AddBusFrame(ctk.CTkFrame):
     """
@@ -13,41 +28,34 @@ class AddBusFrame(ctk.CTkFrame):
     input.
     """
 
-    def __init__(self, app: ctk.CTk, fleet: Fleet, controller):
+    def __init__(self, app: ctk.CTk, controller):
         require_not_none(app, "App should not be None.")
-        require_not_none(fleet, "Fleet should not be None.")
+        require_not_none(controller, "Controller should not be None.")
 
         super().__init__(app)
+
         self.controller = controller
 
-        self.configure(fg_color="transparent")
+        self._configure_frame()
+        self._create_header()
+        self._create_input_fields()
+        self._create_submit_area()
 
-        # Header
-        ctk.CTkLabel(self,
-                            text="Add Bus",
-                            font=("Arial", 20, "bold")
-                     ).grid(row=0, column=0, columnspan=2)
+    def submit(self) -> None:
+        """
+        Attempts to create a new bus based on the input provided in the fields.
+        If successful, the bus is added to the fleet, a success message is
+        displayed and the fields are cleared. Otherwise, an error message is
+        displayed.
+        """
+        try:
+            bus = self._create_bus_from_input_fields()
+            self.controller.add_bus(bus)
 
-        # Tracking number
-        ctk.CTkLabel(self, text="Tracking number").grid(row=1, column=0, padx=10, sticky="w")
-        self.tracking_num_entry = ctk.CTkEntry(self, placeholder_text="e.g. 971")
-        self.tracking_num_entry.grid(row=1, column=1, padx=10)
-
-        # Model
-        ctk.CTkLabel(self, text="Model").grid(row=2, column=0, padx=10, sticky="w")
-        self.model_entry = ctk.CTkEntry(self, placeholder_text="e.g. XE40")
-        self.model_entry.grid(row=2, column=1, padx=10)
-
-        # Year
-        ctk.CTkLabel(self, text="Year").grid(row=3, column=0, padx=10, sticky="w")
-        self.year_entry = ctk.CTkEntry(self, placeholder_text="e.g. 2025")
-        self.year_entry.grid(row=3, column=1, padx=10)
-
-        # Submit button and error message
-        submit_button = ctk.CTkButton(self, text="Add", command=self.submit)
-        submit_button.grid(row=4, column=1, pady=10)
-        self.msg = ctk.CTkLabel(self, text="", padx=10)
-        self.msg.grid(row=5, column=0, columnspan=2)
+            self._show_success("Bus added successfully.")
+            self._clear_input_fields()
+        except Exception as e:
+            self._handle_error(e)
 
     def handle_enter(self, event=None) -> None:
         """
@@ -58,34 +66,83 @@ class AddBusFrame(ctk.CTkFrame):
         """
         self.submit()
 
-    def submit(self) -> None:
-        """"
-        Attempts to create a new bus based on the input provided in the fields.
-        If successful, the bus is added to the fleet, a success message is
-        displayed and the fields are cleared. Otherwise, an error message is
-        displayed.
-        """
-        try:
-            tracking_num_input = validate_tracking_number(self.tracking_num_entry.get())
-            model_input = validate_model(self.model_entry.get())
-            year_input = validate_year(self.year_entry.get())
+    def _configure_frame(self) -> None:
+        self.configure(fg_color="transparent")
 
-            self.controller.add_bus(Bus(tracking_num_input, year_input, model_input))
-            self.msg.configure(text="Bus added successfully.", text_color="green")
+    def _create_header(self) -> None:
+        ctk.CTkLabel(
+            self,
+            text="Add Bus",
+            font=TITLE_FONT
+        ).grid(row=0, column=LABEL_COL, columnspan=2)
 
-            self.tracking_num_entry.delete(0, "end")
-            self.model_entry.delete(0, "end")
-            self.year_entry.delete(0, "end")
-        except InvalidTrackingNumberError:
-            self.msg.configure(text="Tracking number should contain exactly three digits.", text_color="red")
-        except InvalidYearError:
-            self.msg.configure(text="Year should be an integer greater than or equal to 2000.", text_color="red")
-        except EmptyModelError:
-            self.msg.configure(text="Model should contain at least one character.", text_color="red")
-        except DuplicateBusError:
-            self.msg.configure(text="A bus already exists with that tracking number.", text_color="red")
-        except Exception as e:
+    def _create_input_fields(self) -> None:
+        self.tracking_num_entry = self._create_labelled_input_field(
+            label="Tracking number",
+            placeholder="e.g. 971",
+            row=1
+        )
+
+        self.model_entry = self._create_labelled_input_field(
+            label="Model",
+            placeholder="e.g. XE40",
+            row=2
+        )
+
+        self.year_entry = self._create_labelled_input_field(
+            label="Year",
+            placeholder="e.g. 2025",
+            row=3
+        )
+
+    def _create_submit_area(self) -> None:
+        submit_button = ctk.CTkButton(
+            self,
+            text="Add",
+            command=self.submit
+        )
+        submit_button.grid(row=4, column=INPUT_FIELD_COL, pady=PAD_Y)
+
+        self.msg = ctk.CTkLabel(self, text="", padx=PAD_X)
+        self.msg.grid(row=5, column=LABEL_COL, columnspan=2)
+
+    def _create_labelled_input_field(self, label: str, placeholder: str,
+                                     row: int) -> ctk.CTkEntry:
+        ctk.CTkLabel(
+            self,
+            text=label
+        ).grid(row=row, column=LABEL_COL, padx=PAD_X, sticky="w")
+
+        input_field = ctk.CTkEntry(self, placeholder_text=placeholder)
+        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PAD_X)
+
+        return input_field
+
+    def _create_bus_from_input_fields(self) -> Bus:
+        tracking_num_input = validate_tracking_number(self.tracking_num_entry.get())
+        model_input = validate_model(self.model_entry.get())
+        year_input = validate_year(self.year_entry.get())
+
+        return Bus(tracking_num_input, year_input, model_input)
+
+    def _handle_error(self, e: Exception) -> None:
+        message = ERR_MESSAGES.get(type(e))
+
+        if message is not None:
+            self._show_error(message)
+        else:
             print("Unexpected error: " + str(e))
+
+    def _show_success(self, message: str) -> None:
+        self.msg.configure(text=message, text_color="green")
+
+    def _show_error(self, message: str) -> None:
+        self.msg.configure(text=message, text_color="red")
+
+    def _clear_input_fields(self) -> None:
+        self.tracking_num_entry.delete(0, "end")
+        self.model_entry.delete(0, "end")
+        self.year_entry.delete(0, "end")
 
 
 

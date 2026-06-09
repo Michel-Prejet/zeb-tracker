@@ -12,16 +12,19 @@ from ui.AutoAddRunsFrame import AutoAddRunsFrame
 from utilities.InvariantHelper import require_not_none
 
 
-PAD_X_MORE = 10
-PAD_X_LESS = 5
-PAD_Y = 10
-TITLE_FONT = ("Arial", 20, "bold")
-
 LABEL_COL = 0
 INPUT_FIELD_COL = 1
 TODAY_AUTOFILL_BUTTON_COL = 2
 YESTERDAY_AUTOFILL_BUTTON_COL = 3
 CHECKBOX_COL = 4
+
+TITLE_FONT = ("Arial", 20, "bold")
+
+PAD_Y = 10
+PADX_INPUT_FIELD_AND_LABEL = 10
+PADX_CHECKBOX = 5
+PADX_AUTOFILL_BUTTON = 5
+PADX_SUBMIT_BUTTON = 10
 
 CHECKBOX_SIDE_LENGTH = 18
 CHECKBOX_BORDER_WIDTH = 2
@@ -136,13 +139,13 @@ class AddRunFrame(ctk.CTkFrame):
         ctk.CTkLabel(
             self.manual_adder_frame,
             text=label
-        ).grid(row=row, column=LABEL_COL, padx=PAD_X_MORE, sticky="w")
+        ).grid(row=row, column=LABEL_COL, padx=PADX_INPUT_FIELD_AND_LABEL, sticky="w")
 
         input_field = ctk.CTkEntry(
             self.manual_adder_frame,
             placeholder_text=placeholder
         )
-        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PAD_X_MORE, sticky="w")
+        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PADX_INPUT_FIELD_AND_LABEL, sticky="w")
 
         hold_value_checkbox = ctk.CTkCheckBox(
             self.manual_adder_frame,
@@ -151,7 +154,7 @@ class AddRunFrame(ctk.CTkFrame):
             checkbox_height=CHECKBOX_SIDE_LENGTH,
             border_width=CHECKBOX_BORDER_WIDTH
         )
-        hold_value_checkbox.grid(row=row, column=CHECKBOX_COL, padx=PAD_X_LESS)
+        hold_value_checkbox.grid(row=row, column=CHECKBOX_COL, padx=PADX_CHECKBOX)
 
         return input_field, hold_value_checkbox
 
@@ -162,7 +165,7 @@ class AddRunFrame(ctk.CTkFrame):
             width=DATE_AUTOFILL_BUTTONS_WIDTH,
             fg_color="transparent",
             command=command
-        ).grid(row=3, column=col, padx=PAD_X_LESS, sticky="w")
+        ).grid(row=3, column=col, padx=PADX_AUTOFILL_BUTTON, sticky="w")
 
     def _autofill_todays_date(self) -> None:
         self.date_entry.delete(0, "end")
@@ -179,7 +182,7 @@ class AddRunFrame(ctk.CTkFrame):
             command=self.submit
         ).grid(row=5, column=INPUT_FIELD_COL, pady=PAD_Y)
 
-        self.msg = ctk.CTkLabel(self.manual_adder_frame, text="", padx=PAD_X_MORE)
+        self.msg = ctk.CTkLabel(self.manual_adder_frame, text="", padx=PADX_SUBMIT_BUTTON)
         self.msg.grid(row=6, column=LABEL_COL, columnspan=2)
 
     def _create_runs_from_input_fields(self) -> tuple[int, list[Run]]:

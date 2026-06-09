@@ -39,7 +39,7 @@ class FleetController:
         self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
         self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
         self.add_bus_frame = AddBusFrame(app, self)
-        self.add_run_frame = AddRunFrame(app, self.fleet, self.inferred_runs, self)
+        self.add_run_frame = AddRunFrame(app, self.inferred_runs, self)
         self.csv_export_dialog = None
 
         self.curr_frame = self.view_fleet_frame
@@ -98,18 +98,19 @@ class FleetController:
 
         BusPersistence.delete_bus(bus)
 
-    def add_run_to_bus(self, bus: Bus, run: Run) -> None:
+    def add_run_to_bus(self, bus_tracking_num: int, run: Run) -> None:
         """
         Adds a given run to a given bus in response to a UI event. Assumes
         that the bus exists in this fleet.
 
-        :param bus: the bus to which to add a run.
+        :param bus_tracking_num: the tracking number of the bus to which to add a run.
         :param run: the run to add to the given bus.
         """
-        require_not_none(bus, "Bus should not be None.")
+        require_not_none(bus_tracking_num, "Bus tracking number should not be None.")
         require_not_none(run, "Run should not be None.")
-        require_state(bus in self.fleet.buses.values(), "Bus should be in the fleet.")
+        require_state(bus_tracking_num in self.fleet.buses.keys(), "Bus should be in the fleet.")
 
+        bus = self.fleet.get_bus(bus_tracking_num)
         bus.add_run(run)
 
         RunPersistence.save_run(run, bus)

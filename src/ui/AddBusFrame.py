@@ -59,10 +59,7 @@ class AddBusFrame(ctk.CTkFrame):
 
     def handle_enter(self, event=None) -> None:
         """
-        Event handler for when the user presses the Enter key. Submits the
-        current input to create a new bus.
-
-        :param event: the Tkinter event to handle (None by default).
+        Event handler for when the user presses the Enter key.
         """
         self.submit()
 

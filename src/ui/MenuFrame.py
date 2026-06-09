@@ -1,6 +1,10 @@
+from typing import Callable
 import customtkinter as ctk
 from utilities.InvariantHelper import require_not_none
 
+
+PADX = 5
+PADY = 10
 
 class MenuFrame(ctk.CTkFrame):
     """
@@ -13,21 +17,47 @@ class MenuFrame(ctk.CTkFrame):
         require_not_none(controller, "Controller should not be None.")
 
         super().__init__(app)
+
         self.controller = controller
 
+        self._configure_frame()
+        self._create_buttons()
+
+    def _configure_frame(self) -> None:
         self.configure(fg_color="transparent")
 
-        self.view_fleet_button = ctk.CTkButton(self, text="View fleet", command=controller.switch_to_view_fleet_frame)
-        self.view_fleet_button.pack(anchor="nw", side="left", padx=5, pady=10)
+    def _create_buttons(self) -> None:
+        self._create_menu_button(
+            label="View fleet",
+            command=self.controller.switch_to_view_fleet_frame
+        )
 
-        self.view_runs_button = ctk.CTkButton(self, text="View runs", command=controller.switch_to_view_runs_frame)
-        self.view_runs_button.pack(anchor="nw", side="left", padx=5, pady=10)
+        self._create_menu_button(
+            label="View runs",
+            command=self.controller.switch_to_view_runs_frame
+        )
 
-        self.add_bus_button = ctk.CTkButton(self, text="Add bus", command=controller.switch_to_add_bus_frame)
-        self.add_bus_button.pack(anchor="nw", side="left", padx=5, pady=10)
+        self._create_menu_button(
+            label="Add bus",
+            command=self.controller.switch_to_add_bus_frame
+        )
 
-        self.add_run_button = ctk.CTkButton(self, text="Add run", command=controller.switch_to_add_run_frame)
-        self.add_run_button.pack(anchor="nw", side="left", padx=5, pady=10)
+        self._create_menu_button(
+            label="Add run",
+            command=self.controller.switch_to_add_run_frame
+        )
 
-        self.csv_export_dialog = ctk.CTkButton(self, text="Export to CSV", command=controller.show_csv_export_dialog)
-        self.csv_export_dialog.pack(anchor="nw", side="left", padx=5, pady=10)
+        self._create_menu_button(
+            label="Export to CSV",
+            command=self.controller.show_csv_export_dialog
+        )
+
+    def _create_menu_button(self, label: str, command: Callable) -> ctk.CTkButton:
+        button = ctk.CTkButton(
+            self,
+            text=label,
+            command=command
+        )
+        button.pack(anchor="nw", side="left", padx=PADX, pady=PADY)
+
+        return button

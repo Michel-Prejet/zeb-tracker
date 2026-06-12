@@ -3,12 +3,10 @@ from domain.Bus import Bus
 from domain.validation.ValidateBus import validate_tracking_number, validate_model, validate_year
 from domain.validation.exceptions.BusError import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
 from domain.validation.exceptions.FleetError import DuplicateBusError
+from ui.AddRunFrame import LARGE_TITLE_FONT
+from ui.UIConstants import PADDING_LARGE
 from utilities.InvariantHelper import require_not_none
 
-
-PAD_X = 10
-PAD_Y = 10
-TITLE_FONT = ("Arial", 20, "bold")
 
 LABEL_COL = 0
 INPUT_FIELD_COL = 1
@@ -70,7 +68,7 @@ class AddBusFrame(ctk.CTkFrame):
         ctk.CTkLabel(
             self,
             text="Add Bus",
-            font=TITLE_FONT
+            font=LARGE_TITLE_FONT
         ).grid(row=0, column=LABEL_COL, columnspan=2)
 
     def _create_input_fields(self) -> None:
@@ -98,9 +96,9 @@ class AddBusFrame(ctk.CTkFrame):
             text="Add",
             command=self.submit
         )
-        submit_button.grid(row=4, column=INPUT_FIELD_COL, pady=PAD_Y)
+        submit_button.grid(row=4, column=INPUT_FIELD_COL, pady=PADDING_LARGE)
 
-        self.msg = ctk.CTkLabel(self, text="", padx=PAD_X)
+        self.msg = ctk.CTkLabel(self, text="", padx=PADDING_LARGE)
         self.msg.grid(row=5, column=LABEL_COL, columnspan=2)
 
     def _create_labelled_input_field(self, label: str, placeholder: str,
@@ -108,10 +106,10 @@ class AddBusFrame(ctk.CTkFrame):
         ctk.CTkLabel(
             self,
             text=label
-        ).grid(row=row, column=LABEL_COL, padx=PAD_X, sticky="w")
+        ).grid(row=row, column=LABEL_COL, padx=PADDING_LARGE, sticky="w")
 
         input_field = ctk.CTkEntry(self, placeholder_text=placeholder)
-        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PAD_X)
+        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PADDING_LARGE)
 
         return input_field
 

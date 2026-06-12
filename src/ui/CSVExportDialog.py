@@ -1,11 +1,11 @@
 from datetime import date
 from pathlib import Path
 from tkinter import filedialog
-
 import customtkinter as ctk
 from domain.Fleet import Fleet
 from utilities.InvariantHelper import require_not_none
 from utilities.csv_io.CSVExporter import create_csv_from_fleet
+
 
 
 class CSVExportDialog(ctk.CTkToplevel):

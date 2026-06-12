@@ -1,10 +1,8 @@
 from typing import Callable
 import customtkinter as ctk
+from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE
 from utilities.InvariantHelper import require_not_none
 
-
-PADX = 5
-PADY = 10
 
 class MenuFrame(ctk.CTkFrame):
     """
@@ -58,6 +56,6 @@ class MenuFrame(ctk.CTkFrame):
             text=label,
             command=command
         )
-        button.pack(anchor="nw", side="left", padx=PADX, pady=PADY)
+        button.pack(anchor="nw", side="left", padx=PADDING_MEDIUM, pady=PADDING_LARGE)
 
         return button

@@ -9,6 +9,8 @@ from domain.validation.exceptions.BusError import DuplicateRunError, InvalidTrac
 from domain.validation.exceptions.FleetError import BusNotFoundError
 from domain.validation.exceptions.RunError import InvalidRunDateError, InvalidBlockIDError
 from ui.AutoAddRunsFrame import AutoAddRunsFrame
+from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, \
+    CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
 from utilities.InvariantHelper import require_not_none
 
 
@@ -17,18 +19,6 @@ INPUT_FIELD_COL = 1
 TODAY_AUTOFILL_BUTTON_COL = 2
 YESTERDAY_AUTOFILL_BUTTON_COL = 3
 CHECKBOX_COL = 4
-
-TITLE_FONT = ("Arial", 20, "bold")
-
-PAD_Y = 10
-PADX_INPUT_FIELD_AND_LABEL = 10
-PADX_CHECKBOX = 5
-PADX_AUTOFILL_BUTTON = 5
-PADX_SUBMIT_BUTTON = 10
-
-CHECKBOX_SIDE_LENGTH = 18
-CHECKBOX_BORDER_WIDTH = 2
-DATE_AUTOFILL_BUTTONS_WIDTH = 30
 
 ERR_MESSAGES = {
     InvalidTrackingNumberError: "Tracking number should contain exactly three digits.",
@@ -90,13 +80,13 @@ class AddRunFrame(ctk.CTkFrame):
         self.manual_adder_frame.pack()
 
         self.auto_adder_frame = AutoAddRunsFrame(self, inferred_runs, controller)
-        self.auto_adder_frame.pack(anchor="nw")
+        self.auto_adder_frame.pack(anchor="nw", padx=PADDING_LARGE)
 
     def _create_header(self) -> None:
         ctk.CTkLabel(
             self.manual_adder_frame,
             text="Add Run",
-            font=TITLE_FONT
+            font=LARGE_TITLE_FONT
         ).grid(row=0, column=INPUT_FIELD_COL, columnspan=2)
 
         ctk.CTkLabel(
@@ -139,22 +129,22 @@ class AddRunFrame(ctk.CTkFrame):
         ctk.CTkLabel(
             self.manual_adder_frame,
             text=label
-        ).grid(row=row, column=LABEL_COL, padx=PADX_INPUT_FIELD_AND_LABEL, sticky="w")
+        ).grid(row=row, column=LABEL_COL, padx=PADDING_LARGE, sticky="w")
 
         input_field = ctk.CTkEntry(
             self.manual_adder_frame,
             placeholder_text=placeholder
         )
-        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PADX_INPUT_FIELD_AND_LABEL, sticky="w")
+        input_field.grid(row=row, column=INPUT_FIELD_COL, padx=PADDING_LARGE, sticky="w")
 
         hold_value_checkbox = ctk.CTkCheckBox(
             self.manual_adder_frame,
             text="",
-            checkbox_width=CHECKBOX_SIDE_LENGTH,
-            checkbox_height=CHECKBOX_SIDE_LENGTH,
+            checkbox_width=CHECKBOX_WIDTH,
+            checkbox_height=CHECKBOX_HEIGHT,
             border_width=CHECKBOX_BORDER_WIDTH
         )
-        hold_value_checkbox.grid(row=row, column=CHECKBOX_COL, padx=PADX_CHECKBOX)
+        hold_value_checkbox.grid(row=row, column=CHECKBOX_COL, padx=PADDING_MEDIUM)
 
         return input_field, hold_value_checkbox
 
@@ -162,10 +152,11 @@ class AddRunFrame(ctk.CTkFrame):
         ctk.CTkButton(
             self.manual_adder_frame,
             text=label,
-            width=DATE_AUTOFILL_BUTTONS_WIDTH,
+            height=MEDIUM_BUTTON_HEIGHT,
+            width=MEDIUM_BUTTON_WIDTH,
             fg_color="transparent",
             command=command
-        ).grid(row=3, column=col, padx=PADX_AUTOFILL_BUTTON, sticky="w")
+        ).grid(row=3, column=col, padx=PADDING_MEDIUM, sticky="w")
 
     def _autofill_todays_date(self) -> None:
         self.date_entry.delete(0, "end")
@@ -180,9 +171,9 @@ class AddRunFrame(ctk.CTkFrame):
             self.manual_adder_frame,
             text="Add",
             command=self.submit
-        ).grid(row=5, column=INPUT_FIELD_COL, pady=PAD_Y)
+        ).grid(row=5, column=INPUT_FIELD_COL, pady=PADDING_LARGE)
 
-        self.msg = ctk.CTkLabel(self.manual_adder_frame, text="", padx=PADX_SUBMIT_BUTTON)
+        self.msg = ctk.CTkLabel(self.manual_adder_frame, text="", padx=PADDING_LARGE)
         self.msg.grid(row=6, column=LABEL_COL, columnspan=2)
 
     def _create_runs_from_input_fields(self) -> tuple[int, list[Run]]:

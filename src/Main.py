@@ -1,16 +1,14 @@
-from datetime import timedelta, datetime
 import customtkinter as ctk
 from controller.FleetController import FleetController
-from domain.location_info.Coordinates import Coordinates
-from domain.location_info.LocationInfo import LocationInfo
-from domain.location_info.Stop import Stop
 from persistence.Connection import initialize_database, connection
 from dotenv import load_dotenv
+from ui.UIConstants import APP_HEIGHT, APP_WIDTH
 
 load_dotenv()
 
-DIMENSIONS = '900x650'
-TITLE = 'ZEB Tracker'
+
+DIMENSIONS = f"{APP_WIDTH}x{APP_HEIGHT}"
+TITLE = "ZEB Tracker"
 
 # Create tables for the database
 initialize_database(connection())

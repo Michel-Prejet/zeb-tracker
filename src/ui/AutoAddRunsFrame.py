@@ -4,30 +4,18 @@ from typing import Callable
 import customtkinter as ctk
 from domain.InferredRunList import InferredRunList
 from domain.Listener import Listener
+from ui.UIConstants import PADDING_MEDIUM, PADDING_SMALL, PADDING_LARGE, LARGE_TITLE_FONT, SQUARE_BUTTON_WIDTH, \
+    FLAT_BUTTON_WIDTH, FLAT_BUTTON_HEIGHT, ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_WIDTH, ROW_BUTTON_HEIGHT, \
+    WIDE_ROW_BUTTON_HEIGHT, SQUARE_BUTTON_HEIGHT, APP_WIDTH
 from utilities.InvariantHelper import require_not_none
 
 
 RUNS_PER_PAGE = 10
 
-TITLE_FONT = ("Arial", 16, "bold")
 BLOCK_ID_FONT = ("Arial", 15, "bold")
 
-PADX_PAGE_CONTROL_FRAME = 5
-PADX_PAGE_INFO_LABEL = 5
-PADX_PAGE_BUTTON = 2
-PADX_ROW_FRAME = 5
-PADY_ROW_FRAME = 5
-PADX_ROW_DATA = 10
-PADX_ROW_BUTTON = 5
-
-SCROLLABLE_LIST_WIDTH = 800
-SCROLLABLE_LIST_HEIGHT = 275
-ADD_ALL_BUTTON_WIDTH = 20
-ADD_ALL_BUTTON_HEIGHT = 10
-PAGE_BUTTON_WIDTH = 20
-ROW_BUTTON_HEIGHT = 20
-ROW_ADD_BUTTON_WIDTH = 30
-ROW_REMOVE_BUTTON_WIDTH = 60
+SCROLLABLE_LIST_DIMENSIONS = (275, APP_WIDTH)
+SCROLLABLE_LIST_HEIGHT, SCROLLABLE_LIST_WIDTH = SCROLLABLE_LIST_DIMENSIONS
 
 class AutoAddRunsFrame(ctk.CTkFrame, Listener):
     """
@@ -95,15 +83,15 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
         ctk.CTkLabel(
             self,
             text="Runs from Location Info",
-            font=TITLE_FONT
+            font=LARGE_TITLE_FONT
         ).pack(anchor="nw")
 
     def _create_page_information_and_controls(self) -> None:
         self.page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.page_control_frame.pack(anchor="nw", padx=PADX_PAGE_CONTROL_FRAME)
+        self.page_control_frame.pack(anchor="nw", padx=PADDING_MEDIUM)
 
         self.page_info = ctk.CTkLabel(self.page_control_frame)
-        self.page_info.pack(anchor="nw", padx=PADX_PAGE_INFO_LABEL)
+        self.page_info.pack(anchor="nw", padx=PADDING_MEDIUM)
         self._update_page_info()
 
         self._create_page_button("<<", self._first_page)
@@ -123,10 +111,11 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
         button = ctk.CTkButton(
             self.page_control_frame,
             text=label,
-            width=PAGE_BUTTON_WIDTH,
+            height=SQUARE_BUTTON_HEIGHT,
+            width=SQUARE_BUTTON_WIDTH,
             command=command
         )
-        button.pack(anchor="nw", side="left", padx=PADX_PAGE_BUTTON)
+        button.pack(anchor="nw", side="left", padx=PADDING_SMALL)
 
         return button
 
@@ -168,8 +157,8 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
         self.add_all_runs_button = ctk.CTkButton(
             self,
             text="Add all",
-            width=ADD_ALL_BUTTON_WIDTH,
-            height=ADD_ALL_BUTTON_HEIGHT
+            width=FLAT_BUTTON_WIDTH,
+            height=FLAT_BUTTON_HEIGHT
         )
         self.add_all_runs_button.pack(anchor="ne")
 
@@ -205,7 +194,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
             run = self.runs.get(tracking_num)
 
             row = ctk.CTkFrame(self.run_list)
-            row.pack(fill="x", padx=PADX_ROW_FRAME, pady=PADY_ROW_FRAME)
+            row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
             self._add_row_data(
                 text=_format_run_date(run.run_date), # Run date
@@ -224,13 +213,15 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
             self._add_row_button(
                 label="Add",
                 command=lambda b=tracking_num: self.controller.add_inferred_run_for_bus(b),
-                width=ROW_ADD_BUTTON_WIDTH,
+                width=ROW_BUTTON_WIDTH,
+                height=ROW_BUTTON_HEIGHT,
                 row=row
             )
             self._add_row_button(
                 label="Remove",
                 command=lambda b=tracking_num: self.runs.remove(b),
-                width=ROW_REMOVE_BUTTON_WIDTH,
+                width=WIDE_ROW_BUTTON_WIDTH,
+                height=WIDE_ROW_BUTTON_HEIGHT,
                 row=row
             )
 
@@ -240,16 +231,17 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
             row,
             text=text,
             font=font or ctk.CTkFont(),
-        ).pack(anchor="nw", side="left", padx=PADX_ROW_DATA)
+        ).pack(anchor="nw", side="left", padx=PADDING_LARGE)
 
-    def _add_row_button(self, label: str, command: Callable, width: int, row: ctk.CTkFrame) -> None:
+    def _add_row_button(self, label: str, command: Callable, width: int,
+                        height: int, row: ctk.CTkFrame) -> None:
         ctk.CTkButton(
             row,
             text=label,
-            height=ROW_BUTTON_HEIGHT,
+            height=height,
             width=width,
             command=command
-        ).pack(side="right", padx=PADX_ROW_BUTTON)
+        ).pack(side="right", padx=PADDING_MEDIUM)
 
 def _format_run_date(run_date: date) -> str:
     return f"{run_date.strftime('%B')} {run_date.day}, {run_date.year}"

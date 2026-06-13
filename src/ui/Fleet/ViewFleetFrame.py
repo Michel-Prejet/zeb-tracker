@@ -6,7 +6,7 @@ import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
-from ui.LocationInfoDialog import LocationInfoDialog
+from ui.Fleet.LocationInfoDialog import LocationInfoDialog
 from utilities.InvariantHelper import require_not_none
 
 

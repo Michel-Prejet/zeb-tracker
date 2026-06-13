@@ -8,7 +8,7 @@ from domain.validation.ValidateRun import validate_date, validate_block_id
 from domain.validation.exceptions.BusError import DuplicateRunError, InvalidTrackingNumberError
 from domain.validation.exceptions.FleetError import BusNotFoundError
 from domain.validation.exceptions.RunError import InvalidRunDateError, InvalidBlockIDError
-from ui.AutoAddRunsFrame import AutoAddRunsFrame
+from ui.Runs.AutoAddRunsFrame import AutoAddRunsFrame
 from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, \
     CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
 from utilities.InvariantHelper import require_not_none

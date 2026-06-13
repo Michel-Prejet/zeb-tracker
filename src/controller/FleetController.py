@@ -4,12 +4,12 @@ from domain.Fleet import Fleet
 import customtkinter as ctk
 from domain.InferredRunList import InferredRunList
 from domain.Run import Run
-from ui.AddBusFrame import AddBusFrame
-from ui.AddRunFrame import AddRunFrame
+from ui.Fleet.AddBusFrame import AddBusFrame
+from ui.Runs.AddRunFrame import AddRunFrame
 from ui.CSVExport.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
-from ui.ViewFleetFrame import ViewFleetFrame
-from ui.ViewRunsFrame import ViewRunsFrame
+from ui.Fleet.ViewFleetFrame import ViewFleetFrame
+from ui.Runs.ViewRunsFrame import ViewRunsFrame
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
 from threading import Thread

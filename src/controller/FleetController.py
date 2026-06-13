@@ -6,7 +6,7 @@ from domain.InferredRunList import InferredRunList
 from domain.Run import Run
 from ui.AddBusFrame import AddBusFrame
 from ui.AddRunFrame import AddRunFrame
-from ui.CSVExportDialog import CSVExportDialog
+from ui.CSVExport.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
 from ui.ViewFleetFrame import ViewFleetFrame
 from ui.ViewRunsFrame import ViewRunsFrame

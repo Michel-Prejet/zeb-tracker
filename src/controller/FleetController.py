@@ -10,6 +10,7 @@ from ui.CSVExport.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
 from ui.Fleet.ViewFleetFrame import ViewFleetFrame
 from ui.Runs.ViewRunsFrame import ViewRunsFrame
+from ui.UIConstants import PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
 from threading import Thread
@@ -28,51 +29,12 @@ class FleetController:
         require_not_none(app, "App should not be None.")
 
         self.app = app
-        self.fleet = Fleet()
-        for bus in BusPersistence.load_all_buses():
-            self.fleet.add_bus(bus)
-        self.tracker = None
-        self.inferred_runs = InferredRunList(self.fleet)
 
-        # Initialize frames
-        self.menu_frame = MenuFrame(app, self)
-        self.view_fleet_frame = ViewFleetFrame(app, self.fleet, self)
-        self.view_runs_frame = ViewRunsFrame(app, self.fleet, self)
-        self.add_bus_frame = AddBusFrame(app, self)
-        self.add_run_frame = AddRunFrame(app, self.inferred_runs, self)
-        self.csv_export_dialog = None
-
-        self.curr_frame = self.view_fleet_frame
-
-        # Bind hotkeys
-        self.app.bind("<Return>", self._handle_enter)
-        self.app.bind("<Left>", self._handle_left_arrow)
-        self.app.bind("<Right>", self._handle_right_arrow)
-
-        # Show the menu and the current frame
-        self.menu_frame.pack(pady=5)
-        self.curr_frame.pack(anchor="nw")
-
-    def switch_to_add_bus_frame(self):
-        self._switch_main_frame(self.add_bus_frame)
-
-    def switch_to_add_run_frame(self):
-        self._switch_main_frame(self.add_run_frame)
-
-    def switch_to_view_fleet_frame(self):
-        self._switch_main_frame(self.view_fleet_frame)
-
-    def switch_to_view_runs_frame(self):
-        self._switch_main_frame(self.view_runs_frame)
-
-    def show_csv_export_dialog(self):
-        if self.csv_export_dialog is None:
-            self.csv_export_dialog = CSVExportDialog(self.app, self.fleet)
-        else:
-            self.csv_export_dialog.deiconify()
-
-        self.csv_export_dialog.lift()
-        self.csv_export_dialog.focus_force()
+        self._initialize_and_load_domain_model()
+        self._initialize_location_tracker()
+        self._create_frames()
+        self._bind_hotkeys()
+        self._display_initial_frame()
 
     def add_bus(self, bus: Bus) -> None:
         """
@@ -173,6 +135,80 @@ class FleetController:
         if self.tracker is not None:
             self.tracker.cancel_stop_scan()
 
+    def switch_to_add_bus_frame(self):
+        self._switch_main_frame(self.add_bus_frame)
+
+    def switch_to_add_run_frame(self):
+        self._switch_main_frame(self.add_run_frame)
+
+    def switch_to_view_fleet_frame(self):
+        self._switch_main_frame(self.view_fleet_frame)
+
+    def switch_to_view_runs_frame(self):
+        self._switch_main_frame(self.view_runs_frame)
+
+    def show_csv_export_dialog(self):
+        if self.csv_export_dialog is None:
+            self.csv_export_dialog = CSVExportDialog(self.app, self.fleet)
+        else:
+            self.csv_export_dialog.deiconify()
+
+        self.csv_export_dialog.lift()
+        self.csv_export_dialog.focus_force()
+
+    def _initialize_and_load_domain_model(self) -> None:
+        self.fleet = Fleet()
+        for bus in BusPersistence.load_all_buses():
+            self.fleet.add_bus(bus)
+
+    def _initialize_location_tracker(self) -> None:
+        self.tracker = None
+        self.inferred_runs = InferredRunList(self.fleet)
+
+    def _create_frames(self) -> None:
+        self.menu_frame = MenuFrame(self.app, self)
+        self.view_fleet_frame = ViewFleetFrame(self.app, self.fleet, self)
+        self.view_runs_frame = ViewRunsFrame(self.app, self.fleet, self)
+        self.add_bus_frame = AddBusFrame(self.app, self)
+        self.add_run_frame = AddRunFrame(self.app, self.inferred_runs, self)
+        self.csv_export_dialog = None
+
+        self.curr_frame = self.view_fleet_frame
+
+    def _bind_hotkeys(self) -> None:
+        self.app.bind("<Return>", lambda _: self._handle_hotkey("handle_enter"))
+        self.app.bind("<Left>", lambda _: self._handle_hotkey("handle_left_arrow"))
+        self.app.bind("<Right>", lambda _: self._handle_hotkey("handle_right_arrow"))
+
+    def _display_initial_frame(self) -> None:
+        self.menu_frame.pack(pady=PADDING_MEDIUM)
+        self.curr_frame.pack(anchor="nw")
+
+    def _switch_main_frame(self, next_frame: ctk.CTkFrame):
+        """
+        Sets the main frame in the application's window.
+
+        :param next_frame: the frame to display as the main frame.
+        """
+        self.curr_frame.pack_forget()
+        self.curr_frame = next_frame
+        self.curr_frame.pack(anchor="n")
+
+    def _handle_hotkey(self, handler_name: str, event=None) -> None:
+        """
+        Responds to the user pressing a hotkey. Calls an event handler in
+        the current frame, if such an event handler exists. Otherwise, no
+        action is taken.
+
+        :param handler_name: the name of the handler to call.
+        :param event: the Tkinter event to handle (None by default).
+        """
+        if self.curr_frame is not None:
+            handler = getattr(self.curr_frame, handler_name, None)
+
+            if callable(handler):
+                handler(event)
+
     def _update_bus_locations_background(self) -> None:
         """
         Creates a live bus tracker object and starts the stop scan. Catches
@@ -185,7 +221,7 @@ class FleetController:
             self.app.after(0, self._apply_bus_locations, success)
         except Exception as e:
             print(f"Error updating locations: {e}")
-            self.view_fleet_frame.show_location_fetch_finished()
+            self.app.after(0, self.view_fleet_frame.show_location_fetch_finished)
 
     def _apply_bus_locations(self, success: bool) -> None:
         """
@@ -203,61 +239,6 @@ class FleetController:
 
         if success:
             self.view_fleet_frame.update_location_fetch_query_time(datetime.now())
-
-    def _switch_main_frame(self, next_frame: ctk.CTkFrame):
-        """
-        Sets the main frame in the application's window.
-
-        :param next_frame: the frame to display as the main frame.
-        """
-        self.curr_frame.pack_forget()
-        self.curr_frame = next_frame
-        self.curr_frame.pack(anchor="n")
-
-    def _handle_enter(self, event=None) -> None:
-        """
-        Responds to the user pressing the Enter key. Calls an event handler
-        in the current frame, if such an event handler exists. Otherwise,
-        no action is taken.
-
-        :param event: the Tkinter event to handle (None by default).
-        """
-
-        if self.curr_frame is not None:
-            enter_handler = getattr(self.curr_frame, "handle_enter", None)
-
-            if callable(enter_handler):
-                self.curr_frame.handle_enter(event)
-
-    def _handle_left_arrow(self, event=None) -> None:
-        """
-        Responds to the user pressing the left arrow key. Calls an event handler
-        in the current frame, if such an event handler exists. Otherwise, no
-        action is taken.
-
-        :param event: the Tkinter event to handle (None by default).
-        """
-
-        if self.curr_frame is not None:
-            left_arrow_handler = getattr(self.curr_frame, "handle_left_arrow", None)
-
-            if callable(left_arrow_handler):
-                self.curr_frame.handle_left_arrow(event)
-
-    def _handle_right_arrow(self, event=None) -> None:
-        """
-        Responds to the user pressing the right arrow key. Calls an event handler
-        in the current frame, if such an event handler exists. Otherwise, no
-        action is taken.
-
-        :param event: the Tkinter event to handle (None by default).
-        """
-
-        if self.curr_frame is not None:
-            right_arrow_handler = getattr(self.curr_frame, "handle_right_arrow", None)
-
-            if callable(right_arrow_handler):
-                self.curr_frame.handle_right_arrow(event)
 
 
 

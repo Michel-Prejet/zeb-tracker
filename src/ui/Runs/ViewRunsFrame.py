@@ -126,7 +126,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         )
         self.search_frame.pack(
             anchor="w",
-            padx=PADDING_LARGE,
+            padx=PADDING_MEDIUM,
             pady=PADDING_MEDIUM
         )
 
@@ -137,7 +137,11 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
             items_per_page=RUNS_PER_PAGE,
             get_num_items=lambda: len(self.runs)
         )
-        self.pagination_frame.pack(anchor="nw", padx=PADDING_MEDIUM)
+        self.pagination_frame.pack(
+            anchor="nw",
+            padx=PADDING_MEDIUM,
+            pady=PADDING_MEDIUM
+        )
 
     def _initialize_scrollable_list(self) -> None:
         self.scrollable_list = ctk.CTkScrollableFrame(
@@ -248,30 +252,33 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         in zero results. For the DATE filter, an error message is displayed if
         the dates provided are not in YYYY-MM-DD format.
         """
+        self.search_frame.remove_error_message()
+
         search_filter_type = self.search_frame.get_search_filter_selection()
 
         if search_filter_type == SearchFilterType.DATE:
-            self._get_date_range_search_filter_from_input()
+            try:
+                self._get_date_range_search_filter_from_input()
+
+                self.search_frame.clear_input_fields()
+                self.curr_page = 1
+                self.notify()
+            except ValueError:
+                self.search_frame.show_error("Dates should be in YYYY-MM-DD format.")
         else:
             self._get_general_search_filter_from_input(search_filter_type)
 
-        self.curr_page = 1
-
-        self.notify() # Applies the search filter
-
-        self.search_frame.clear_input_fields()
-        self.search_frame.remove_error_message()
+            self.search_frame.clear_input_fields()
+            self.curr_page = 1
+            self.notify()
 
     def _get_date_range_search_filter_from_input(self) -> None:
-        try:
-            start_date = self.search_frame.get_date_from_main_input()
-            end_date = self.search_frame.get_date_from_extra_input()
+        start_date = self.search_frame.get_date_from_main_input()
+        end_date = self.search_frame.get_date_from_extra_input()
 
-            self.curr_search_filter = lambda run_list: (
-                FILTER_ACTIONS[SearchFilterType.DATE](run_list, start_date, end_date)
-            )
-        except ValueError:
-            self.search_frame.show_error("Dates should be in YYYY-MM-DD format.")
+        self.curr_search_filter = lambda run_list: (
+            FILTER_ACTIONS[SearchFilterType.DATE](run_list, start_date, end_date)
+        )
 
     def _get_general_search_filter_from_input(self, filter_type: SearchFilterType) -> None:
         text_filter = self.search_frame.get_main_input_raw()

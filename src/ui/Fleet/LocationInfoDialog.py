@@ -1,8 +1,7 @@
-from datetime import timedelta
 import customtkinter as ctk
 from domain.Bus import Bus
 from ui.UIConstants import PADDING_MEDIUM
-from utilities.DateTimeHelper import _format_timedelta
+from utilities.DateTimeHelper import format_timedelta
 from utilities.InvariantHelper import require_not_none
 import webbrowser
 
@@ -72,7 +71,7 @@ class LocationInfoDialog(ctk.CTkToplevel):
         )
         self._add_row(
             label="",
-            content=f"ETA: {_format_timedelta(self.info.estimated_departure)}",
+            content=f"ETA: {format_timedelta(self.info.estimated_departure)}",
             row=4
         )
 

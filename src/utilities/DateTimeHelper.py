@@ -1,8 +1,16 @@
-from datetime import date, timedelta
-
+from datetime import date, timedelta, datetime
 
 SECONDS_PER_HOUR = 3600
 MINUTES_PER_HOUR = 60
+
+def format_datetime(d: datetime) -> str:
+    """
+    Creates a string in YYYY-MM-DD HH:MM:SS format from a datetime object.
+
+    :param d: the datetime object to format as a string.
+    :return: a string of the form YYYY-MM-DD HH:MM:SS.
+    """
+    return d.strftime('%Y-%m-%d %H:%M:%S')
 
 def format_date(d: date) -> str:
     """
@@ -13,7 +21,7 @@ def format_date(d: date) -> str:
     """
     return f"{d.strftime('%B')} {d.day}, {d.year}"
 
-def _format_timedelta(td: timedelta) -> str:
+def format_timedelta(td: timedelta) -> str:
     """
     Creates a string in HH:MM:SS format from a timedelta object.
 

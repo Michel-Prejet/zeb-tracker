@@ -1,42 +1,32 @@
-import math
 from datetime import datetime
-from enum import Enum
 from tkinter import messagebox
 import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
 from ui.Fleet.LocationInfoDialog import LocationInfoDialog
+from ui.Fleet.Search.BusSearchFilters import SearchFilterType, build_search_filter_function
+from ui.Fleet.Search.BusSearchFrame import BusSearchFrame
+from ui.Pagination.Paginatable import Paginatable
+from ui.Pagination.PaginationFrame import PaginationFrame
+from ui.UIConstants import LARGE_TITLE_FONT, PADDING_MEDIUM, APP_WIDTH, PADDING_LARGE, SMALL_TITLE_FONT, \
+    WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT
+from utilities.DateTimeHelper import format_date, format_datetime
 from utilities.InvariantHelper import require_not_none
 
 
 UNKNOWN_DATE_PLACEHOLDER = "never"
 UNKNOWN_LOCATION_PLACEHOLDER = "No location information"
-PAGE_SIZE = 15
 
-class SearchFilterType(Enum):
-    """
-    Represents different filters that can be applied to the fleet during a
-    search. Each filter is associated with a lambda function taking as an
-    argument a bus list and a string, where the string is used to filter the bus
-    list based on whether it is contained in the string representation of the
-    selected attribute.
-    For example, when TRACKING_NUM is selected with filter "2", all buses
-    whose tracking number contains the digit "2" will be displayed.
-    """
-    TRACKING_NUM = "Tracking number"
-    YEAR = "Year"
-    MODEL = "Model"
+LOCATION_INFO_FONT_SIZE = 13
+LOCATION_INFO_FONT_SIZE_HOVER = 14
 
-FILTER_ACTIONS = {
-    SearchFilterType.TRACKING_NUM: lambda bus_list, search_filter: [b for b in bus_list if search_filter in str(b.tracking_num)],
-    SearchFilterType.YEAR: lambda bus_list, search_filter: [b for b in bus_list if search_filter in str(b.year)],
-    SearchFilterType.MODEL: lambda bus_list, search_filter: [b for b in bus_list if search_filter in b.model]
-}
+BUSES_PER_PAGE = 15
 
-INITIAL_FILTER = SearchFilterType.TRACKING_NUM
+SCROLLABLE_LIST_DIMENSIONS = (APP_WIDTH, 650)
+SCROLLABLE_LIST_WIDTH, SCROLLABLE_LIST_HEIGHT = SCROLLABLE_LIST_DIMENSIONS
 
-class ViewFleetFrame(ctk.CTkFrame, Listener):
+class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
     """
     Frame displaying the list of buses in a given fleet, including their
     tracking number, model info, the date of their last run, and a "remove"
@@ -48,162 +38,310 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
     def __init__(self, app: ctk.CTk, fleet: Fleet, controller):
         require_not_none(app, "App should not be None.")
         require_not_none(fleet, "Fleet should not be None.")
+        require_not_none(controller, "Controller should not be None.")
 
         super().__init__(app)
+
         self.app = app
         self.controller = controller
         self.fleet = fleet
         self.fleet.register_listener(self)
-        self.curr_bus_list = fleet.sorted_buses()
-        self.curr_page = 1
+
+        self.buses = fleet.sorted_buses()
         self.curr_search_filter = lambda bus_list: bus_list
+        self.curr_page = 1
 
-        # Header
-        ctk.CTkLabel(self,
-                     text="Fleet",
-                     font=("Arial", 20, "bold")
-                     ).pack()
-
-        # Search frame
-        search_frame = ctk.CTkFrame(self, fg_color="transparent")
-        search_frame.pack(anchor="w", padx=10, pady=5)
-
-        # Search filter entry
-        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="Search...", width=250)
-        self.search_entry.grid(row=0, column=0, sticky="w")
-
-        # Submit search button
-        search_button = ctk.CTkButton(search_frame, text="🔎", width=20, command=self.submit_search)
-        search_button.grid(row=0, column=1, sticky="w", padx=5)
-
-        # Dropdown menu of filter types for the search
-        self.search_filter_menu = ctk.CTkOptionMenu(search_frame, values=[f.value for f in SearchFilterType])
-        self.search_filter_menu.grid(row=0, column=2, sticky="w", padx=5)
-
-        # Button to reset search (remove any filter that was applied)
-        search_reset_button = ctk.CTkButton(search_frame, text="Reset", width=50, command=self.reset_search)
-        search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
-
-        # Show only active button
-        self.show_only_active_checkbox = ctk.CTkCheckBox(search_frame,
-                                                    text="Active buses only",
-                                                    checkbox_width=18,
-                                                    checkbox_height=18,
-                                                    border_width=2,
-                                                    command=self.show_only_active)
-        self.show_only_active_checkbox.grid(row=0, column=4, sticky="w", padx=5)
-
-        # Fetch location frame
-        self.location_fetch_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.location_fetch_frame.pack(anchor="w", padx=10, pady=5)
-        self.location_fetch_button = ctk.CTkButton(self.location_fetch_frame,
-                                                   text="Fetch location information",
-                                                   command=self.controller.update_bus_locations)
-        self.location_fetch_button.pack(anchor="nw", side="left")
-        self.location_fetch_feedback = ctk.CTkLabel(self.location_fetch_frame, text="")
-        self.location_fetch_feedback.pack(anchor="nw", padx=10, side="left")
-        self.cancel_scan_button = None
-
-        # Page information
-        page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
-        page_control_frame.pack(anchor="nw", padx=5)
-
-        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()} "
-                                                               f"({len(self.curr_bus_list)} buses)")
-        self.page_info.pack(anchor="nw", padx=5)
-
-        first_page_button = ctk.CTkButton(page_control_frame,
-                                          text="<<", width=20, command=self._first_page)
-        first_page_button.pack(anchor="nw", side="left", padx=2)
-        prev_page_button = ctk.CTkButton(page_control_frame,
-                                         text="<", width=20, command=self._prev_page)
-        prev_page_button.pack(anchor="nw", side="left", padx=2)
-        next_page_button = ctk.CTkButton(page_control_frame,
-                                         text=">", width=20, command=self._next_page)
-        next_page_button.pack(anchor="nw", side="left", padx=2)
-        last_page_button = ctk.CTkButton(page_control_frame,
-                                         text=">>", width=20, command=self._last_page)
-        last_page_button.pack(anchor="nw", padx=2, side="left")
-
-        # Initialize scrollable list
-        self.bus_list = ctk.CTkScrollableFrame(self, width=900, height=650)
-        self.bus_list.pack()
+        self._create_header()
+        self._create_search_area()
+        self._create_location_fetch_area()
+        self._create_pagination_area()
+        self._initialize_scrollable_list()
 
         self.notify()
+
+    def notify(self) -> None:
+        """
+        Refreshes the list of buses and the page information in response to a
+        change in the state of the fleet. Clears the old scrollable list of
+        buses and reconstructs it, applying the current search filter and
+        appending all necessary labels and buttons.
+        """
+        self._clear_scrollable_list()
+
+        self._apply_search_filter()
+
+        self.pagination_frame.update_page_info(self.curr_page)
+
+        self._show_no_buses_in_list_if_empty()
+
+        self._create_bus_list()
+
+    def show_fetching_location(self) -> None:
+        """
+        Updates the UI to show elements relevant to the location scan.
+        Shows a message telling the user that the system is fetching bus
+        locations, initializing the displayed progress of the scan to 0%.
+        Adds a button to the screen to cancel the scan.
+        """
+        self.location_fetch_button.configure(state="disabled")
+        self._show_location_fetch_feedback(percentage=0)
+
+        self._show_cancel_scan_button()
+
+        self.notify()
+
+    def update_location_fetch_progress(self, completed_stops: int, total_stops: int) -> None:
+        """
+        Updates the progress of the location scan displayed in the UI based on
+        the given values. Progress is calculated by dividing the number of
+        completed stops by the total number of stops.
+
+        :param completed_stops: the number of stops that have been scanned.
+        :param total_stops: the total number of stops to scan.
+        """
+        self._show_location_fetch_feedback(round(completed_stops / total_stops * 100))
+
+    def show_location_fetch_finished(self) -> None:
+        """
+        Updates the UI to remove elements used for the location scan. Removes
+        the 'Fetching location' message and the 'Cancel' button.
+        """
+        self._show_location_fetch_feedback() # Clears the field
+        self.location_fetch_button.configure(state="enabled")
+
+        self._hide_cancel_scan_button()
+
+        self.notify()
+
+    def update_location_fetch_query_time(self, query_time: datetime) -> None:
+        """
+        Updates the query time of the last location scan to the given value.
+
+        :param query_time: a datetime object representing the query time of
+        the last location scan.
+        """
+        self._show_location_fetch_feedback(query_time=query_time)
 
     def handle_enter(self, event=None) -> None:
         """
-        Event handler for when the user presses the Enter key. Submits the
-        current search filter.
-
-        :param event: the Tkinter event to handle (None by default).
+        Event handler for when the user presses the Enter key.
         """
-        self.submit_search()
+        self._submit_search()
 
     def handle_left_arrow(self, event=None) -> None:
         """
-        Event handler for when the user presses the left arrow key. Goes to
-        the previous page.
-
-        :param event: the Tkinter event to handle (None by default).
+        Event handler for when the user presses the left arrow key.
         """
-        self._prev_page()
+        self.prev_page()
 
     def handle_right_arrow(self, event=None) -> None:
         """
-        Event handler for when the user presses the right arrow key. Goes to
-        the next page.
+        Event handler for when the user presses the right arrow key.
+        """
+        self.next_page()
 
-        :param event: the Tkinter event to handle (None by default).
-        """
-        self._next_page()
+    def next_page(self) -> None:
+        if self.curr_page + 1 <= self.pagination_frame.num_pages():
+            self.curr_page += 1
+            self._refresh_and_scroll_to_top()
 
-    def reset_search(self) -> None:
-        """
-        Reconstructs the bus list with all filters removed and goes back
-        to page 1.
-        """
+    def prev_page(self) -> None:
+        if self.curr_page > 1:
+            self.curr_page -= 1
+            self._refresh_and_scroll_to_top()
+
+    def first_page(self) -> None:
         self.curr_page = 1
-        self.curr_search_filter = lambda bus_list: bus_list
+        self._refresh_and_scroll_to_top()
+
+    def last_page(self) -> None:
+        self.curr_page = self.pagination_frame.num_pages()
+        self._refresh_and_scroll_to_top()
+
+    def _refresh_and_scroll_to_top(self) -> None:
         self.notify()
+        self.scrollable_list._parent_canvas.yview_moveto(0)
 
-        self.search_entry.delete(0, "end")
-        self.search_filter_menu.set(INITIAL_FILTER.value)
-        self.show_only_active_checkbox.deselect()
+    def _create_header(self) -> None:
+        ctk.CTkLabel(
+            self,
+            text="Fleet",
+            font=LARGE_TITLE_FONT
+        ).pack()
 
-    def submit_search(self) -> None:
-        """
-        Filters the bus list based on the input provided in the search entry
-        field, the search filter type menu, and the "Active buses only"
-        checkbox. Takes no action if the search entry is empty or only whitespace.
-        Does not validate input; invalid search filters will simply result in
-        zero results.
-        """
-        search_filter: str = self.search_entry.get().strip()
-        search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
+    def _create_search_area(self) -> None:
+        self.search_frame = BusSearchFrame(
+            parent=self,
+            submit_search=self._submit_search,
+            reset_search=self._reset_search,
+            show_only_active=self._show_only_active
+        )
+        self.search_frame.pack(
+            anchor="nw",
+            padx=PADDING_MEDIUM,
+            pady=PADDING_MEDIUM
+        )
 
-        self.curr_page = 1
+    def _create_location_fetch_area(self) -> None:
+        self.location_fetch_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.location_fetch_frame.pack(
+            anchor="w",
+            padx=PADDING_MEDIUM,
+            pady=PADDING_MEDIUM
+        )
 
-        def apply_filter(bus_list):
-            filtered_list = bus_list
+        self._create_location_fetch_button()
+        self._create_location_fetch_feedback_area()
 
-            if len(search_filter) > 0:
-                filtered_list = FILTER_ACTIONS[search_filter_type](filtered_list, search_filter)
+        self.cancel_scan_button = None
 
-            if self.show_only_active_checkbox.get():
-                filtered_list = [b for b in filtered_list if b.location_info is not None]
+    def _create_location_fetch_button(self) -> None:
+        self.location_fetch_button = ctk.CTkButton(
+            self.location_fetch_frame,
+            text="Fetch location information",
+            command=self.controller.update_bus_locations
+        )
+        self.location_fetch_button.pack(anchor="nw", side="left")
 
-            return filtered_list
+    def _create_location_fetch_feedback_area(self) -> None:
+        self.location_fetch_feedback = ctk.CTkLabel(
+            self.location_fetch_frame,
+            text=""
+        )
+        self.location_fetch_feedback.pack(
+            anchor="nw",
+            padx=PADDING_LARGE,
+            side="left"
+        )
 
-        self.curr_search_filter = apply_filter
+    def _create_pagination_area(self) -> None:
+        self.pagination_frame = PaginationFrame(
+            parent=self,
+            item_name="buses",
+            items_per_page=BUSES_PER_PAGE,
+            get_num_items=lambda: len(self.buses)
+        )
+        self.pagination_frame.pack(
+            anchor="nw",
+            padx=PADDING_MEDIUM,
+            pady=PADDING_MEDIUM
+        )
 
-        self.notify()
+    def _initialize_scrollable_list(self) -> None:
+        self.scrollable_list = ctk.CTkScrollableFrame(
+            self,
+            width=SCROLLABLE_LIST_WIDTH,
+            height=SCROLLABLE_LIST_HEIGHT
+        )
+        self.scrollable_list.pack()
 
-    def show_only_active(self) -> None:
-        self.curr_page = 1
-        self.submit_search()
+    def _clear_scrollable_list(self) -> None:
+        for child in self.scrollable_list.winfo_children():
+            child.destroy()
 
-    def confirm_remove_bus(self, bus: Bus) -> None:
+    def _apply_search_filter(self) -> None:
+        all_buses = self.fleet.sorted_buses()
+        self.buses = self.curr_search_filter(all_buses)
+
+    def _show_no_buses_in_list_if_empty(self) -> None:
+        if len(self.buses) == 0:
+            ctk.CTkLabel(
+                self.scrollable_list,
+                text="No buses to display."
+            ).pack(anchor="nw")
+
+    def _create_bus_list(self) -> None:
+        start_bus_index = (self.curr_page - 1) * BUSES_PER_PAGE
+        end_bus_index = start_bus_index + BUSES_PER_PAGE
+
+        for bus in self.buses[start_bus_index:end_bus_index]:
+            row = ctk.CTkFrame(self.scrollable_list)
+            row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
+
+            self._add_bus_data_to_row(bus, row)
+            self._add_bus_location_info_to_row(bus, row)
+            self._add_remove_button_to_row(bus, row)
+
+    def _add_bus_data_to_row(self, bus: Bus, row: ctk.CTkFrame) -> None:
+        self._add_row_data(
+            text=f"{bus.tracking_num}",
+            row=row,
+            font=SMALL_TITLE_FONT
+        )
+
+        self._add_row_data(
+            text=f" {bus.year} {bus.model}",
+            row=row
+        )
+
+        self._add_row_data(
+            text=f"Last seen: {last_run_date_to_str(bus)}",
+            row=row
+        )
+
+    def _add_row_data(self, text: str, row: ctk.CTkFrame,
+                      font: ctk.CTkFont | tuple | None = None) -> None:
+        ctk.CTkLabel(
+            row,
+            text=text,
+            font=font or ctk.CTkFont()
+        ).pack(side="left", padx=PADDING_MEDIUM)
+
+    def _add_bus_location_info_to_row(self, bus: Bus, row: ctk.CTkFrame) -> None:
+        info = ctk.CTkLabel(
+            row,
+            text=UNKNOWN_LOCATION_PLACEHOLDER,
+            text_color="grey"
+        )
+
+        if bus.location_info is not None:
+            info.configure(
+                text=self._get_bus_location_info_label(bus),
+                text_color="green",
+                font=ctk.CTkFont(size=LOCATION_INFO_FONT_SIZE)
+            )
+            
+            self._bind_label_to_show_location_info_popup_on_click(info, bus)
+            self._bind_label_to_change_font_size_on_hover(info)
+
+        info.pack(side="left", padx=PADDING_MEDIUM)
+
+    def _get_bus_location_info_label(self, bus: Bus) -> str:
+        require_not_none(bus.location_info,"Bus should contain location info.")
+
+        label = f"🟢 {bus.location_info.route} "
+
+        if bus.location_info.block_id is not None:
+            label += f"({bus.location_info.block_id}) "
+
+        return label
+
+    def _bind_label_to_show_location_info_popup_on_click(self, location_info_label: ctk.CTkLabel, bus: Bus) -> None:
+        location_info_label.bind(
+            "<Button-1>",
+            lambda e, b=bus: LocationInfoDialog(self.app, b)
+        )
+
+    def _bind_label_to_change_font_size_on_hover(self, location_info_label: ctk.CTkLabel) -> None:
+        location_info_label.bind(
+            "<Enter>",
+            lambda e, l=location_info_label: l.configure(font=ctk.CTkFont(size=LOCATION_INFO_FONT_SIZE_HOVER))
+        )
+        location_info_label.bind(
+            "<Leave>",
+            lambda e, l=location_info_label: l.configure(font=ctk.CTkFont(size=LOCATION_INFO_FONT_SIZE))
+        )
+
+    def _add_remove_button_to_row(self, bus: Bus, row: ctk.CTkFrame) -> None:
+        ctk.CTkButton(
+            row,
+            text="Remove",
+            width=WIDE_ROW_BUTTON_WIDTH,
+            height=WIDE_ROW_BUTTON_HEIGHT,
+            command=lambda b=bus: self._confirm_remove_bus(b)
+        ).pack(side="right", padx=PADDING_MEDIUM)
+
+    def _confirm_remove_bus(self, bus: Bus) -> None:
         """
         Displays a pop-up window asking the user to confirm that they would
         like to remove a bus from the fleet. Removes the bus if the user
@@ -219,187 +357,79 @@ class ViewFleetFrame(ctk.CTkFrame, Listener):
         if confirmed:
             self.controller.remove_bus(bus)
 
-    def show_fetching_location(self) -> None:
+    def _reset_search(self) -> None:
         """
-        Updates the UI to show elements relevant to the location scan.
-        Shows a message telling the user that the system is fetching bus
-        locations, initializing the displayed progress of the scan to 0%.
-        Adds a button to the screen to cancel the scan.
+        Reconstructs the bus list with all filters removed and goes back
+        to page 1.
         """
-        self.location_fetch_button.configure(state="disabled")
-        self.location_fetch_feedback.configure(text="Fetching bus locations (0%)")
+        self.curr_page = 1
+        self.curr_search_filter = lambda bus_list: bus_list
+        self.notify()
 
+        self.search_frame.reset()
+
+    def _submit_search(self) -> None:
+        """
+        Filters the bus list based on the input provided in the search entry
+        field, the search filter type menu, and the "Active buses only"
+        checkbox. Takes no action if the search entry is empty or only whitespace.
+        Does not validate input; invalid search filters will simply result in
+        zero results.
+        """
+        search_filter = self.search_frame.get_input()
+        search_filter_type: SearchFilterType = self.search_frame.get_search_filter_selection()
+        show_only_active = self.search_frame.get_show_only_active_selection()
+
+        self.curr_search_filter = build_search_filter_function(
+            search_filter,
+            search_filter_type,
+            show_only_active
+        )
+
+        self.curr_page = 1
+
+        self.notify()
+
+    def _show_only_active(self) -> None:
+        self.curr_page = 1
+        self._submit_search()
+
+    def _show_location_fetch_feedback(self, percentage: int | None = None,
+                                      query_time: datetime | None = None) -> None:
+        """
+        Sets the location fetch feedback field based on the given parameters.
+        If a percentage is provided, displays a message telling the user that
+        location fetch is in progress (with the given percentage).
+        If a query time is provided, displays a message telling the user that
+        the last location fetch was at that time.
+        If nothing is provided, the field is cleared.
+        """
+        if percentage is not None:
+            self.location_fetch_feedback.configure(
+                text=f"Fetching bus locations ({percentage}%)"
+            )
+        elif query_time is not None:
+            self.location_fetch_feedback.configure(
+                text=f"Last fetch: {format_datetime(query_time)}"
+            )
+        else:
+            self.location_fetch_feedback.configure(text="")
+
+    def _show_cancel_scan_button(self) -> None:
         self.cancel_scan_button = ctk.CTkButton(
             self.location_fetch_frame,
             text="Cancel",
-            width=20,
+            width=MEDIUM_BUTTON_WIDTH,
+            height=MEDIUM_BUTTON_HEIGHT,
             fg_color="transparent",
             command=self.controller.cancel_update_bus_locations
         )
         self.cancel_scan_button.pack(anchor="nw", side="left")
 
-        self.notify()
-
-    def update_location_fetch_progress(self, completed_stops: int, total_stops: int) -> None:
-        """
-        Updates the progress of the location scan displayed in the UI based on
-        the given values. Progress is calculated by dividing the number of
-        completed stops by the total number of stops.
-
-        :param completed_stops: the number of stops that have been scanned.
-        :param total_stops: the total number of stops to scan.
-        """
-        progress = round(completed_stops / total_stops * 100)
-        self.location_fetch_feedback.configure(text=f"Fetching bus locations ({progress}%)")
-
-    def show_location_fetch_finished(self) -> None:
-        """
-        Updates the UI to remove elements used for the location scan. Removes
-        the 'Fetching location' message and the 'Cancel' button.
-        """
-        self.location_fetch_feedback.configure(text=f"")
-        self.location_fetch_button.configure(state="enabled")
-
+    def _hide_cancel_scan_button(self) -> None:
         if self.cancel_scan_button is not None:
             self.cancel_scan_button.pack_forget()
             self.cancel_scan_button = None
-
-        self.notify()
-
-    def update_location_fetch_query_time(self, query_time: datetime) -> None:
-        """
-        Updates the query time of the last location scan to the given value.
-
-        :param query_time: a datetime object representing the query time of
-        the last location scan.
-        """
-        self.location_fetch_feedback.configure(text=f"Last fetch: {query_time.strftime('%Y-%m-%d %H:%M:%S')}")
-
-    def _num_pages(self) -> int:
-        """
-        :return: the number of pages for the current number of buses to
-        display (any search filters will be considered).
-        """
-        num_runs = len(self.curr_bus_list)
-
-        if num_runs == 0:
-            return 1
-
-        return math.ceil(num_runs / PAGE_SIZE)
-
-    def _next_page(self) -> None:
-        """
-        Increments the current page number if it does not exceed the total
-        number of pages, then refreshes the bus list.
-        """
-        if self.curr_page + 1 <= self._num_pages():
-            self.curr_page += 1
-            self.notify()
-            self.bus_list._parent_canvas.yview_moveto(0)
-
-    def _prev_page(self) -> None:
-        """
-        Decrements the current page number if it is greater than 1, then
-        refreshes the bus list.
-        """
-        if self.curr_page > 1:
-            self.curr_page -= 1
-            self.notify()
-            self.bus_list._parent_canvas.yview_moveto(0)
-
-    def _first_page(self) -> None:
-        """
-        Sets the current page number to 1, then refreshes the bus list.
-        """
-        self.curr_page = 1
-        self.notify()
-        self.bus_list._parent_canvas.yview_moveto(0)
-
-    def _last_page(self) -> None:
-        """
-        Sets the current page number to the last page, then refreshes the
-        bus list.
-        """
-        self.curr_page = self._num_pages()
-        self.notify()
-        self.bus_list._parent_canvas.yview_moveto(0)
-
-    def notify(self) -> None:
-        """
-        Refreshes the list of buses and the page information in response to a
-        change in the state of the fleet. Clears the old scrollable list of
-        buses and reconstructs it, applying the current search filter and
-        appending all necessary labels and buttons.
-        """
-
-        # Clear the old list
-        for child in self.bus_list.winfo_children():
-            child.destroy()
-
-        # Apply the search filter to the bus list
-        all_buses = self.fleet.sorted_buses()
-        self.curr_bus_list = self.curr_search_filter(all_buses)
-
-        # Update page info
-        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()} "
-                                      f"({len(self.curr_bus_list)} buses)")
-
-        # Create the new list
-        start_bus_index = (self.curr_page - 1) * PAGE_SIZE
-        end_bus_index = start_bus_index + PAGE_SIZE
-
-        for bus in self.curr_bus_list[start_bus_index:end_bus_index]:
-            curr_row = ctk.CTkFrame(self.bus_list)
-            curr_row.pack(fill="x", padx=5, pady=5)
-
-            # Bus info
-            tracking_num_label = ctk.CTkLabel(curr_row, text=f"{bus.tracking_num}", font=("Arial", 15, "bold"))
-            tracking_num_label.pack(side="left", padx=5)
-
-            model_label = ctk.CTkLabel(curr_row, text=f" {bus.year} {bus.model}")
-            model_label.pack(side="left", padx=5)
-
-            runs_label = ctk.CTkLabel(curr_row, text=f"{bus.num_runs()} runs ({self.fleet.percent_of_runs(bus)} %)")
-            runs_label.pack(side="left", padx=5)
-
-            last_seen_label = ctk.CTkLabel(curr_row, text=f"Last seen: {last_run_date_to_str(bus)}")
-            last_seen_label.pack(side="left", padx=5)
-
-            # Bus location info
-            location_info_label = ctk.CTkLabel(curr_row)
-            if bus.location_info is None:
-                location_info_label.configure(text=UNKNOWN_LOCATION_PLACEHOLDER, text_color="grey")
-            else:
-                location_info_label.configure(text=f"🟢 {bus.location_info.route} ",
-                                              text_color="green",
-                                              font=ctk.CTkFont(size=13))
-                if bus.location_info.block_id is not None:
-                    location_info_label.configure(text=f"🟢 {bus.location_info.route} "
-                                                       f"({bus.location_info.block_id}) ",
-                                                  text_color="green")
-
-                # Button to show detailed location info in a pop-up
-                location_info_label.bind("<Button-1>", lambda e, b=bus: LocationInfoDialog(self.app, b))
-                location_info_label.bind("<Enter>", lambda e, l=location_info_label: l.configure(
-                    font=ctk.CTkFont(size=14)
-                ))
-                location_info_label.bind("<Leave>", lambda e, l=location_info_label: l.configure(
-                    font=ctk.CTkFont(size=13)
-                ))
-
-            location_info_label.pack(side="left", padx=5)
-
-            # "Remove" button
-            (ctk.CTkButton(curr_row,
-                           text="Remove",
-                           height=20,
-                           width=60,
-                           command=lambda b=bus: self.confirm_remove_bus(b))
-             .pack(side="right", padx=5))
-
-        if len(self.curr_bus_list) == 0:
-            no_results_label = ctk.CTkLabel(self.bus_list, text="No buses to display.")
-            no_results_label.pack(anchor="nw")
 
 def last_run_date_to_str(bus: Bus) -> str:
     """
@@ -410,7 +440,6 @@ def last_run_date_to_str(bus: Bus) -> str:
     """
     if bus.last_run() is None:
         return UNKNOWN_DATE_PLACEHOLDER
-    d = bus.last_run().run_date
-    return f"{d.strftime('%B')} {d.day}, {d.year}"
+    return format_date(bus.last_run().run_date)
 
 

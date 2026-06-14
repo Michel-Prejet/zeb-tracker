@@ -3,13 +3,11 @@ from typing import Callable
 import customtkinter as ctk
 from ui.Runs.Search.RunSearchFilters import SearchFilterType
 from ui.UIConstants import SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, MEDIUM_BUTTON_WIDTH, \
-    MEDIUM_BUTTON_HEIGHT
+    MEDIUM_BUTTON_HEIGHT, SPLIT_INPUT_FIELD_WIDTH, REGULAR_INPUT_FIELD_WIDTH
+from utilities.InvariantHelper import require_not_none
 
 
 INITIAL_SEARCH_FILTER = SearchFilterType.DATE
-
-INPUT_FIELD_WIDTH_WHEN_ONE = 250
-INPUT_FIELD_WIDTH_WHEN_TWO = 125
 
 class RunSearchFrame(ctk.CTkFrame):
     """
@@ -20,9 +18,12 @@ class RunSearchFrame(ctk.CTkFrame):
 
     def __init__(self, parent: ctk.CTkFrame, submit_search: Callable,
                  reset_search: Callable):
+        require_not_none(parent, "Parent should not be None.")
+        require_not_none(submit_search, "submit_search() should not be None.")
+        require_not_none(reset_search, "reset_search() should not be None.")
+
         super().__init__(parent)
 
-        self.parent = parent
         self.submit_search = submit_search
         self.reset_search = reset_search
 
@@ -132,11 +133,11 @@ class RunSearchFrame(ctk.CTkFrame):
     def _display_two_date_input_fields(self) -> None:
         self.search_entry_main.configure(
             placeholder_text="Start date",
-            width=INPUT_FIELD_WIDTH_WHEN_TWO
+            width=SPLIT_INPUT_FIELD_WIDTH
         )
         self.search_entry_extra.configure(
             placeholder_text="End date",
-            width=INPUT_FIELD_WIDTH_WHEN_TWO
+            width=SPLIT_INPUT_FIELD_WIDTH
         )
         self.search_entry_main.pack(anchor="w", side="left")
         self.search_entry_extra.pack(anchor="w", padx=PADDING_MEDIUM)
@@ -145,7 +146,7 @@ class RunSearchFrame(ctk.CTkFrame):
         self.search_entry_extra.pack_forget()
         self.search_entry_main.configure(
             placeholder_text="Search...",
-            width=INPUT_FIELD_WIDTH_WHEN_ONE
+            width=REGULAR_INPUT_FIELD_WIDTH
         )
         self.search_entry_main.pack(anchor="w")
 

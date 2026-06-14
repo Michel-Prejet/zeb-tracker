@@ -1,12 +1,13 @@
-import math
 from datetime import date
 from typing import Callable
 import customtkinter as ctk
 from domain.InferredRunList import InferredRunList
 from domain.Listener import Listener
-from ui.UIConstants import PADDING_MEDIUM, PADDING_SMALL, PADDING_LARGE, LARGE_TITLE_FONT, SQUARE_BUTTON_WIDTH, \
+from ui.Pagination.Paginatable import Paginatable
+from ui.Pagination.PaginationFrame import PaginationFrame
+from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, \
     FLAT_BUTTON_WIDTH, FLAT_BUTTON_HEIGHT, ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_WIDTH, ROW_BUTTON_HEIGHT, \
-    WIDE_ROW_BUTTON_HEIGHT, SQUARE_BUTTON_HEIGHT, APP_WIDTH
+    WIDE_ROW_BUTTON_HEIGHT, APP_WIDTH
 from utilities.InvariantHelper import require_not_none
 
 
@@ -14,10 +15,10 @@ RUNS_PER_PAGE = 10
 
 BLOCK_ID_FONT = ("Arial", 15, "bold")
 
-SCROLLABLE_LIST_DIMENSIONS = (275, APP_WIDTH)
-SCROLLABLE_LIST_HEIGHT, SCROLLABLE_LIST_WIDTH = SCROLLABLE_LIST_DIMENSIONS
+SCROLLABLE_LIST_DIMENSIONS = (APP_WIDTH, 275)
+SCROLLABLE_LIST_WIDTH, SCROLLABLE_LIST_HEIGHT = SCROLLABLE_LIST_DIMENSIONS
 
-class AutoAddRunsFrame(ctk.CTkFrame, Listener):
+class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
     """
     Frame containing a scrollable, paginated list of runs inferred from location
     data that the user can choose to add to the system. Each row contains the
@@ -41,7 +42,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
 
         self._configure_frame()
         self._create_header()
-        self._create_page_information_and_controls()
+        self._create_pagination_area()
         self._create_add_all_button()
         self._create_scrollable_list()
 
@@ -68,13 +69,35 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
         """
         Event handler for when the user presses the left arrow key.
         """
-        self._prev_page()
+        self.prev_page()
 
     def handle_right_arrow(self, event=None) -> None:
         """
         Event handler for when the user presses the right arrow key.
         """
-        self._next_page()
+        self.next_page()
+
+    def next_page(self) -> None:
+        if self.curr_page + 1 <= self.pagination_frame.num_pages():
+            self.curr_page += 1
+            self._refresh_and_scroll_to_top()
+
+    def prev_page(self) -> None:
+        if self.curr_page > 1:
+            self.curr_page -= 1
+            self._refresh_and_scroll_to_top()
+
+    def first_page(self) -> None:
+        self.curr_page = 1
+        self._refresh_and_scroll_to_top()
+
+    def last_page(self) -> None:
+        self.curr_page = self.pagination_frame.num_pages()
+        self._refresh_and_scroll_to_top()
+
+    def _refresh_and_scroll_to_top(self) -> None:
+        self.notify()
+        self.run_list._parent_canvas.yview_moveto(0)
 
     def _configure_frame(self) -> None:
         self.configure(fg_color="transparent")
@@ -86,72 +109,20 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
             font=LARGE_TITLE_FONT
         ).pack(anchor="nw")
 
-    def _create_page_information_and_controls(self) -> None:
-        self.page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.page_control_frame.pack(anchor="nw", padx=PADDING_MEDIUM)
-
-        self.page_info = ctk.CTkLabel(self.page_control_frame)
-        self.page_info.pack(anchor="nw", padx=PADDING_MEDIUM)
-        self._update_page_info()
-
-        self._create_page_button("<<", self._first_page)
-        self._create_page_button("<", self._prev_page)
-        self._create_page_button(">", self._next_page)
-        self._create_page_button(">>", self._last_page)
+    def _create_pagination_area(self) -> None:
+        self.pagination_frame = PaginationFrame(
+            parent=self,
+            item_name="runs",
+            items_per_page=RUNS_PER_PAGE,
+            get_num_items=lambda: len(self.runs)
+        )
+        self.pagination_frame.pack(anchor="nw", padx=PADDING_MEDIUM)
 
     def _update_page_info(self) -> None:
-        if self.curr_page > self._num_pages():
-            self.curr_page = self._num_pages()
+        if self.curr_page > self.pagination_frame.num_pages():
+            self.curr_page = self.pagination_frame.num_pages()
 
-        self.page_info.configure(
-            text=f"Page {self.curr_page} of {self._num_pages()} ({len(self.runs)} runs)"
-        )
-
-    def _create_page_button(self, label: str, command: Callable) -> ctk.CTkButton:
-        button = ctk.CTkButton(
-            self.page_control_frame,
-            text=label,
-            height=SQUARE_BUTTON_HEIGHT,
-            width=SQUARE_BUTTON_WIDTH,
-            command=command
-        )
-        button.pack(anchor="nw", side="left", padx=PADDING_SMALL)
-
-        return button
-
-    def _num_pages(self) -> int:
-        """
-        :return: the number of pages for the current number of runs to
-        display.
-        """
-        num_runs = len(self.runs)
-
-        if num_runs == 0:
-            return 1
-
-        return math.ceil(num_runs / RUNS_PER_PAGE)
-
-    def _next_page(self) -> None:
-        if self.curr_page + 1 <= self._num_pages():
-            self.curr_page += 1
-            self._refresh_and_go_to_top_of_page()
-
-    def _prev_page(self) -> None:
-        if self.curr_page > 1:
-            self.curr_page -= 1
-            self._refresh_and_go_to_top_of_page()
-
-    def _first_page(self) -> None:
-        self.curr_page = 1
-        self._refresh_and_go_to_top_of_page()
-
-    def _last_page(self) -> None:
-        self.curr_page = self._num_pages()
-        self._refresh_and_go_to_top_of_page()
-
-    def _refresh_and_go_to_top_of_page(self) -> None:
-        self.notify()
-        self.run_list._parent_canvas.yview_moveto(0)
+        self.pagination_frame.update_page_info(self.curr_page)
 
     def _create_add_all_button(self) -> None:
         self.add_all_runs_button = ctk.CTkButton(
@@ -163,18 +134,18 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
         self.add_all_runs_button.pack(anchor="ne")
 
     def _create_scrollable_list(self) -> None:
-        self.run_list = ctk.CTkScrollableFrame(
+        self.scrollable_list = ctk.CTkScrollableFrame(
             self,
             width=SCROLLABLE_LIST_WIDTH,
             height=SCROLLABLE_LIST_HEIGHT,
             fg_color="transparent"
         )
-        self.run_list.pack(anchor="nw")
+        self.scrollable_list.pack(anchor="nw")
 
         self._show_no_runs_in_list_if_empty()
 
     def _clear_scrollable_list_and_reset_add_all(self) -> None:
-        for child in self.run_list.winfo_children():
+        for child in self.scrollable_list.winfo_children():
             child.destroy()
 
         self.add_all_runs_button.configure(command=None)
@@ -182,7 +153,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
     def _show_no_runs_in_list_if_empty(self) -> None:
         if len(self.runs) == 0:
             ctk.CTkLabel(
-                self.run_list,
+                self.scrollable_list,
                 text="No runs to display. Try running location fetch."
             ).pack(anchor="nw")
 
@@ -193,7 +164,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener):
         for tracking_num in self.runs[start_run_index:end_run_index]:
             run = self.runs.get(tracking_num)
 
-            row = ctk.CTkFrame(self.run_list)
+            row = ctk.CTkFrame(self.scrollable_list)
             row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
             self._add_row_data(

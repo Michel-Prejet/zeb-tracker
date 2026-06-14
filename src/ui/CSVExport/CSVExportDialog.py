@@ -44,7 +44,7 @@ class CSVExportDialog(ctk.CTkToplevel):
         self._create_input_fields()
         self._create_submit_area()
 
-    def submit(self) -> None:
+    def _submit(self) -> None:
         """
         Attempts to create a CSV file containing all run data for this fleet with
         the folder path, name, and (optionally) the start date provided in the
@@ -147,7 +147,7 @@ class CSVExportDialog(ctk.CTkToplevel):
         ctk.CTkButton(
             self,
             text="Export",
-            command=self.submit
+            command=self._submit
         ).pack()
 
         self.msg = ctk.CTkLabel(self, text="")

@@ -53,9 +53,9 @@ class AddRunFrame(ctk.CTkFrame):
         """
         Event handler for when the user presses the Enter key.
         """
-        self.submit()
+        self._submit()
 
-    def submit(self) -> None:
+    def _submit(self) -> None:
         """
         Attempts to create a new bus based on the input provided in the fields.
         If successful, the run is added to the bus in the fleet, a success
@@ -170,7 +170,7 @@ class AddRunFrame(ctk.CTkFrame):
         ctk.CTkButton(
             self.manual_adder_frame,
             text="Add",
-            command=self.submit
+            command=self._submit
         ).grid(row=5, column=INPUT_FIELD_COL, pady=PADDING_LARGE)
 
         self.msg = ctk.CTkLabel(self.manual_adder_frame, text="", padx=PADDING_LARGE)

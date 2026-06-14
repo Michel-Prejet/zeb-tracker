@@ -39,7 +39,13 @@ class AddBusFrame(ctk.CTkFrame):
         self._create_input_fields()
         self._create_submit_area()
 
-    def submit(self) -> None:
+    def handle_enter(self, event=None) -> None:
+        """
+        Event handler for when the user presses the Enter key.
+        """
+        self._submit()
+
+    def _submit(self) -> None:
         """
         Attempts to create a new bus based on the input provided in the fields.
         If successful, the bus is added to the fleet, a success message is
@@ -54,12 +60,6 @@ class AddBusFrame(ctk.CTkFrame):
             self._clear_input_fields()
         except Exception as e:
             self._handle_error(e)
-
-    def handle_enter(self, event=None) -> None:
-        """
-        Event handler for when the user presses the Enter key.
-        """
-        self.submit()
 
     def _configure_frame(self) -> None:
         self.configure(fg_color="transparent")
@@ -94,7 +94,7 @@ class AddBusFrame(ctk.CTkFrame):
         submit_button = ctk.CTkButton(
             self,
             text="Add",
-            command=self.submit
+            command=self._submit
         )
         submit_button.grid(row=4, column=INPUT_FIELD_COL, pady=PADDING_LARGE)
 

@@ -1,43 +1,25 @@
-import math
-from enum import Enum
 from tkinter import messagebox
 import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
 from domain.Run import Run
+from ui.Pagination.Paginatable import Paginatable
+from ui.Pagination.PaginationFrame import PaginationFrame
+from ui.Runs.Search.RunSearchFilters import SearchFilterType, FILTER_ACTIONS
+from ui.Runs.Search.RunSearchFrame import RunSearchFrame
+from ui.UIConstants import LARGE_TITLE_FONT, PADDING_LARGE, PADDING_MEDIUM, APP_WIDTH, SMALL_TITLE_FONT, \
+    WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT
+from utilities.DateTimeHelper import format_date
 from utilities.InvariantHelper import require_not_none
-from datetime import date
 
 
-PAGE_SIZE = 20
+RUNS_PER_PAGE = 20
 
-class SearchFilterType(Enum):
-    """
-    Represents different filters that can be applied to the list of runs during
-    a search. Each filter is associated with a lambda function taking as an
-    argument a list of (Run, Bus) tuples and a string, where the string is used
-    to filter the run list based on whether it is contained in the string
-    representation of the selected attribute (except for block IDs, which
-    require an exact match).
-    For example, when DATE is selected with filter "2026-05", all runs in
-    May 2026 will be displayed.
-    """
-    DATE = "Date"
-    BLOCK_ID = "Block ID"
-    BUS_TRACKING_NUM = "Bus"
-    BUS_MODEL = "Model"
+SCROLLABLE_LIST_DIMENSIONS = (APP_WIDTH, 650)
+SCROLLABLE_LIST_WIDTH, SCROLLABLE_LIST_HEIGHT = SCROLLABLE_LIST_DIMENSIONS
 
-FILTER_ACTIONS = {
-    SearchFilterType.DATE: lambda run_list, start_date, end_date: [r for r in run_list if start_date <= r[0].run_date <= end_date],
-    SearchFilterType.BLOCK_ID: lambda run_list, search_filter: [r for r in run_list if search_filter == r[0].block_id],
-    SearchFilterType.BUS_TRACKING_NUM: lambda run_list, search_filter: [r for r in run_list if search_filter in str(r[1].tracking_num)],
-    SearchFilterType.BUS_MODEL: lambda run_list, search_filter: [r for r in run_list if search_filter in r[1].model]
-}
-
-INITIAL_FILTER = SearchFilterType.DATE
-
-class ViewRunsFrame(ctk.CTkFrame, Listener):
+class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
     """
     Frame displaying the list of runs in a given fleet, including the run
     date, the block ID, and the tracking number of the bus that completed the
@@ -51,246 +33,26 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
 
     def __init__(self, app: ctk.CTk, fleet: Fleet, controller):
         require_not_none(app, "App should not be None.")
+        require_not_none(fleet, "Fleet should not be None.")
         require_not_none(controller, "Controller should not be None.")
 
         super().__init__(app)
-        self.controller = controller
+
+        self.app = app
         self.fleet = fleet
+        self.controller = controller
         fleet.register_listener(self)
-        self.curr_run_list = fleet.sorted_runs()
-        self.curr_page = 1
+
+        self.runs = fleet.sorted_runs()
         self.curr_search_filter = lambda run_list: run_list
-
-        # Header
-        ctk.CTkLabel(self,
-                     text="Runs",
-                     font=("Arial", 20, "bold")
-                     ).pack()
-
-        # Search frame
-        self.search_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.search_frame.pack(anchor="w", padx=10, pady=5)
-
-        self.search_inputs_frame = ctk.CTkFrame(self.search_frame, fg_color="transparent")
-        self.search_inputs_frame.grid(row=0, column=0, sticky="w")
-
-        # Search field(s)
-        self.search_entry_1 = ctk.CTkEntry(self.search_inputs_frame)
-        self.search_entry_2 = ctk.CTkEntry(self.search_inputs_frame)
-
-        # Submit search button
-        search_button = ctk.CTkButton(self.search_frame, text="🔎", width=20, command=self.submit_search)
-        search_button.grid(row=0, column=1, sticky="w", padx=5)
-
-        # Dropdown menu of filter types for the search
-        self.search_filter_menu = ctk.CTkOptionMenu(self.search_frame,
-                                                    values=[f.value for f in SearchFilterType],
-                                                    command=lambda _: self.refresh_search_inputs_frame())
-        self.search_filter_menu.grid(row=0, column=2, sticky="w", padx=5)
-
-        # Button to reset search
-        search_reset_button = ctk.CTkButton(self.search_frame, text="Reset", width=50, command=self.reset_search)
-        search_reset_button.grid(row=0, column=3, sticky="w", padx=5)
-
-        # Error message for search filters
-        self.search_err_msg = ctk.CTkLabel(self.search_frame, text="")
-
-        # Page information
-        page_control_frame = ctk.CTkFrame(self, fg_color="transparent")
-        page_control_frame.pack(anchor="nw", padx=5)
-
-        self.page_info = ctk.CTkLabel(page_control_frame, text=f"Page {self.curr_page} of {self._num_pages()} "
-                                                               f"({len(self.curr_run_list)} runs)")
-        self.page_info.pack(anchor="nw", padx=5)
-
-        first_page_button = ctk.CTkButton(page_control_frame,
-                                          text="<<", width=20, command=self._first_page)
-        first_page_button.pack(anchor="nw", side="left", padx=2)
-        prev_page_button = ctk.CTkButton(page_control_frame,
-                                              text="<", width=20, command=self._prev_page)
-        prev_page_button.pack(anchor="nw", side="left", padx=2)
-        next_page_button = ctk.CTkButton(page_control_frame,
-                                              text=">", width=20, command=self._next_page)
-        next_page_button.pack(anchor="nw", side="left", padx=2)
-        last_page_button = ctk.CTkButton(page_control_frame,
-                                           text=">>", width=20, command=self._last_page)
-        last_page_button.pack(anchor="nw", padx=2)
-
-        # Initialize scrollable list
-        self.run_list = ctk.CTkScrollableFrame(self, width=900, height=650)
-        self.run_list.pack()
-
-        self.refresh_search_inputs_frame()
-        self.notify()
-
-    def handle_enter(self, event=None) -> None:
-        """
-        Event handler for when the user presses the Enter key. Submits the
-        current search filter.
-
-        :param event: the Tkinter event to handle (None by default).
-        """
-        self.submit_search()
-
-    def handle_left_arrow(self, event=None) -> None:
-        """
-        Event handler for when the user presses the left arrow key. Goes to
-        the previous page.
-
-        :param event: the Tkinter event to handle (None by default).
-        """
-        self._prev_page()
-
-    def handle_right_arrow(self, event=None) -> None:
-        """
-        Event handler for when the user presses the right arrow key. Goes to
-        the next page.
-
-        :param event: the Tkinter event to handle (None by default).
-        """
-        self._next_page()
-
-    def reset_search(self) -> None:
-        """
-        Reconstructs the run list with all filters removed and goes back
-        to page 1.
-        """
-        self.curr_page = 1
-        self.curr_search_filter = lambda run_list: run_list
-        self.notify()
-
-        self.search_entry_1.delete(0, "end")
-        self.search_entry_2.delete(0, "end")
-        self.search_filter_menu.set(INITIAL_FILTER.value)
-
-    def submit_search(self) -> None:
-        """
-        Filters the run list based on the input provided in the search entry
-        field(s) and the search filter type menu, and goes back to page 1. Takes
-        no action if the search entry is empty or only whitespace. Does not
-        validate input (except dates); invalid search filters will simply result
-        in zero results. For the DATE filter, an error message is displayed if
-        the dates provided are not in YYYY-MM-DD format.
-        """
-        search_filter_type: SearchFilterType = SearchFilterType(self.search_filter_menu.get())
-        if search_filter_type == SearchFilterType.DATE:
-            start_date_raw = self.search_entry_1.get().strip()
-            end_date_raw = self.search_entry_2.get().strip()
-
-            try:
-                start_date = date.fromisoformat(start_date_raw)
-                end_date = date.fromisoformat(end_date_raw)
-                self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, start_date, end_date)
-                self.notify()
-
-                self.search_err_msg.grid_forget()
-                self.search_entry_1.delete(0, "end")
-                self.search_entry_2.delete(0, "end")
-            except ValueError:
-                self.search_err_msg.configure(text="Dates should be in YYYY-MM-DD format.", text_color="red")
-                self.search_err_msg.grid(row=1, columnspan=3, sticky="w")
-        else:
-            search_filter = self.search_entry_1.get().strip()
-
-            if len(search_filter) > 0:
-                self.curr_search_filter = lambda run_list: FILTER_ACTIONS[search_filter_type](run_list, search_filter)
-            self.notify()
-
-            self.search_entry_1.delete(0, "end")
-
         self.curr_page = 1
 
-    def refresh_search_inputs_frame(self) -> None:
-        """
-        Updates and resets the search input fields based on the current
-        search filter type. If DATE is selected, two input fields are provided
-        for start and end dates. Otherwise, a single input field is provided
-        for the search filter.
-        """
-        self.search_entry_1.delete(0, "end")
-        self.search_entry_2.delete(0, "end")
-        self.search_err_msg.grid_forget()
-        self.search_inputs_frame.focus_set()
+        self._create_header()
+        self._create_search_area()
+        self._create_pagination_area()
+        self._initialize_scrollable_list()
 
-        if self.search_filter_menu.get() == SearchFilterType.DATE.value:
-            self.search_entry_1.configure(placeholder_text="Start date", width=125)
-            self.search_entry_2.configure(placeholder_text="End date", width=125)
-            self.search_entry_1.pack(anchor="w", side="left")
-            self.search_entry_2.pack(anchor="w", padx=5)
-        else:
-            self.search_entry_2.pack_forget()
-            self.search_entry_1.configure(placeholder_text="Search...", width=250)
-            self.search_entry_1.pack(anchor="w")
-
-    def confirm_remove_run(self, run: tuple[Run, Bus]) -> None:
-        """
-        Displays a pop-up window asking the user to confirm that they would
-        like to remove a run for a bus in the fleet. Removes the run if the user
-        selects Yes.
-
-        :param run: a RUN, BUS tuple containing the run to remove and the bus
-        to remove it from if the user selects Yes.
-        """
-        d = run[0].run_date
-        run_date = f"{d.strftime('%B')} {d.day}, {d.year}"
-
-        confirmed = messagebox.askyesno(
-            "Remove run",
-            f"Are you sure you want to remove this run?\n"
-            f"{run_date} | Block {run[0].block_id} | Bus {run[1].tracking_num}"
-        )
-
-        if confirmed:
-            self.controller.remove_run_from_bus(run[1], run[0])
-
-    def _num_pages(self) -> int:
-        """
-        :return: the number of pages for the current number of runs to
-        display (any search filters will be considered).
-        """
-        num_runs = len(self.curr_run_list)
-
-        if num_runs == 0:
-            return 1
-
-        return math.ceil(num_runs / PAGE_SIZE)
-
-    def _next_page(self) -> None:
-        """
-        Increments the current page number if it does not exceed the total
-        number of pages, then refreshes the run list.
-        """
-        if self.curr_page + 1 <= self._num_pages():
-            self.curr_page += 1
-            self.notify()
-            self.run_list._parent_canvas.yview_moveto(0)
-
-    def _prev_page(self) -> None:
-        """
-        Decrements the current page number if it is greater than 1, then
-        refreshes the run list.
-        """
-        if self.curr_page > 1:
-            self.curr_page -= 1
-            self.notify()
-            self.run_list._parent_canvas.yview_moveto(0)
-
-    def _first_page(self) -> None:
-        """
-        Sets the current page number to 1, then refreshes the run list.
-        """
-        self.curr_page = 1
         self.notify()
-        self.run_list._parent_canvas.yview_moveto(0)
-
-    def _last_page(self) -> None:
-        """
-        Sets the current page number to the last page, then refreshes the
-        run list.
-        """
-        self.curr_page = self._num_pages()
-        self.notify()
-        self.run_list._parent_canvas.yview_moveto(0)
 
     def notify(self) -> None:
         """
@@ -299,48 +61,226 @@ class ViewRunsFrame(ctk.CTkFrame, Listener):
         scrollable list of runs and reconstructs it, applying the current search
         filter and appending all necessary labels and buttons.
         """
+        self._clear_scrollable_list()
 
-        # Clear the old list
-        for child in self.run_list.winfo_children():
+        self._apply_search_filter()
+
+        self.pagination_frame.update_page_info(self.curr_page)
+
+        self._show_no_runs_in_list_if_empty()
+
+        self._create_run_list()
+
+    def handle_enter(self, event=None) -> None:
+        """
+        Event handler for when the user presses the Enter key.
+        """
+        self._submit_search()
+
+    def handle_left_arrow(self, event=None) -> None:
+        """
+        Event handler for when the user presses the left arrow key.
+        """
+        self.prev_page()
+
+    def handle_right_arrow(self, event=None) -> None:
+        """
+        Event handler for when the user presses the right arrow key.
+        """
+        self.next_page()
+
+    def next_page(self) -> None:
+        if self.curr_page + 1 <= self.pagination_frame.num_pages():
+            self.curr_page += 1
+            self._refresh_and_scroll_to_top()
+
+    def prev_page(self) -> None:
+        if self.curr_page > 1:
+            self.curr_page -= 1
+            self._refresh_and_scroll_to_top()
+
+    def first_page(self) -> None:
+        self.curr_page = 1
+        self._refresh_and_scroll_to_top()
+
+    def last_page(self) -> None:
+        self.curr_page = self.pagination_frame.num_pages()
+        self._refresh_and_scroll_to_top()
+
+    def _refresh_and_scroll_to_top(self) -> None:
+        self.notify()
+        self.scrollable_list._parent_canvas.yview_moveto(0)
+
+    def _create_header(self) -> None:
+        ctk.CTkLabel(
+            self,
+            text="Runs",
+            font=LARGE_TITLE_FONT
+        ).pack()
+
+    def _create_search_area(self) -> None:
+        self.search_frame = RunSearchFrame(
+            self,
+            self._submit_search,
+            self._reset_search
+        )
+        self.search_frame.pack(
+            anchor="w",
+            padx=PADDING_LARGE,
+            pady=PADDING_MEDIUM
+        )
+
+    def _create_pagination_area(self) -> None:
+        self.pagination_frame = PaginationFrame(
+            parent=self,
+            item_name="runs",
+            items_per_page=RUNS_PER_PAGE,
+            get_num_items=lambda: len(self.runs)
+        )
+        self.pagination_frame.pack(anchor="nw", padx=PADDING_MEDIUM)
+
+    def _initialize_scrollable_list(self) -> None:
+        self.scrollable_list = ctk.CTkScrollableFrame(
+            self,
+            width=SCROLLABLE_LIST_WIDTH,
+            height=SCROLLABLE_LIST_HEIGHT
+        )
+        self.scrollable_list.pack()
+
+    def _clear_scrollable_list(self) -> None:
+        for child in self.scrollable_list.winfo_children():
             child.destroy()
 
-        # Apply the search filter to the run list
+    def _apply_search_filter(self) -> None:
         all_runs = self.fleet.sorted_runs()
-        self.curr_run_list = self.curr_search_filter(all_runs)
+        self.runs = self.curr_search_filter(all_runs)
 
-        # Update page info
-        self.page_info.configure(text=f"Page {self.curr_page} of {self._num_pages()} "
-                                      f"({len(self.curr_run_list)} runs)")
+    def _show_no_runs_in_list_if_empty(self) -> None:
+        if len(self.runs) == 0:
+            ctk.CTkLabel(
+                self.scrollable_list,
+                text="No runs to display."
+            ).pack(anchor="nw")
 
-        # Create the new list
-        start_run_index = (self.curr_page - 1) * PAGE_SIZE
-        end_run_index = start_run_index + PAGE_SIZE
+    def _create_run_list(self) -> None:
+        start_run_index = (self.curr_page - 1) * RUNS_PER_PAGE
+        end_run_index = start_run_index + RUNS_PER_PAGE
 
-        for run in self.curr_run_list[start_run_index:end_run_index]:
-            curr_row = ctk.CTkFrame(self.run_list)
-            curr_row.pack(fill="x", padx=5, pady=5)
+        for entry in self.runs[start_run_index:end_run_index]:
+            run, bus = entry
 
-            # Run date
-            d = run[0].run_date
-            run_date = f"{d.strftime('%B')} {d.day}, {d.year}"
-            ctk.CTkLabel(curr_row, text=run_date).pack(anchor="nw", side="left", padx=10)
+            row = ctk.CTkFrame(self.scrollable_list)
+            row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
-            # Block ID
-            (ctk.CTkLabel(curr_row, text=f"Block {run[0].block_id}", font=("Arial", 15, "bold"))
-             .pack(anchor="nw", side="left", padx=10))
+            self._add_row_data(
+                text=f"{format_date(run.run_date)}",
+                row=row
+            )
 
-            # Bus
-            (ctk.CTkLabel(curr_row, text=f"🚍 {run[1].tracking_num}")
-             .pack(anchor="nw", side="left", padx=10))
+            self._add_row_data(
+                text=f"Block {run.block_id}",
+                row=row,
+                font=SMALL_TITLE_FONT
+            )
 
-            # Remove button
-            (ctk.CTkButton(curr_row,
-                           text="Remove",
-                           height=20,
-                           width=60,
-                           command=lambda r=run: self.confirm_remove_run(r))
-             .pack(side="right", padx=5))
+            self._add_row_data(
+                text=f"🚍 {bus.tracking_num}",
+                row=row
+            )
 
-        if len(self.curr_run_list) == 0:
-            no_results_label = ctk.CTkLabel(self.run_list, text="No runs to display.")
-            no_results_label.pack(anchor="nw")
+            self._add_remove_button_to_row(entry, row)
+
+    def _add_row_data(self, text: str, row: ctk.CTkFrame,
+                      font: ctk.CTkFont | tuple | None = None) -> None:
+        ctk.CTkLabel(
+            row,
+            text=text,
+            font=font or ctk.CTkFont()
+        ).pack(anchor="nw", side="left", padx=PADDING_LARGE)
+
+    def _add_remove_button_to_row(self, data: tuple[Run, Bus], row: ctk.CTkFrame) -> None:
+        ctk.CTkButton(
+            row,
+            text="Remove",
+            width=WIDE_ROW_BUTTON_WIDTH,
+            height=WIDE_ROW_BUTTON_HEIGHT,
+            command=lambda d=data: self._confirm_remove_run(d)
+        ).pack(side="right", padx=PADDING_MEDIUM)
+
+    def _confirm_remove_run(self, data: tuple[Run, Bus]) -> None:
+        """
+        Displays a pop-up window asking the user to confirm that they would
+        like to remove a run for a bus in the fleet. Removes the run if the user
+        selects Yes.
+
+        :param data: a RUN, BUS tuple containing the run to remove and the bus
+        to remove it from if the user selects Yes.
+        """
+        run, bus = data
+
+        confirmed = messagebox.askyesno(
+            title="Remove run",
+            message=f"Are you sure you want to remove this run?\n"
+                    f"{format_date(run.run_date)} | Block {run.block_id} | Bus {bus.tracking_num}"
+        )
+
+        if confirmed:
+            self.controller.remove_run_from_bus(bus, run)
+
+    def _reset_search(self) -> None:
+        """
+        Reconstructs the run list with all filters removed and goes back
+        to page 1.
+        """
+        self.curr_page = 1
+        self.curr_search_filter = lambda run_list: run_list
+        self.notify()
+
+        self.search_frame.clear_input_fields()
+        self.search_frame.reset_search_filter_menu()
+
+    def _submit_search(self) -> None:
+        """
+        Filters the run list based on the input provided in the search entry
+        field(s) and the search filter type menu, and goes back to page 1. Takes
+        no action if the search entry is empty or only whitespace. Does not
+        validate input (except dates); invalid search filters will simply result
+        in zero results. For the DATE filter, an error message is displayed if
+        the dates provided are not in YYYY-MM-DD format.
+        """
+        search_filter_type = self.search_frame.get_search_filter_selection()
+
+        if search_filter_type == SearchFilterType.DATE:
+            self._get_date_range_search_filter_from_input()
+        else:
+            self._get_general_search_filter_from_input(search_filter_type)
+
+        self.curr_page = 1
+
+        self.notify() # Applies the search filter
+
+        self.search_frame.clear_input_fields()
+        self.search_frame.remove_error_message()
+
+    def _get_date_range_search_filter_from_input(self) -> None:
+        try:
+            start_date = self.search_frame.get_date_from_main_input()
+            end_date = self.search_frame.get_date_from_extra_input()
+
+            self.curr_search_filter = lambda run_list: (
+                FILTER_ACTIONS[SearchFilterType.DATE](run_list, start_date, end_date)
+            )
+        except ValueError:
+            self.search_frame.show_error("Dates should be in YYYY-MM-DD format.")
+
+    def _get_general_search_filter_from_input(self, filter_type: SearchFilterType) -> None:
+        text_filter = self.search_frame.get_main_input_raw()
+
+        if len(text_filter) > 0:
+            self.curr_search_filter = lambda run_list: (
+                FILTER_ACTIONS[filter_type](run_list, text_filter)
+            )
+
+
+
+

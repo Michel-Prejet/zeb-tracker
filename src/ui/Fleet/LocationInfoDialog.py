@@ -2,6 +2,7 @@ from datetime import timedelta
 import customtkinter as ctk
 from domain.Bus import Bus
 from ui.UIConstants import PADDING_MEDIUM
+from utilities.DateTimeHelper import _format_timedelta
 from utilities.InvariantHelper import require_not_none
 import webbrowser
 
@@ -110,20 +111,3 @@ class LocationInfoDialog(ctk.CTkToplevel):
                f"{self.info.stop.coordinates.latitude},"
                f"{self.info.stop.coordinates.longitude}")
         webbrowser.open(url)
-
-def _format_timedelta(td: timedelta) -> str:
-    """
-    Creates a string in HH:MM:SS format from a timedelta object.
-
-    :param td: the timedelta object to convert to a string.
-    :return: a string representing the given timedelta object in HH:MM:SS format.
-    """
-    SECONDS_PER_HOUR = 3600
-    MINUTES_PER_HOUR = 60
-
-    total_seconds = int(td.total_seconds())
-    hours = total_seconds // SECONDS_PER_HOUR
-    minutes = (total_seconds % SECONDS_PER_HOUR) // MINUTES_PER_HOUR
-    seconds = total_seconds % MINUTES_PER_HOUR
-
-    return f"{hours:02}:{minutes:02}:{seconds:02}"

@@ -1,7 +1,7 @@
 from utilities.live_tracker.winnipeg_transit_gtfs.file_readers.CalendarReader import CalendarReader
 from utilities.live_tracker.winnipeg_transit_gtfs.GTFSFilePaths import GTFS_PATH, TRIPS_INPUT_FILE
 from utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError import GTFSFileNotFoundError, \
-    MissingTokenError, MissingColumnError, InvalidServiceIDError, InvalidTripIDError, InvalidBlockIDError
+    MissingTokenError, MissingColumnError, MalformedTokenError
 
 
 TRIP_ID_COLUMN_HEADER = "trip_id"
@@ -32,8 +32,7 @@ class TripsReader:
                     self.service_id_col = header_tokens.index(SERVICE_ID_COLUMN_HEADER)
                     self.block_id_col = header_tokens.index(BLOCK_ID_COLUMN_HEADER)
                 except ValueError:
-                    raise MissingColumnError(f"Missing column in {TRIPS_INPUT_FILE}.",
-                                             TRIPS_INPUT_FILE)
+                    raise MissingColumnError(TRIPS_INPUT_FILE)
 
                 # Get today's service ID
                 calendar_reader = CalendarReader()
@@ -43,8 +42,7 @@ class TripsReader:
                 self.curr_row = 2
                 self._parse_gtfs_trips()
         except FileNotFoundError:
-            raise GTFSFileNotFoundError(f"{TRIPS_INPUT_FILE} could not be opened.",
-                                        TRIPS_INPUT_FILE)
+            raise GTFSFileNotFoundError(TRIPS_INPUT_FILE)
 
     def get(self) -> dict[int, str]:
         """
@@ -92,22 +90,18 @@ class TripsReader:
         num_tokens = len(tokens)
         if (self.trip_id_col >= num_tokens or self.service_id_col >= num_tokens
                 or self.block_id_col >= num_tokens):
-            raise MissingTokenError(f"Missing token in {TRIPS_INPUT_FILE} on line {self.curr_row}.",
-                                    TRIPS_INPUT_FILE, self.curr_row)
+            raise MissingTokenError(TRIPS_INPUT_FILE, self.curr_row)
 
         trip_id_raw = tokens[self.trip_id_col].strip()
         service_id_raw = tokens[self.service_id_col].strip()
         block_id_raw = tokens[self.block_id_col].strip()
 
         if not trip_id_raw.isdigit():
-            raise InvalidTripIDError(f"Invalid trip ID in {TRIPS_INPUT_FILE} on line {self.curr_row}.",
-                                     TRIPS_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(TRIPS_INPUT_FILE, self.curr_row, TRIP_ID_COLUMN_HEADER)
         if not service_id_raw.isdigit():
-            raise InvalidServiceIDError(f"Invalid service ID in {TRIPS_INPUT_FILE} on line {self.curr_row}.",
-                                        TRIPS_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(TRIPS_INPUT_FILE, self.curr_row, SERVICE_ID_COLUMN_HEADER)
         if not _is_valid_block_id(block_id_raw):
-            raise InvalidBlockIDError(f"Invalid block ID in {TRIPS_INPUT_FILE} on line {self.curr_row}.",
-                                      TRIPS_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(TRIPS_INPUT_FILE, self.curr_row, BLOCK_ID_COLUMN_HEADER)
 
         if int(service_id_raw) != self.curr_service_id:
             return None

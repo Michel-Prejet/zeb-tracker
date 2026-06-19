@@ -1,9 +1,10 @@
 from datetime import timedelta, datetime
 from typing import Callable
-
+from utilities.InvariantHelper import require_state
 from utilities.live_tracker.BlockIDFinder import BlockIDFinder
 from utilities.live_tracker.StopScanner import StopScanner
 from utilities.live_tracker.TimeHelper import get_curr_time_as_timedelta
+from utilities.live_tracker.TrackerErrorMessages import get_tracker_error_message
 from utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader import GTFSReader
 
 
@@ -17,26 +18,37 @@ class LiveBusTracker:
     """
 
     def __init__(self, progress_callback: Callable[[int, int], None] | None = None):
-        gtfs_reader = GTFSReader()
-        self.stop_scanner = StopScanner(gtfs_reader)
-        self.block_id_finder = BlockIDFinder(gtfs_reader)
         self.query_time: datetime | None = None
         self.query_time_delta: timedelta | None = None
         self.progress_callback = progress_callback
+        self.err_messages: list[str] = []
 
-    """
-    Gathers location information for arrivals at all stops in the Winnipeg
-    Transit API.
-    
-    :return True if the scan was successful, False if the scan was cancelled.
-    """
+        self.gtfs_read = False
+
+    def read_gtfs(self) -> None:
+        gtfs_reader = GTFSReader()
+        self.stop_scanner = StopScanner(gtfs_reader)
+        self.block_id_finder = BlockIDFinder(gtfs_reader)
+
+        self.gtfs_read = True
+
     def scan_stops(self) -> bool:
+        """
+        Gathers location information for arrivals at all stops in the Winnipeg
+        Transit API.
+
+        :return: True if the scan was successful, False if the scan was cancelled.
+        """
+        require_state(self.gtfs_read, "GTFS should have been read before scanning stops.")
+
         self.query_time = datetime.now()
         self.query_time_delta = get_curr_time_as_timedelta()
+
         return self.stop_scanner.scan_all_stops_and_record_observations(self.progress_callback)
 
     def cancel_stop_scan(self) -> None:
-        self.stop_scanner.cancel_stop_scan()
+        if self.gtfs_read:
+            self.stop_scanner.cancel_stop_scan()
 
     def get_location_info_for_bus(self, bus_tracking_num: int) -> dict | None:
         """
@@ -45,13 +57,15 @@ class LiveBusTracker:
         the stop ID, name, and coordinates; the route and destination; the
         block ID (possibly missing); and the scheduled and estimated departure times
         at the stop. Only considers buses that are within 15 minutes of a stop.
-        Assumes that the stop scan has already been performed.
+        Assumes that the gtfs read and the stop scan have already been performed.
 
         :param bus_tracking_num: the tracking number of the bus for which to
         retrieve live location information.
         :return: a dictionary containing live location information for the
         given bus, or None if no location information was found.
         """
+        require_state(self.gtfs_read, "GTFS should have been read before retrieving location info.")
+
         observations = self.stop_scanner.observations.get_all_observations_for_bus(bus_tracking_num)
         current_observation = self.stop_scanner.observations.get_most_current_observation_for_bus(bus_tracking_num)
 
@@ -86,6 +100,28 @@ class LiveBusTracker:
             result["block_id"] = block_id
 
         return result
+
+    def get_error_messages(self) -> list[str]:
+        """
+        Returns a list of error messages logged since the last time they
+        were retrieved, then resets the list.
+
+        :return: a list of strings containing all error messages reported
+        since the last time they were retrieved.
+        """
+        if self.gtfs_read:
+            stop_scan_errors = self.stop_scanner.get_error_messages_and_clear_log()
+            result = self.err_messages + stop_scan_errors
+        else:
+            result = self.err_messages
+
+        self.err_messages: list[str] = []
+
+        return result
+
+    def log_error(self, e: Exception) -> None:
+        message = get_tracker_error_message(e)
+        self.err_messages.append(message)
 
 
 

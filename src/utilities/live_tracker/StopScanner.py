@@ -2,6 +2,7 @@ from concurrent.futures import as_completed
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Callable
 from utilities.live_tracker.TimeHelper import parse_api_time
+from utilities.live_tracker.TrackerErrorMessages import get_tracker_error_message
 from utilities.live_tracker.domain.BusObservation import BusObservation
 from utilities.live_tracker.domain.ObservationDict import ObservationDict
 from utilities.live_tracker.winnipeg_transit_api.WTClient import get_stop_information_and_schedule
@@ -20,6 +21,14 @@ class StopScanner:
         self.stops = gtfs_reader.get_all_stops()
         self.observations = ObservationDict()
         self.cancel_scan = False
+        self.err_messages: list[str] = []
+
+    def get_error_messages_and_clear_log(self) -> list[str]:
+        err_messages = self.err_messages
+
+        self.err_messages: list[str] = []
+
+        return err_messages
 
     def scan_all_stops_and_record_observations(self,
         progress_callback: Callable[[int, int], None] | None = None) -> bool:
@@ -53,19 +62,22 @@ class StopScanner:
                     self.cancel_scan = False
                     return False
 
-                stop_id = futures[future]
-
                 try:
                     stop_info = future.result()
                     self._add_observations_from_stop_api_data(stop_info)
                 except Exception as e:
-                    print(f"Error scanning stop {stop_id}: {e}")
+                    err_msg = get_tracker_error_message(e)
+                    self.err_messages.append(err_msg)
                     continue
 
                 completed_stops += 1
 
                 if progress_callback is not None:
                     progress_callback(completed_stops, total_stops)
+
+        if len(self.err_messages) > 0:
+            return False
+
         return True
 
     def cancel_stop_scan(self) -> None:

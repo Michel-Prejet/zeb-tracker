@@ -1,8 +1,7 @@
 from datetime import timedelta
-
 from utilities.live_tracker.TimeHelper import parse_gtfs_time
 from utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError import MissingColumnError, \
-    GTFSFileNotFoundError, MissingTokenError, InvalidStopIDError, InvalidTripIDError, InvalidDepartureTimeError
+    GTFSFileNotFoundError, MissingTokenError, MalformedTokenError
 from utilities.live_tracker.winnipeg_transit_gtfs.GTFSFilePaths import GTFS_PATH, STOP_TIMES_INPUT_FILE
 from utilities.live_tracker.domain.Stop import STOP_NUMBER_LENGTH
 
@@ -35,15 +34,13 @@ class StopTimesReader:
                     self.departure_time_col = header_tokens.index(DEPARTURE_TIME_COLUMN_HEADER)
                     self.trip_id_col = header_tokens.index(TRIP_ID_COLUMN_HEADER)
                 except ValueError:
-                    raise MissingColumnError(f"Missing column in {STOP_TIMES_INPUT_FILE}.",
-                                             STOP_TIMES_INPUT_FILE)
+                    raise MissingColumnError(STOP_TIMES_INPUT_FILE)
 
                 # Parse and validate each row/token to populate the trip ID finder
                 self.curr_row = 2
                 self._parse_gtfs_stop_times()
         except FileNotFoundError:
-            raise GTFSFileNotFoundError(f"{STOP_TIMES_INPUT_FILE} could not be opened.",
-                                        STOP_TIMES_INPUT_FILE)
+            raise GTFSFileNotFoundError(STOP_TIMES_INPUT_FILE)
 
     def get(self) -> dict[int, dict[timedelta, list[int]]]:
         """
@@ -94,21 +91,17 @@ class StopTimesReader:
         num_tokens = len(tokens)
         if (self.stop_id_col >= num_tokens or self.departure_time_col >= num_tokens
                 or self.trip_id_col >= num_tokens):
-            raise MissingTokenError(f"Missing token in {STOP_TIMES_INPUT_FILE} on line {self.curr_row}.",
-                                    STOP_TIMES_INPUT_FILE, self.curr_row)
+            raise MissingTokenError(STOP_TIMES_INPUT_FILE, self.curr_row)
 
         stop_id_raw = tokens[self.stop_id_col].strip()
         departure_time_raw = tokens[self.departure_time_col].strip()
         trip_id_raw = tokens[self.trip_id_col].strip()
 
         if not stop_id_raw.isdigit() or len(stop_id_raw) != STOP_NUMBER_LENGTH:
-            raise InvalidStopIDError(f"Invalid stop ID in {STOP_TIMES_INPUT_FILE} on line {self.curr_row}.",
-                                     STOP_TIMES_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(STOP_TIMES_INPUT_FILE, self.curr_row, STOP_ID_COLUMN_HEADER)
         if not trip_id_raw.isdigit():
-            raise InvalidTripIDError(f"Invalid trip ID in {STOP_TIMES_INPUT_FILE} on line {self.curr_row}.",
-                                     STOP_TIMES_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(STOP_TIMES_INPUT_FILE, self.curr_row, TRIP_ID_COLUMN_HEADER)
 
         departure_time = parse_gtfs_time(departure_time_raw,
-                                        f"Invalid departure time in {STOP_TIMES_INPUT_FILE} "
-                                        f"on line {self.curr_row}.")
+                                        STOP_TIMES_INPUT_FILE, self.curr_row)
         return int(stop_id_raw), departure_time, int(trip_id_raw)

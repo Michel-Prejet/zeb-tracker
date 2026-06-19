@@ -97,7 +97,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
 
     def _refresh_and_scroll_to_top(self) -> None:
         self.notify()
-        self.run_list._parent_canvas.yview_moveto(0)
+        self.scrollable_list._parent_canvas.yview_moveto(0)
 
     def _configure_frame(self) -> None:
         self.configure(fg_color="transparent")

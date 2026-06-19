@@ -7,10 +7,8 @@ from utilities.InvariantHelper import require_not_none, require_state
 from dotenv import load_dotenv
 from utilities.live_tracker.TimeHelper import parse_api_time
 from utilities.live_tracker.domain.Stop import STOP_NUMBER_LENGTH
-from utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError import StopDataParsingError
-from utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError import MissingAPIKeyError
-from utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError import TransitTimeoutError, \
-    TransitConnectionError, TransitAuthenticationError, TransitHTTPError, TransitResponseError, TransitAPIError
+from utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError import MissingAPIKeyError, WtAuthError, \
+    WtTimeoutError, WtConnectionError, WtHTTPError, WtResponseError, WtAPIError, WtParsingError
 
 load_dotenv()
 
@@ -51,20 +49,20 @@ def get_stop_information_and_schedule(stop_number: int) -> dict:
         response.raise_for_status()
         data = _parse_raw_stop_data(response.json())
     except Timeout:
-        raise TransitTimeoutError()
+        raise WtTimeoutError()
     except ConnectionError:
-        raise TransitConnectionError()
+        raise WtConnectionError()
     except HTTPError as e:
         if e.response.status_code == 401:
-            raise TransitAuthenticationError()
+            raise WtAuthError(401)
         elif e.response.status_code == 429:
             time.sleep(REQUEST_DELAY_ON_429)
         else:
-            raise TransitHTTPError(f"{e.response.status_code}")
+            raise WtHTTPError(e.response.status_code)
     except ValueError:
-        raise TransitResponseError()
-    except RequestException as e:
-        raise TransitAPIError(f"Unexpected transit API error: {e}")
+        raise WtResponseError()
+    except RequestException:
+        raise WtAPIError()
 
     return data
 
@@ -85,7 +83,7 @@ def _parse_raw_stop_data(raw_data: dict) -> dict:
     try:
         stop_id = int(_try_key(stop, "key"))
     except (ValueError, TypeError):
-        raise StopDataParsingError("key")
+        raise WtParsingError("key", stop)
     stop_name = _try_key(stop, "name")
 
     # Get stop latitude and longitude
@@ -94,16 +92,16 @@ def _parse_raw_stop_data(raw_data: dict) -> dict:
     try:
         latitude = float(_try_key(geographic, "latitude"))
     except (ValueError, TypeError):
-        raise StopDataParsingError("latitude")
+        raise WtParsingError("latitude", geographic)
     try:
         longitude = float(_try_key(geographic, "longitude"))
     except (ValueError, TypeError):
-        raise StopDataParsingError("longitude")
+        raise WtParsingError("longitude", geographic)
 
     # Get the list of arrivals
     route_schedules = _try_key(stop_schedule, "route-schedules")
     if not isinstance(route_schedules, list):
-        raise StopDataParsingError("route-schedules")
+        raise WtParsingError("route-schedules", stop_schedule)
     bus_arrivals = _parse_raw_schedule(route_schedules)
 
     return {
@@ -168,7 +166,7 @@ def _parse_raw_arrival_data(raw_data: dict, route_name: str) -> dict | None:
     try:
         tracking_num = int(_try_key(bus, "key"))
     except (ValueError, TypeError):
-        raise StopDataParsingError("key")
+        raise WtParsingError("key", bus)
 
     # Get estimated and scheduled departure times
     times = _try_key(raw_data, "times")
@@ -202,6 +200,6 @@ def _try_key(data: dict, key: str) -> Any:
     """
     value = data.get(key)
     if value is None:
-        raise StopDataParsingError(key)
+        raise WtParsingError(key, data)
     return value
 

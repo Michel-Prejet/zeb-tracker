@@ -1,10 +1,14 @@
 from datetime import datetime
+
+from pefile import set_flags
+
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 import customtkinter as ctk
 from domain.InferredRunList import InferredRunList
 from domain.Run import Run
 from ui.Fleet.AddBusFrame import AddBusFrame
+from ui.Fleet.ErrorLog import ErrorLog
 from ui.Runs.AddRunFrame import AddRunFrame
 from ui.CSVExport.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
@@ -135,19 +139,19 @@ class FleetController:
         if self.tracker is not None:
             self.tracker.cancel_stop_scan()
 
-    def switch_to_add_bus_frame(self):
+    def switch_to_add_bus_frame(self) -> None:
         self._switch_main_frame(self.add_bus_frame)
 
-    def switch_to_add_run_frame(self):
+    def switch_to_add_run_frame(self) -> None:
         self._switch_main_frame(self.add_run_frame)
 
-    def switch_to_view_fleet_frame(self):
+    def switch_to_view_fleet_frame(self) -> None:
         self._switch_main_frame(self.view_fleet_frame)
 
-    def switch_to_view_runs_frame(self):
+    def switch_to_view_runs_frame(self) -> None:
         self._switch_main_frame(self.view_runs_frame)
 
-    def show_csv_export_dialog(self):
+    def show_csv_export_dialog(self) -> None:
         if self.csv_export_dialog is None:
             self.csv_export_dialog = CSVExportDialog(self.app, self.fleet)
         else:
@@ -155,6 +159,15 @@ class FleetController:
 
         self.csv_export_dialog.lift()
         self.csv_export_dialog.focus_force()
+
+    def _show_error_log_dialog(self, error_messages: list[str]) -> None:
+        if self.error_log_dialog is None:
+            self.error_log_dialog = ErrorLog(self.app, error_messages, self)
+        else:
+            self.error_log_dialog.deiconify()
+
+        self.error_log_dialog.lift()
+        self.error_log_dialog.focus_force()
 
     def _initialize_and_load_domain_model(self) -> None:
         self.fleet = Fleet()
@@ -172,6 +185,7 @@ class FleetController:
         self.add_bus_frame = AddBusFrame(self.app, self)
         self.add_run_frame = AddRunFrame(self.app, self.inferred_runs, self)
         self.csv_export_dialog = None
+        self.error_log_dialog = None
 
         self.curr_frame = self.view_fleet_frame
 
@@ -214,14 +228,19 @@ class FleetController:
         Creates a live bus tracker object and starts the stop scan. Catches
         any exceptions that might occur and stops the scan early.
         """
+        if self.tracker is None:
+            self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
         try:
-            if self.tracker is None:
-                self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
+            self.tracker.read_gtfs()
             success = self.tracker.scan_stops()
             self.app.after(0, self._apply_bus_locations, success)
         except Exception as e:
-            print(f"Error updating locations: {e}")
-            self.app.after(0, self.view_fleet_frame.show_location_fetch_finished)
+            self.tracker.log_error(e)
+            self.cancel_update_bus_locations()
+            self.app.after(
+                0,
+                self._complete_location_fetch
+            )
 
     def _apply_bus_locations(self, success: bool) -> None:
         """
@@ -235,10 +254,19 @@ class FleetController:
             update_bus_locations(self.fleet, self.tracker)
             infer_runs_from_location_info(self.inferred_runs)
 
-        self.view_fleet_frame.show_location_fetch_finished()
-
+        self._complete_location_fetch()
         if success:
             self.view_fleet_frame.update_location_fetch_query_time(datetime.now())
+
+    def _complete_location_fetch(self) -> None:
+        self.view_fleet_frame.show_location_fetch_finished()
+
+        err_messages = self.tracker.get_error_messages()
+        if len(err_messages) > 0:
+            self._show_error_log_dialog(err_messages)
+            self.error_log_dialog = None
+
+
 
 
 

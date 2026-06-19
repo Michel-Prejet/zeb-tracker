@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from utilities.live_tracker.winnipeg_transit_gtfs.GTFSFilePaths import GTFS_PATH, FEED_INFO_INPUT_FILE
 from utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError import MissingColumnError, \
-    MissingTokenError, InvalidStartDateError, InvalidEndDateError, GTFSFileNotFoundError, GTFSOutdatedError
+    MissingTokenError, GTFSFileNotFoundError, GTFSOutdatedError, MalformedTokenError
 
 
 START_DATE_COLUMN_HEADER = "feed_start_date"
@@ -26,15 +26,13 @@ class FeedInfoReader:
                     self.start_date_col = header_tokens.index(START_DATE_COLUMN_HEADER)
                     self.end_date_col = header_tokens.index(END_DATE_COLUMN_HEADER)
                 except ValueError:
-                    raise MissingColumnError(f"Missing column in {FEED_INFO_INPUT_FILE}.",
-                                             FEED_INFO_INPUT_FILE)
+                    raise MissingColumnError(FEED_INFO_INPUT_FILE)
 
                 # Parse and validate the start/end dates
                 self.curr_row = 2
                 self.start_date, self.end_date = self._validate_and_parse_start_and_end_dates()
         except FileNotFoundError:
-            raise GTFSFileNotFoundError(f"{FEED_INFO_INPUT_FILE} could not be opened.",
-                                        FEED_INFO_INPUT_FILE)
+            raise GTFSFileNotFoundError(FEED_INFO_INPUT_FILE)
 
     def validate_feed_is_current(self) -> None:
         """
@@ -62,32 +60,26 @@ class FeedInfoReader:
 
         num_tokens = len(tokens)
         if self.start_date_col >= num_tokens or self.end_date_col >= num_tokens:
-            raise MissingTokenError(f"Missing token in {FEED_INFO_INPUT_FILE} on line {self.curr_row}.",
-                                    FEED_INFO_INPUT_FILE, self.curr_row)
+            raise MissingTokenError(FEED_INFO_INPUT_FILE, self.curr_row)
 
         start_date_raw = tokens[self.start_date_col].strip()
         end_date_raw = tokens[self.end_date_col].strip()
 
         if not start_date_raw.isdigit() or len(start_date_raw) != NUM_DIGITS_IN_DATE:
-            raise InvalidStartDateError(f"Invalid start date in {FEED_INFO_INPUT_FILE} on line {self.curr_row}.",
-                                        FEED_INFO_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(FEED_INFO_INPUT_FILE, self.curr_row, START_DATE_COLUMN_HEADER)
         if not end_date_raw.isdigit() or len(end_date_raw) != NUM_DIGITS_IN_DATE:
-            raise InvalidEndDateError(f"Invalid end date in {FEED_INFO_INPUT_FILE} on line {self.curr_row}.",
-                                      FEED_INFO_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(FEED_INFO_INPUT_FILE, self.curr_row, END_DATE_COLUMN_HEADER)
 
         try:
             start_date = datetime.strptime(start_date_raw, "%Y%m%d").date()
         except ValueError:
-            raise InvalidStartDateError(f"Invalid start date in {FEED_INFO_INPUT_FILE} on line {self.curr_row}.",
-                                        FEED_INFO_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(FEED_INFO_INPUT_FILE, self.curr_row, START_DATE_COLUMN_HEADER)
         try:
             end_date = datetime.strptime(end_date_raw, "%Y%m%d").date()
         except ValueError:
-            raise InvalidEndDateError(f"Invalid end date in {FEED_INFO_INPUT_FILE} on line {self.curr_row}.",
-                                      FEED_INFO_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(FEED_INFO_INPUT_FILE, self.curr_row, END_DATE_COLUMN_HEADER)
 
         if start_date > end_date:
-            raise InvalidEndDateError(f"End date occurs before start date in {FEED_INFO_INPUT_FILE} on line {self.curr_row}.",
-                                      FEED_INFO_INPUT_FILE, self.curr_row)
+            raise MalformedTokenError(FEED_INFO_INPUT_FILE, self.curr_row, END_DATE_COLUMN_HEADER)
 
         return start_date, end_date

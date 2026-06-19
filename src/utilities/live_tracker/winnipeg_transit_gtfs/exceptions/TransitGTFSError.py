@@ -1,90 +1,74 @@
-class TransitGTFSError(Exception):
+class WtGTFSError(Exception):
     """
     Exception raised when there is a problem parsing data from
     the Winnipeg Transit GTFS archive.
     """
-    pass
 
-class GTFSOutdatedError(TransitGTFSError):
+
+class GTFSOutdatedError(WtGTFSError):
     """
     Exception raised when the GTFS data is out of date.
     """
     pass
 
-class StopNotFoundError(TransitGTFSError):
+class StopNotFoundError(WtGTFSError):
     """
     Exception raised when a stop doesn't exist in the trip ID finder.
     """
-    pass
 
-class DepartureTimeNotFoundError(TransitGTFSError):
+class DepartureTimeNotFoundError(WtGTFSError):
     """
     Exception raised when an arrival time doesn't exist for a stop in the trip
     ID finder.
     """
     pass
 
-class TripIDNotFoundError(TransitGTFSError):
+class TripIDNotFoundError(WtGTFSError):
     """
     Exception raised when a trip ID doesn't exist in the block ID finder.
     """
-    def __init__(self, message: str, trip_id: int):
-        super().__init__(message)
-        self.trip_id = trip_id
     pass
 
-class GTFSFileNotFoundError(TransitGTFSError):
-    def __init__(self, message: str, filename: str) -> None:
-        super().__init__(message)
+
+class GTFSFileError(WtGTFSError):
+    """
+    Exception raised when an error occurs related to a specific GTFS file.
+    """
+    def __init__(self, filename: str):
         self.filename = filename
+
+class GTFSFileNotFoundError(GTFSFileError):
     """
     Exception raised when a GTFS file could not be opened.
     """
     pass
 
-class MissingColumnError(TransitGTFSError):
-    def __init__(self, message: str, filename: str) -> None:
-        super().__init__(message)
-        self.filename = filename
+class MissingColumnError(GTFSFileError):
     """
     Exception raised when a column could not be found in a GTFS
     CSV file.
     """
-    pass
 
-class MissingTokenError(TransitGTFSError):
-    def __init__(self, message: str, filename: str, row: int) -> None:
-        super().__init__(message)
+
+class GTFSRowError(GTFSFileError):
+    """
+    Exception raised when an error occurs related to a specific row in a
+    GTFS file.
+    """
+    def __init__(self, filename: str, row: int, token_name: str | None = None):
         self.filename = filename
         self.row = row
+        self.token_name = token_name
+
+class MissingTokenError(GTFSRowError):
     """
     Exception raised when a token is missing from a row in a GTFS
     CSV file.
     """
-    pass
 
-class MalformedTokenError(TransitGTFSError):
-    def __init__(self, message:str, filename: str, row: int) -> None:
-        super().__init__(message)
-        self.filename = filename
-        self.row = row
+class MalformedTokenError(GTFSRowError):
     """
     Exception raised when a token read from a GTFS CSV line is malformed.
     """
     pass
-class InvalidStopIDError(MalformedTokenError): pass
-class InvalidDepartureTimeError(MalformedTokenError): pass
-class InvalidTripIDError(MalformedTokenError): pass
-class InvalidStartDateError(MalformedTokenError): pass
-class InvalidEndDateError(MalformedTokenError): pass
-class InvalidServiceIDError(MalformedTokenError): pass
-class InvalidServiceFlagError(MalformedTokenError): pass
-class DuplicateServiceIDError(MalformedTokenError): pass
-class MissingServiceIDError(MalformedTokenError): pass
-class InvalidExceptionalDateError(MalformedTokenError): pass
-class InvalidExceptionTypeError(MalformedTokenError): pass
-class InvalidBlockIDError(MalformedTokenError): pass
-class EmptyStopNameError(MalformedTokenError): pass
-class InvalidStopLatitudeError(MalformedTokenError): pass
-class InvalidStopLongitudeError(MalformedTokenError): pass
 

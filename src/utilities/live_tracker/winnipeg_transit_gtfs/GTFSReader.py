@@ -40,7 +40,7 @@ class GTFSReader:
         """
         return self.stop_dictionary
 
-    def get_trip_ids(self, stop_id: int, scheduled_departure_time: timedelta) -> list[int]:
+    def get_trip_ids(self, stop_id: int, scheduled_departure_time: timedelta) -> list[str]:
         """
         Finds the list of trip IDs corresponding to a given departure time at
         a given stop. Raises an exception if the stop ID or the corresponding
@@ -71,7 +71,7 @@ class GTFSReader:
                       "Trip ID list should not be empty.")
         return trip_ids
 
-    def get_block_id(self, trip_id: int) -> str:
+    def get_block_id(self, trip_id: str) -> str:
         """
         Finds the block ID associated with the given trip ID. Raises an
         exception if the trip ID wasn't found in the GTFS archive.

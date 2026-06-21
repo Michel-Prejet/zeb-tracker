@@ -1,2 +1,2 @@
-agency_name,agency_url,agency_timezone,agency_lang,agency_phone,agency_fare_url,agency_email
-Winnipeg Transit,https://winnipegtransit.com,America/Winnipeg,en,1-877-311-4974,https://efare.winnipegtransit.com,311@winnipeg.ca
+agency_phone,agency_url,agency_fare_url,agency_id,agency_name,agency_timezone,agency_lang,agency_email
+1-877-311-4974,https://winnipegtransit.com,https://efare.winnipegtransit.com,,Winnipeg Transit,America/Winnipeg,en,311@winnipeg.ca

@@ -19,7 +19,7 @@ class StopTimesReader:
     """
 
     def __init__(self):
-        self.trip_id_finder: dict[int, dict[timedelta, list[int]]] = {}
+        self.trip_id_finder: dict[int, dict[timedelta, list[str]]] = {}
 
         try:
             with open(f"{GTFS_PATH}/{STOP_TIMES_INPUT_FILE}", "r") as stop_times_file:
@@ -42,7 +42,7 @@ class StopTimesReader:
         except FileNotFoundError:
             raise GTFSFileNotFoundError(STOP_TIMES_INPUT_FILE)
 
-    def get(self) -> dict[int, dict[timedelta, list[int]]]:
+    def get(self) -> dict[int, dict[timedelta, list[str]]]:
         """
         Returns the trip ID finder dictionary created by this stop times reader.
 
@@ -73,7 +73,7 @@ class StopTimesReader:
 
             self.curr_row += 1
 
-    def _validate_and_parse_tokens(self, tokens: list[str]) -> tuple[int, timedelta, int]:
+    def _validate_and_parse_tokens(self, tokens: list[str]) -> tuple[int, timedelta, str]:
         """
         Validates and parses the tokens read from a row in the stop times GTFS
         file. The given list should contain three tokens: the stop ID, the
@@ -86,7 +86,7 @@ class StopTimesReader:
         trip ID.
         :return: a tuple of the form (STOP_ID, DEPARTURE_TIME, TRIP_ID), where
         STOP_ID is 5-digit integer, DEPARTURE_TIME is a timedelta object, and
-        TRIP_ID is an integer.
+        TRIP_ID is a string.
         """
         num_tokens = len(tokens)
         if (self.stop_id_col >= num_tokens or self.departure_time_col >= num_tokens
@@ -97,11 +97,12 @@ class StopTimesReader:
         departure_time_raw = tokens[self.departure_time_col].strip()
         trip_id_raw = tokens[self.trip_id_col].strip()
 
+        if "_" in stop_id_raw:
+            stop_id_raw = stop_id_raw.split("_")[0]
+
         if not stop_id_raw.isdigit() or len(stop_id_raw) != STOP_NUMBER_LENGTH:
             raise MalformedTokenError(STOP_TIMES_INPUT_FILE, self.curr_row, STOP_ID_COLUMN_HEADER)
-        if not trip_id_raw.isdigit():
-            raise MalformedTokenError(STOP_TIMES_INPUT_FILE, self.curr_row, TRIP_ID_COLUMN_HEADER)
 
         departure_time = parse_gtfs_time(departure_time_raw,
                                         STOP_TIMES_INPUT_FILE, self.curr_row)
-        return int(stop_id_raw), departure_time, int(trip_id_raw)
+        return int(stop_id_raw), departure_time, trip_id_raw

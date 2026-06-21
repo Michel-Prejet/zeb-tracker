@@ -17,7 +17,7 @@ class TripsReader:
     """
 
     def __init__(self):
-        self.block_id_finder: dict[int, str] = {}
+        self.block_id_finder: dict[str, str] = {}
 
         try:
             with open(f"{GTFS_PATH}/{TRIPS_INPUT_FILE}", "r") as trips_file:
@@ -44,7 +44,7 @@ class TripsReader:
         except FileNotFoundError:
             raise GTFSFileNotFoundError(TRIPS_INPUT_FILE)
 
-    def get(self) -> dict[int, str]:
+    def get(self) -> dict[str, str]:
         """
         Returns the block ID finder dictionary created by this trips reader.
 
@@ -71,7 +71,7 @@ class TripsReader:
 
             self.curr_row += 1
 
-    def _validate_and_parse_tokens(self, tokens: list[str]) -> tuple[int, str] | None:
+    def _validate_and_parse_tokens(self, tokens: list[str]) -> tuple[str, str] | None:
         """
         Validates and parses the tokens read from a row in the trips GTFS file.
         The given list should contain three tokens: the trip ID, service ID,
@@ -82,51 +82,42 @@ class TripsReader:
 
         :param tokens: a list of raw strings read from a CSV line in the trips
         GTFS file which should contain a trip ID, service ID, and block ID.
-        :return: a tuple of the form (TRIP_ID, BLOCK_ID), where TRIP_ID is an
-        integer and BLOCK_ID is a string, if the service ID matches the service
-        ID associated with today's date; or None if the service ID does not match
-        the one associated with today's date.
+        :return: a tuple of the form (TRIP_ID, BLOCK_ID), where TRIP_ID and
+        BLOCK_ID are strings, if the service ID matches the service ID associated
+        with today's date; or None if the service ID does not match the one
+        associated with today's date.
         """
         num_tokens = len(tokens)
         if (self.trip_id_col >= num_tokens or self.service_id_col >= num_tokens
                 or self.block_id_col >= num_tokens):
             raise MissingTokenError(TRIPS_INPUT_FILE, self.curr_row)
 
-        trip_id_raw = tokens[self.trip_id_col].strip()
-        service_id_raw = tokens[self.service_id_col].strip()
+        trip_id = tokens[self.trip_id_col].strip()
+        service_id = tokens[self.service_id_col].strip()
         block_id_raw = tokens[self.block_id_col].strip()
 
-        if not trip_id_raw.isdigit():
-            raise MalformedTokenError(TRIPS_INPUT_FILE, self.curr_row, TRIP_ID_COLUMN_HEADER)
-        if not service_id_raw.isdigit():
-            raise MalformedTokenError(TRIPS_INPUT_FILE, self.curr_row, SERVICE_ID_COLUMN_HEADER)
         if not _is_valid_block_id(block_id_raw):
             raise MalformedTokenError(TRIPS_INPUT_FILE, self.curr_row, BLOCK_ID_COLUMN_HEADER)
 
-        if int(service_id_raw) != self.curr_service_id:
+        if service_id != self.curr_service_id:
             return None
 
         block_id_parts = block_id_raw.split("-")
         block_id = f"{block_id_parts[1]}-{block_id_parts[2]}"
 
-        return int(trip_id_raw), block_id
+        return trip_id, block_id
 
 def _is_valid_block_id(value: str) -> bool:
     """
     Determines whether a given string from the GTFS data is valid block ID. A
-    valid block ID contains exactly two dashes (not at the first or last indices)
-    and only digits (other than the dashes).
+    valid block ID contains exactly two dashes.
 
     :param value: the string to validate.
     :return: True if the given string is a valid block ID, False otherwise.
     """
     NUM_DASHES_IN_BLOCK_ID = 2
 
-    if not value.replace("-", "").isdigit():
-        return False
     if value.count("-") != NUM_DASHES_IN_BLOCK_ID:
-        return False
-    if not (value[0].isdigit() and value[len(value) - 1].isdigit()):
         return False
 
     return True

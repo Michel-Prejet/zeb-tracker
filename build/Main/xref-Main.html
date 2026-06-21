@@ -27,10 +27,6 @@ imports:
  &#8226;   <a href="#controller.FleetController">controller.FleetController</a>
  &#8226;   <a href="#copyreg">copyreg</a>
  &#8226;   <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#datetime">datetime</a>
- &#8226;   <a href="#domain.location_info.Coordinates">domain.location_info.Coordinates</a>
- &#8226;   <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
- &#8226;   <a href="#domain.location_info.Stop">domain.location_info.Stop</a>
  &#8226;   <a href="#dotenv">dotenv</a>
  &#8226;   <a href="#encodings">encodings</a>
  &#8226;   <a href="#encodings.aliases">encodings.aliases</a>
@@ -185,6 +181,7 @@ imports:
  &#8226;   <a href="#stat">stat</a>
  &#8226;   <a href="#traceback">traceback</a>
  &#8226;   <a href="#types">types</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
  &#8226;   <a href="#warnings">warnings</a>
  &#8226;   <a href="#weakref">weakref</a>
 
@@ -2404,6 +2401,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.packaging.specifiers">setuptools._vendor.packaging.specifiers</a>
  &#8226;   <a href="#setuptools.config.setupcfg">setuptools.config.setupcfg</a>
  &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#ui.Pagination.Paginatable">ui.Pagination.Paginatable</a>
 
   </div>
 
@@ -4495,19 +4493,21 @@ imports:
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
  &#8226;   <a href="#domain.Run">domain.Run</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
+ &#8226;   <a href="#logic.RunFinder">logic.RunFinder</a>
  &#8226;   <a href="#persistence">persistence</a>
  &#8226;   <a href="#persistence.BusPersistence">persistence.BusPersistence</a>
  &#8226;   <a href="#persistence.RunPersistence">persistence.RunPersistence</a>
  &#8226;   <a href="#threading">threading</a>
- &#8226;   <a href="#ui.AddBusFrame">ui.AddBusFrame</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Fleet.ErrorLog">ui.Fleet.ErrorLog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
  &#8226;   <a href="#ui.MenuFrame">ui.MenuFrame</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
- &#8226;   <a href="#utilities.RunFinder">utilities.RunFinder</a>
  &#8226;   <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
 
   </div>
@@ -4882,14 +4882,18 @@ imported by:
  &#8226;   <a href="#customtkinter">customtkinter</a>
  &#8226;   <a href="#customtkinter.windows">customtkinter.windows</a>
  &#8226;   <a href="#customtkinter.windows.widgets.core_widget_classes.ctk_base_class">customtkinter.windows.widgets.core_widget_classes.ctk_base_class</a>
- &#8226;   <a href="#ui.AddBusFrame">ui.AddBusFrame</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Fleet.BusSearchFrame">ui.Fleet.BusSearchFrame</a>
+ &#8226;   <a href="#ui.Fleet.ErrorLog">ui.Fleet.ErrorLog</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
  &#8226;   <a href="#ui.MenuFrame">ui.MenuFrame</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -6104,8 +6108,7 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#Main.py">Main.py</a>
- &#8226;   <a href="#_strptime">_strptime</a>
+    <a href="#_strptime">_strptime</a>
  &#8226;   <a href="#calendar">calendar</a>
  &#8226;   <a href="#controller.FleetController">controller.FleetController</a>
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
@@ -6115,6 +6118,8 @@ imported by:
  &#8226;   <a href="#email.utils">email.utils</a>
  &#8226;   <a href="#http.cookiejar">http.cookiejar</a>
  &#8226;   <a href="#http.server">http.server</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
  &#8226;   <a href="#persistence.RunPersistence">persistence.RunPersistence</a>
  &#8226;   <a href="#requests.models">requests.models</a>
  &#8226;   <a href="#requests.sessions">requests.sessions</a>
@@ -6122,13 +6127,14 @@ imported by:
  &#8226;   <a href="#setuptools.warnings">setuptools.warnings</a>
  &#8226;   <a href="#sqlite3.dbapi2">sqlite3.dbapi2</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
  &#8226;   <a href="#urllib3.connection">urllib3.connection</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
+ &#8226;   <a href="#utilities.DateTimeHelper">utilities.DateTimeHelper</a>
+ &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
  &#8226;   <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
  &#8226;   <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
  &#8226;   <a href="#utilities.live_tracker.domain.BusObservation">utilities.live_tracker.domain.BusObservation</a>
@@ -6290,12 +6296,15 @@ imported by:
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
  &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterer">logic.BusFiltering.BusFilterer</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
  &#8226;   <a href="#persistence.BusPersistence">persistence.BusPersistence</a>
  &#8226;   <a href="#persistence.RunPersistence">persistence.RunPersistence</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
- &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+ &#8226;   <a href="#utilities.DateTimeHelper">utilities.DateTimeHelper</a>
 
   </div>
 
@@ -6319,12 +6328,11 @@ imports:
 imported by:
     <a href="#controller.FleetController">controller.FleetController</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
- &#8226;   <a href="#ui.AddBusFrame">ui.AddBusFrame</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+ &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
 
   </div>
 
@@ -6347,9 +6355,9 @@ imports:
   <div class="import">
 imported by:
     <a href="#controller.FleetController">controller.FleetController</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#utilities.RunFinder">utilities.RunFinder</a>
+ &#8226;   <a href="#logic.RunFinder">logic.RunFinder</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
 
   </div>
 
@@ -6368,9 +6376,9 @@ imported by:
     <a href="#domain.Bus">domain.Bus</a>
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -6392,11 +6400,11 @@ imported by:
  &#8226;   <a href="#domain.Bus">domain.Bus</a>
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
+ &#8226;   <a href="#logic.RunFinder">logic.RunFinder</a>
  &#8226;   <a href="#persistence.RunPersistence">persistence.RunPersistence</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
- &#8226;   <a href="#utilities.RunFinder">utilities.RunFinder</a>
- &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -6412,26 +6420,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#domain.location_info.Coordinates">domain.location_info.Coordinates</a>
- &#8226;   <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
+    <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
  &#8226;   <a href="#domain.location_info.Stop">domain.location_info.Stop</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="domain.location_info.Coordinates"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/domain/location_info/Coordinates.py" type="text/plain"><tt>domain.location_info.Coordinates</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#domain.location_info">domain.location_info</a>
- &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#Main.py">Main.py</a>
 
   </div>
 
@@ -6450,9 +6440,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#Main.py">Main.py</a>
- &#8226;   <a href="#domain.Bus">domain.Bus</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
+    <a href="#domain.Bus">domain.Bus</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
 
   </div>
 
@@ -6470,9 +6459,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#Main.py">Main.py</a>
- &#8226;   <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
+    <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
 
   </div>
 
@@ -6509,8 +6497,8 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.AddBusFrame">ui.AddBusFrame</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
+    <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
 
   </div>
 
@@ -6529,7 +6517,7 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
+    <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
 
   </div>
 
@@ -6566,7 +6554,8 @@ imported by:
     <a href="#domain.Bus">domain.Bus</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
  &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
 
   </div>
 
@@ -6583,8 +6572,8 @@ imports:
   <div class="import">
 imported by:
     <a href="#domain.Fleet">domain.Fleet</a>
- &#8226;   <a href="#ui.AddBusFrame">ui.AddBusFrame</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
 
   </div>
 
@@ -6601,7 +6590,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#domain.validation.ValidateRun">domain.validation.ValidateRun</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
 
   </div>
 
@@ -9738,6 +9727,8 @@ imported by:
  &#8226;   <a href="#calendar">calendar</a>
  &#8226;   <a href="#http">http</a>
  &#8226;   <a href="#inspect">inspect</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterType">logic.BusFiltering.BusFilterType</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterType">logic.RunFiltering.RunFilterType</a>
  &#8226;   <a href="#packaging._elffile">packaging._elffile</a>
  &#8226;   <a href="#packaging.specifiers">packaging.specifiers</a>
  &#8226;   <a href="#py_compile">py_compile</a>
@@ -9747,8 +9738,6 @@ imported by:
  &#8226;   <a href="#socket">socket</a>
  &#8226;   <a href="#ssl">ssl</a>
  &#8226;   <a href="#tkinter">tkinter</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
  &#8226;   <a href="#urllib3._collections">urllib3._collections</a>
  &#8226;   <a href="#urllib3.util.request">urllib3.util.request</a>
  &#8226;   <a href="#urllib3.util.timeout">urllib3.util.timeout</a>
@@ -11644,6 +11633,172 @@ imported by:
 </div>
 
 <div class="node">
+  <a name="logic"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/__init__.py" type="text/plain"><tt>logic</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imported by:
+    <a href="#logic.BusFiltering">logic.BusFiltering</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
+ &#8226;   <a href="#logic.RunFiltering">logic.RunFiltering</a>
+ &#8226;   <a href="#logic.RunFinder">logic.RunFinder</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.BusFiltering"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/BusFiltering/__init__.py" type="text/plain"><tt>logic.BusFiltering</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#logic">logic</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#logic.BusFiltering.BusFilterType">logic.BusFiltering.BusFilterType</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterer">logic.BusFiltering.BusFilterer</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.BusFiltering.BusFilterType"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/BusFiltering/BusFilterType.py" type="text/plain"><tt>logic.BusFiltering.BusFilterType</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#enum">enum</a>
+ &#8226;   <a href="#logic.BusFiltering">logic.BusFiltering</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#logic.BusFiltering.BusFilterer">logic.BusFiltering.BusFilterer</a>
+ &#8226;   <a href="#ui.Fleet.BusSearchFrame">ui.Fleet.BusSearchFrame</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.BusFiltering.BusFilterer"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/BusFiltering/BusFilterer.py" type="text/plain"><tt>logic.BusFiltering.BusFilterer</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#domain.Bus">domain.Bus</a>
+ &#8226;   <a href="#logic.BusFiltering">logic.BusFiltering</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterType">logic.BusFiltering.BusFilterType</a>
+ &#8226;   <a href="#typing">typing</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.BusLocationUpdater"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/BusLocationUpdater.py" type="text/plain"><tt>logic.BusLocationUpdater</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
+ &#8226;   <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
+ &#8226;   <a href="#domain.location_info.Stop">domain.location_info.Stop</a>
+ &#8226;   <a href="#logic">logic</a>
+ &#8226;   <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
+ &#8226;   <a href="#utilities.live_tracker.domain.Coordinates">utilities.live_tracker.domain.Coordinates</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controller.FleetController">controller.FleetController</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.RunFiltering"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/RunFiltering/__init__.py" type="text/plain"><tt>logic.RunFiltering</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#logic">logic</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#logic.RunFiltering.RunFilterType">logic.RunFiltering.RunFilterType</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.RunFiltering.RunFilterType"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/RunFiltering/RunFilterType.py" type="text/plain"><tt>logic.RunFiltering.RunFilterType</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#enum">enum</a>
+ &#8226;   <a href="#logic.RunFiltering">logic.RunFiltering</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.RunFiltering.RunFilterer"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/RunFiltering/RunFilterer.py" type="text/plain"><tt>logic.RunFiltering.RunFilterer</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.Bus">domain.Bus</a>
+ &#8226;   <a href="#domain.Run">domain.Run</a>
+ &#8226;   <a href="#logic.RunFiltering">logic.RunFiltering</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterType">logic.RunFiltering.RunFilterType</a>
+ &#8226;   <a href="#typing">typing</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="logic.RunFinder"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/logic/RunFinder.py" type="text/plain"><tt>logic.RunFinder</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#domain.InferredRunList">domain.InferredRunList</a>
+ &#8226;   <a href="#domain.Run">domain.Run</a>
+ &#8226;   <a href="#logic">logic</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controller.FleetController">controller.FleetController</a>
+
+  </div>
+
+</div>
+
+<div class="node">
   <a name="lzma"></a>
   <a target="code" href="///C:/Users/miche/AppData/Local/Programs/Python/Python313/Lib/lzma.py" type="text/plain"><tt>lzma</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
@@ -11696,9 +11851,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.more_itertools.more">setuptools._vendor.more_itertools.more</a>
  &#8226;   <a href="#setuptools._vendor.more_itertools.recipes">setuptools._vendor.more_itertools.recipes</a>
  &#8226;   <a href="#statistics">statistics</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
  &#8226;   <a href="#urllib.parse">urllib.parse</a>
 
   </div>
@@ -13381,7 +13534,8 @@ imported by:
  &#8226;   <a href="#setuptools.config.expand">setuptools.config.expand</a>
  &#8226;   <a href="#setuptools.discovery">setuptools.discovery</a>
  &#8226;   <a href="#setuptools.dist">setuptools.dist</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
  &#8226;   <a href="#zipfile._path">zipfile._path</a>
 
   </div>
@@ -19894,9 +20048,9 @@ imported by:
  &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
  &#8226;   <a href="#tkinter.simpledialog">tkinter.simpledialog</a>
  &#8226;   <a href="#tkinter.ttk">tkinter.ttk</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -19970,7 +20124,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
 
   </div>
 
@@ -20006,8 +20160,8 @@ imports:
 imported by:
     <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tkinter.simpledialog">tkinter.simpledialog</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -20455,6 +20609,8 @@ imported by:
  &#8226;   <a href="#importlib.metadata._meta">importlib.metadata._meta</a>
  &#8226;   <a href="#importlib.resources._common">importlib.resources._common</a>
  &#8226;   <a href="#importlib.resources.abc">importlib.resources.abc</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterer">logic.BusFiltering.BusFilterer</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
  &#8226;   <a href="#packaging._elffile">packaging._elffile</a>
  &#8226;   <a href="#packaging._manylinux">packaging._manylinux</a>
  &#8226;   <a href="#packaging._musllinux">packaging._musllinux</a>
@@ -20552,6 +20708,12 @@ imported by:
  &#8226;   <a href="#tomllib._parser">tomllib._parser</a>
  &#8226;   <a href="#tomllib._re">tomllib._re</a>
  &#8226;   <a href="#tomllib._types">tomllib._types</a>
+ &#8226;   <a href="#ui.Fleet.BusSearchFrame">ui.Fleet.BusSearchFrame</a>
+ &#8226;   <a href="#ui.MenuFrame">ui.MenuFrame</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
  &#8226;   <a href="#urllib3">urllib3</a>
  &#8226;   <a href="#urllib3._base_connection">urllib3._base_connection</a>
  &#8226;   <a href="#urllib3._collections">urllib3._collections</a>
@@ -20642,91 +20804,37 @@ imported by:
   <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/__init__.py" type="text/plain"><tt>ui</tt></a>
 <span class="moduletype">Package</span>  <div class="import">
 imported by:
-    <a href="#ui.AddBusFrame">ui.AddBusFrame</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
+    <a href="#ui.CSVExport">ui.CSVExport</a>
+ &#8226;   <a href="#ui.Fleet">ui.Fleet</a>
  &#8226;   <a href="#ui.MenuFrame">ui.MenuFrame</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Pagination">ui.Pagination</a>
+ &#8226;   <a href="#ui.Runs">ui.Runs</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
 
   </div>
 
 </div>
 
 <div class="node">
-  <a name="ui.AddBusFrame"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/AddBusFrame.py" type="text/plain"><tt>ui.AddBusFrame</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
+  <a name="ui.CSVExport"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/CSVExport/__init__.py" type="text/plain"><tt>ui.CSVExport</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
 imports:
-    <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
- &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
- &#8226;   <a href="#domain.validation.exceptions.FleetError">domain.validation.exceptions.FleetError</a>
- &#8226;   <a href="#ui">ui</a>
+    <a href="#ui">ui</a>
 
   </div>
   <div class="import">
 imported by:
-    <a href="#controller.FleetController">controller.FleetController</a>
+    <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialogErrors">ui.CSVExport.CSVExportDialogErrors</a>
 
   </div>
 
 </div>
 
 <div class="node">
-  <a name="ui.AddRunFrame"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/AddRunFrame.py" type="text/plain"><tt>ui.AddRunFrame</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#datetime">datetime</a>
- &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
- &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
- &#8226;   <a href="#domain.Run">domain.Run</a>
- &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
- &#8226;   <a href="#domain.validation.ValidateRun">domain.validation.ValidateRun</a>
- &#8226;   <a href="#domain.validation.exceptions.BusError">domain.validation.exceptions.BusError</a>
- &#8226;   <a href="#domain.validation.exceptions.FleetError">domain.validation.exceptions.FleetError</a>
- &#8226;   <a href="#domain.validation.exceptions.RunError">domain.validation.exceptions.RunError</a>
- &#8226;   <a href="#ui">ui</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#controller.FleetController">controller.FleetController</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="ui.AutoAddRunsFrame"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/AutoAddRunsFrame.py" type="text/plain"><tt>ui.AutoAddRunsFrame</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
- &#8226;   <a href="#domain.Listener">domain.Listener</a>
- &#8226;   <a href="#math">math</a>
- &#8226;   <a href="#ui">ui</a>
- &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="ui.CSVExportDialog"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/CSVExportDialog.py" type="text/plain"><tt>ui.CSVExportDialog</tt></a>
+  <a name="ui.CSVExport.CSVExportDialog"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/CSVExport/CSVExportDialog.py" type="text/plain"><tt>ui.CSVExport.CSVExportDialog</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#customtkinter">customtkinter</a>
@@ -20735,7 +20843,9 @@ imports:
  &#8226;   <a href="#pathlib">pathlib</a>
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tkinter.filedialog">tkinter.filedialog</a>
- &#8226;   <a href="#ui">ui</a>
+ &#8226;   <a href="#ui.CSVExport">ui.CSVExport</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialogErrors">ui.CSVExport.CSVExportDialogErrors</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
  &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
 
@@ -20749,21 +20859,153 @@ imported by:
 </div>
 
 <div class="node">
-  <a name="ui.LocationInfoDialog"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/LocationInfoDialog.py" type="text/plain"><tt>ui.LocationInfoDialog</tt></a>
+  <a name="ui.CSVExport.CSVExportDialogErrors"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/CSVExport/CSVExportDialogErrors.py" type="text/plain"><tt>ui.CSVExport.CSVExportDialogErrors</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#ui.CSVExport">ui.CSVExport</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Fleet"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Fleet/__init__.py" type="text/plain"><tt>ui.Fleet</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#ui">ui</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Fleet.BusSearchFrame">ui.Fleet.BusSearchFrame</a>
+ &#8226;   <a href="#ui.Fleet.ErrorLog">ui.Fleet.ErrorLog</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Fleet.AddBusFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Fleet/AddBusFrame.py" type="text/plain"><tt>ui.Fleet.AddBusFrame</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#datetime">datetime</a>
  &#8226;   <a href="#domain.Bus">domain.Bus</a>
- &#8226;   <a href="#ui">ui</a>
+ &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
+ &#8226;   <a href="#domain.validation.exceptions.BusError">domain.validation.exceptions.BusError</a>
+ &#8226;   <a href="#domain.validation.exceptions.FleetError">domain.validation.exceptions.FleetError</a>
+ &#8226;   <a href="#ui.Fleet">ui.Fleet</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controller.FleetController">controller.FleetController</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Fleet.BusSearchFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Fleet/BusSearchFrame.py" type="text/plain"><tt>ui.Fleet.BusSearchFrame</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterType">logic.BusFiltering.BusFilterType</a>
+ &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#ui.Fleet">ui.Fleet</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Fleet.ErrorLog"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Fleet/ErrorLog.py" type="text/plain"><tt>ui.Fleet.ErrorLog</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#ui.Fleet">ui.Fleet</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controller.FleetController">controller.FleetController</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Fleet.LocationInfoDialog"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Fleet/LocationInfoDialog.py" type="text/plain"><tt>ui.Fleet.LocationInfoDialog</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#domain.Bus">domain.Bus</a>
+ &#8226;   <a href="#ui.Fleet">ui.Fleet</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.DateTimeHelper">utilities.DateTimeHelper</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
  &#8226;   <a href="#webbrowser">webbrowser</a>
 
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
+    <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Fleet.ViewFleetFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Fleet/ViewFleetFrame.py" type="text/plain"><tt>ui.Fleet.ViewFleetFrame</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.Bus">domain.Bus</a>
+ &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
+ &#8226;   <a href="#domain.Listener">domain.Listener</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterType">logic.BusFiltering.BusFilterType</a>
+ &#8226;   <a href="#logic.BusFiltering.BusFilterer">logic.BusFiltering.BusFilterer</a>
+ &#8226;   <a href="#tkinter">tkinter</a>
+ &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
+ &#8226;   <a href="#ui.Fleet">ui.Fleet</a>
+ &#8226;   <a href="#ui.Fleet.BusSearchFrame">ui.Fleet.BusSearchFrame</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Pagination.Paginatable">ui.Pagination.Paginatable</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.DateTimeHelper">utilities.DateTimeHelper</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controller.FleetController">controller.FleetController</a>
 
   </div>
 
@@ -20775,7 +21017,9 @@ imported by:
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#ui">ui</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
 
   </div>
@@ -20788,54 +21032,217 @@ imported by:
 </div>
 
 <div class="node">
-  <a name="ui.ViewFleetFrame"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/ViewFleetFrame.py" type="text/plain"><tt>ui.ViewFleetFrame</tt></a>
+  <a name="ui.Pagination"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Pagination/__init__.py" type="text/plain"><tt>ui.Pagination</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#ui">ui</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Pagination.Paginatable">ui.Pagination.Paginatable</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Pagination.Paginatable"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Pagination/Paginatable.py" type="text/plain"><tt>ui.Pagination.Paginatable</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#abc">abc</a>
+ &#8226;   <a href="#ui.Pagination">ui.Pagination</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Pagination.PaginationFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Pagination/PaginationFrame.py" type="text/plain"><tt>ui.Pagination.PaginationFrame</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#customtkinter">customtkinter</a>
- &#8226;   <a href="#datetime">datetime</a>
- &#8226;   <a href="#domain.Bus">domain.Bus</a>
- &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
- &#8226;   <a href="#domain.Listener">domain.Listener</a>
- &#8226;   <a href="#enum">enum</a>
  &#8226;   <a href="#math">math</a>
- &#8226;   <a href="#tkinter">tkinter</a>
- &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
- &#8226;   <a href="#ui">ui</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
+ &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#ui.Pagination">ui.Pagination</a>
+ &#8226;   <a href="#ui.Pagination.Paginatable">ui.Pagination.Paginatable</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
 
   </div>
   <div class="import">
 imported by:
-    <a href="#controller.FleetController">controller.FleetController</a>
+    <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
 </div>
 
 <div class="node">
-  <a name="ui.ViewRunsFrame"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/ViewRunsFrame.py" type="text/plain"><tt>ui.ViewRunsFrame</tt></a>
+  <a name="ui.Runs"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Runs/__init__.py" type="text/plain"><tt>ui.Runs</tt></a>
+<span class="moduletype">Package</span>  <div class="import">
+imports:
+    <a href="#ui">ui</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Runs.AddRunFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Runs/AddRunFrame.py" type="text/plain"><tt>ui.Runs.AddRunFrame</tt></a>
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#customtkinter">customtkinter</a>
  &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
+ &#8226;   <a href="#domain.Run">domain.Run</a>
+ &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
+ &#8226;   <a href="#domain.validation.ValidateRun">domain.validation.ValidateRun</a>
+ &#8226;   <a href="#domain.validation.exceptions.BusError">domain.validation.exceptions.BusError</a>
+ &#8226;   <a href="#domain.validation.exceptions.FleetError">domain.validation.exceptions.FleetError</a>
+ &#8226;   <a href="#domain.validation.exceptions.RunError">domain.validation.exceptions.RunError</a>
+ &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#ui.Runs">ui.Runs</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#controller.FleetController">controller.FleetController</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Runs.AutoAddRunsFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Runs/AutoAddRunsFrame.py" type="text/plain"><tt>ui.Runs.AutoAddRunsFrame</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
+ &#8226;   <a href="#domain.Listener">domain.Listener</a>
+ &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#ui.Pagination.Paginatable">ui.Pagination.Paginatable</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs">ui.Runs</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Runs.RunSearchFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Runs/RunSearchFrame.py" type="text/plain"><tt>ui.Runs.RunSearchFrame</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
+ &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterType">logic.RunFiltering.RunFilterType</a>
+ &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#ui.Runs">ui.Runs</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.Runs.ViewRunsFrame"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/Runs/ViewRunsFrame.py" type="text/plain"><tt>ui.Runs.ViewRunsFrame</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#customtkinter">customtkinter</a>
  &#8226;   <a href="#domain.Bus">domain.Bus</a>
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
  &#8226;   <a href="#domain.Listener">domain.Listener</a>
  &#8226;   <a href="#domain.Run">domain.Run</a>
- &#8226;   <a href="#enum">enum</a>
- &#8226;   <a href="#math">math</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterType">logic.RunFiltering.RunFilterType</a>
+ &#8226;   <a href="#logic.RunFiltering.RunFilterer">logic.RunFiltering.RunFilterer</a>
  &#8226;   <a href="#tkinter">tkinter</a>
  &#8226;   <a href="#tkinter.messagebox">tkinter.messagebox</a>
- &#8226;   <a href="#ui">ui</a>
+ &#8226;   <a href="#ui.Pagination.Paginatable">ui.Pagination.Paginatable</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs">ui.Runs</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
+ &#8226;   <a href="#ui.UIConstants">ui.UIConstants</a>
+ &#8226;   <a href="#utilities.DateTimeHelper">utilities.DateTimeHelper</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
 
   </div>
   <div class="import">
 imported by:
     <a href="#controller.FleetController">controller.FleetController</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="ui.UIConstants"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/ui/UIConstants.py" type="text/plain"><tt>ui.UIConstants</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#ui">ui</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#Main.py">Main.py</a>
+ &#8226;   <a href="#controller.FleetController">controller.FleetController</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Fleet.BusSearchFrame">ui.Fleet.BusSearchFrame</a>
+ &#8226;   <a href="#ui.Fleet.ErrorLog">ui.Fleet.ErrorLog</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.MenuFrame">ui.MenuFrame</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -22407,11 +22814,30 @@ imported by:
   <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/__init__.py" type="text/plain"><tt>utilities</tt></a>
 <span class="moduletype">Package</span>  <div class="import">
 imported by:
-    <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
- &#8226;   <a href="#utilities.RunFinder">utilities.RunFinder</a>
+    <a href="#utilities.DateTimeHelper">utilities.DateTimeHelper</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
  &#8226;   <a href="#utilities.csv_io">utilities.csv_io</a>
  &#8226;   <a href="#utilities.live_tracker">utilities.live_tracker</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="utilities.DateTimeHelper"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/DateTimeHelper.py" type="text/plain"><tt>utilities.DateTimeHelper</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.Bus">domain.Bus</a>
+ &#8226;   <a href="#utilities">utilities</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
 
   </div>
 
@@ -22432,68 +22858,32 @@ imported by:
  &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
  &#8226;   <a href="#domain.InferredRunList">domain.InferredRunList</a>
  &#8226;   <a href="#domain.Run">domain.Run</a>
- &#8226;   <a href="#domain.location_info.Coordinates">domain.location_info.Coordinates</a>
  &#8226;   <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
  &#8226;   <a href="#domain.location_info.Stop">domain.location_info.Stop</a>
  &#8226;   <a href="#domain.validation.ValidateBus">domain.validation.ValidateBus</a>
  &#8226;   <a href="#domain.validation.ValidateRun">domain.validation.ValidateRun</a>
  &#8226;   <a href="#persistence.BusPersistence">persistence.BusPersistence</a>
  &#8226;   <a href="#persistence.RunPersistence">persistence.RunPersistence</a>
- &#8226;   <a href="#ui.AddRunFrame">ui.AddRunFrame</a>
- &#8226;   <a href="#ui.AutoAddRunsFrame">ui.AutoAddRunsFrame</a>
- &#8226;   <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
+ &#8226;   <a href="#ui.Fleet.AddBusFrame">ui.Fleet.AddBusFrame</a>
+ &#8226;   <a href="#ui.Fleet.ErrorLog">ui.Fleet.ErrorLog</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.ViewFleetFrame">ui.Fleet.ViewFleetFrame</a>
  &#8226;   <a href="#ui.MenuFrame">ui.MenuFrame</a>
- &#8226;   <a href="#ui.ViewFleetFrame">ui.ViewFleetFrame</a>
- &#8226;   <a href="#ui.ViewRunsFrame">ui.ViewRunsFrame</a>
+ &#8226;   <a href="#ui.Pagination.PaginationFrame">ui.Pagination.PaginationFrame</a>
+ &#8226;   <a href="#ui.Runs.AddRunFrame">ui.Runs.AddRunFrame</a>
+ &#8226;   <a href="#ui.Runs.AutoAddRunsFrame">ui.Runs.AutoAddRunsFrame</a>
+ &#8226;   <a href="#ui.Runs.RunSearchFrame">ui.Runs.RunSearchFrame</a>
+ &#8226;   <a href="#ui.Runs.ViewRunsFrame">ui.Runs.ViewRunsFrame</a>
  &#8226;   <a href="#utilities.csv_io.CSVExporter">utilities.csv_io.CSVExporter</a>
  &#8226;   <a href="#utilities.live_tracker.BlockIDFinder">utilities.live_tracker.BlockIDFinder</a>
+ &#8226;   <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
  &#8226;   <a href="#utilities.live_tracker.domain.BusObservation">utilities.live_tracker.domain.BusObservation</a>
  &#8226;   <a href="#utilities.live_tracker.domain.Coordinates">utilities.live_tracker.domain.Coordinates</a>
  &#8226;   <a href="#utilities.live_tracker.domain.ObservationDict">utilities.live_tracker.domain.ObservationDict</a>
  &#8226;   <a href="#utilities.live_tracker.domain.Stop">utilities.live_tracker.domain.Stop</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader">utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="utilities.LocationInfoHelper"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/LocationInfoHelper.py" type="text/plain"><tt>utilities.LocationInfoHelper</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#datetime">datetime</a>
- &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
- &#8226;   <a href="#domain.location_info.LocationInfo">domain.location_info.LocationInfo</a>
- &#8226;   <a href="#domain.location_info.Stop">domain.location_info.Stop</a>
- &#8226;   <a href="#utilities">utilities</a>
- &#8226;   <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
- &#8226;   <a href="#utilities.live_tracker.domain.Coordinates">utilities.live_tracker.domain.Coordinates</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#controller.FleetController">controller.FleetController</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="utilities.RunFinder"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/RunFinder.py" type="text/plain"><tt>utilities.RunFinder</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#domain.InferredRunList">domain.InferredRunList</a>
- &#8226;   <a href="#domain.Run">domain.Run</a>
- &#8226;   <a href="#utilities">utilities</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#controller.FleetController">controller.FleetController</a>
 
   </div>
 
@@ -22521,15 +22911,16 @@ imported by:
 <span class="moduletype">SourceModule</span>  <div class="import">
 imports:
     <a href="#csv">csv</a>
- &#8226;   <a href="#domain.Bus">domain.Bus</a>
- &#8226;   <a href="#domain.Run">domain.Run</a>
+ &#8226;   <a href="#datetime">datetime</a>
+ &#8226;   <a href="#domain.Fleet">domain.Fleet</a>
+ &#8226;   <a href="#pathlib">pathlib</a>
  &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
  &#8226;   <a href="#utilities.csv_io">utilities.csv_io</a>
 
   </div>
   <div class="import">
 imported by:
-    <a href="#ui.CSVExportDialog">ui.CSVExportDialog</a>
+    <a href="#ui.CSVExport.CSVExportDialog">ui.CSVExport.CSVExportDialog</a>
 
   </div>
 
@@ -22549,6 +22940,7 @@ imported by:
  &#8226;   <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
  &#8226;   <a href="#utilities.live_tracker.StopScanner">utilities.live_tracker.StopScanner</a>
  &#8226;   <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
+ &#8226;   <a href="#utilities.live_tracker.TrackerErrorMessages">utilities.live_tracker.TrackerErrorMessages</a>
  &#8226;   <a href="#utilities.live_tracker.domain">utilities.live_tracker.domain</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api">utilities.live_tracker.winnipeg_transit_api</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs">utilities.live_tracker.winnipeg_transit_gtfs</a>
@@ -22584,17 +22976,19 @@ imported by:
 imports:
     <a href="#datetime">datetime</a>
  &#8226;   <a href="#typing">typing</a>
+ &#8226;   <a href="#utilities.InvariantHelper">utilities.InvariantHelper</a>
  &#8226;   <a href="#utilities.live_tracker">utilities.live_tracker</a>
  &#8226;   <a href="#utilities.live_tracker.BlockIDFinder">utilities.live_tracker.BlockIDFinder</a>
  &#8226;   <a href="#utilities.live_tracker.StopScanner">utilities.live_tracker.StopScanner</a>
  &#8226;   <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
+ &#8226;   <a href="#utilities.live_tracker.TrackerErrorMessages">utilities.live_tracker.TrackerErrorMessages</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader">utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader</a>
 
   </div>
   <div class="import">
 imported by:
     <a href="#controller.FleetController">controller.FleetController</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
 
   </div>
 
@@ -22610,6 +23004,7 @@ imports:
  &#8226;   <a href="#typing">typing</a>
  &#8226;   <a href="#utilities.live_tracker">utilities.live_tracker</a>
  &#8226;   <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
+ &#8226;   <a href="#utilities.live_tracker.TrackerErrorMessages">utilities.live_tracker.TrackerErrorMessages</a>
  &#8226;   <a href="#utilities.live_tracker.domain.BusObservation">utilities.live_tracker.domain.BusObservation</a>
  &#8226;   <a href="#utilities.live_tracker.domain.ObservationDict">utilities.live_tracker.domain.ObservationDict</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
@@ -22631,7 +23026,7 @@ imported by:
 imports:
     <a href="#datetime">datetime</a>
  &#8226;   <a href="#utilities.live_tracker">utilities.live_tracker</a>
- &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.InvalidAPIStopTimeError">utilities.live_tracker.winnipeg_transit_api.exceptions.InvalidAPIStopTimeError</a>
+ &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError">utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError">utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError</a>
 
   </div>
@@ -22642,6 +23037,25 @@ imported by:
  &#8226;   <a href="#utilities.live_tracker.domain.ObservationDict">utilities.live_tracker.domain.ObservationDict</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.file_readers.StopTimesReader">utilities.live_tracker.winnipeg_transit_gtfs.file_readers.StopTimesReader</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="utilities.live_tracker.TrackerErrorMessages"></a>
+  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/live_tracker/TrackerErrorMessages.py" type="text/plain"><tt>utilities.live_tracker.TrackerErrorMessages</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#utilities.live_tracker">utilities.live_tracker</a>
+ &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError">utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError</a>
+ &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError">utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#utilities.live_tracker.LiveBusTracker">utilities.live_tracker.LiveBusTracker</a>
+ &#8226;   <a href="#utilities.live_tracker.StopScanner">utilities.live_tracker.StopScanner</a>
 
   </div>
 
@@ -22699,7 +23113,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#domain.location_info.Stop">domain.location_info.Stop</a>
- &#8226;   <a href="#utilities.LocationInfoHelper">utilities.LocationInfoHelper</a>
+ &#8226;   <a href="#logic.BusLocationUpdater">logic.BusLocationUpdater</a>
  &#8226;   <a href="#utilities.live_tracker.domain.Stop">utilities.live_tracker.domain.Stop</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.file_readers.StopsReader">utilities.live_tracker.winnipeg_transit_gtfs.file_readers.StopsReader</a>
 
@@ -22780,8 +23194,6 @@ imports:
  &#8226;   <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
  &#8226;   <a href="#utilities.live_tracker.domain.Stop">utilities.live_tracker.domain.Stop</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api">utilities.live_tracker.winnipeg_transit_api</a>
- &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError">utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError</a>
- &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError">utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError">utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError</a>
 
   </div>
@@ -22803,58 +23215,7 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.InvalidAPIStopTimeError">utilities.live_tracker.winnipeg_transit_api.exceptions.InvalidAPIStopTimeError</a>
- &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError">utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError</a>
- &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError">utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError</a>
- &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError">utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="utilities.live_tracker.winnipeg_transit_api.exceptions.InvalidAPIStopTimeError"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/live_tracker/winnipeg_transit_api/exceptions/InvalidAPIStopTimeError.py" type="text/plain"><tt>utilities.live_tracker.winnipeg_transit_api.exceptions.InvalidAPIStopTimeError</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions">utilities.live_tracker.winnipeg_transit_api.exceptions</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/live_tracker/winnipeg_transit_api/exceptions/MissingAPIKeyError.py" type="text/plain"><tt>utilities.live_tracker.winnipeg_transit_api.exceptions.MissingAPIKeyError</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions">utilities.live_tracker.winnipeg_transit_api.exceptions</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
-
-  </div>
-
-</div>
-
-<div class="node">
-  <a name="utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError"></a>
-  <a target="code" href="///D:/IDE%20Files/zeb-tracker/src/utilities/live_tracker/winnipeg_transit_api/exceptions/StopDataParsingError.py" type="text/plain"><tt>utilities.live_tracker.winnipeg_transit_api.exceptions.StopDataParsingError</tt></a>
-<span class="moduletype">SourceModule</span>  <div class="import">
-imports:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions">utilities.live_tracker.winnipeg_transit_api.exceptions</a>
-
-  </div>
-  <div class="import">
-imported by:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
+    <a href="#utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError">utilities.live_tracker.winnipeg_transit_api.exceptions.TransitAPIError</a>
 
   </div>
 
@@ -22870,7 +23231,9 @@ imports:
   </div>
   <div class="import">
 imported by:
-    <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
+    <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
+ &#8226;   <a href="#utilities.live_tracker.TrackerErrorMessages">utilities.live_tracker.TrackerErrorMessages</a>
+ &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_api.WTClient">utilities.live_tracker.winnipeg_transit_api.WTClient</a>
 
   </div>
 
@@ -22969,6 +23332,7 @@ imports:
 imported by:
     <a href="#utilities.live_tracker.BlockIDFinder">utilities.live_tracker.BlockIDFinder</a>
  &#8226;   <a href="#utilities.live_tracker.TimeHelper">utilities.live_tracker.TimeHelper</a>
+ &#8226;   <a href="#utilities.live_tracker.TrackerErrorMessages">utilities.live_tracker.TrackerErrorMessages</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader">utilities.live_tracker.winnipeg_transit_gtfs.GTFSReader</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.file_readers.CalendarReader">utilities.live_tracker.winnipeg_transit_gtfs.file_readers.CalendarReader</a>
  &#8226;   <a href="#utilities.live_tracker.winnipeg_transit_gtfs.file_readers.FeedInfoReader">utilities.live_tracker.winnipeg_transit_gtfs.file_readers.FeedInfoReader</a>
@@ -23305,7 +23669,7 @@ imports:
   <div class="import">
 imported by:
     <a href="#pydoc">pydoc</a>
- &#8226;   <a href="#ui.LocationInfoDialog">ui.LocationInfoDialog</a>
+ &#8226;   <a href="#ui.Fleet.LocationInfoDialog">ui.Fleet.LocationInfoDialog</a>
 
   </div>
 

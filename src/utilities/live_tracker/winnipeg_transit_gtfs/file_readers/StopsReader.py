@@ -7,7 +7,15 @@ from utilities.live_tracker.winnipeg_transit_gtfs.exceptions.TransitGTFSError im
 import csv
 
 
-STOP_ID_COLUMN_HEADER = "stop_id"
+# Retired/invalid stops that still exist in the GTFS archive
+# These will be ignored by the stop reader
+BLACKLIST = [
+    11152,
+    11110,
+    17001
+]
+
+STOP_ID_COLUMN_HEADER = "stop_code"
 STOP_NAME_COLUMN_HEADER = "stop_name"
 STOP_LATITUDE_COLUMN_HEADER = "stop_lat"
 STOP_LONGITUDE_COLUMN_HEADER = "stop_lon"
@@ -60,7 +68,8 @@ class StopsReader:
         for tokens in self.reader:
             stop_id, stop_name, latitude, longitude = self._validate_and_parse_tokens(tokens)
 
-            self.all_stops[stop_id] = Stop(stop_name, stop_id, Coordinates(latitude, longitude))
+            if stop_id not in BLACKLIST:
+                self.all_stops[stop_id] = Stop(stop_name, stop_id, Coordinates(latitude, longitude))
 
             self.curr_row += 1
 

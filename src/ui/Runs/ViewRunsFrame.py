@@ -4,10 +4,11 @@ from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
 from domain.Run import Run
+from logic.RunFiltering.RunFilterType import RunFilterType
+from logic.RunFiltering.RunFilterer import build_search_filter_function
 from ui.Pagination.Paginatable import Paginatable
 from ui.Pagination.PaginationFrame import PaginationFrame
-from ui.Runs.Search.RunSearchFilters import SearchFilterType, FILTER_ACTIONS
-from ui.Runs.Search.RunSearchFrame import RunSearchFrame
+from ui.Runs.RunSearchFrame import RunSearchFrame
 from ui.UIConstants import LARGE_TITLE_FONT, PADDING_LARGE, PADDING_MEDIUM, APP_WIDTH, SMALL_TITLE_FONT, \
     WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT
 from utilities.DateTimeHelper import format_date
@@ -256,7 +257,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
 
         search_filter_type = self.search_frame.get_search_filter_selection()
 
-        if search_filter_type == SearchFilterType.DATE:
+        if search_filter_type == RunFilterType.DATE:
             try:
                 self._get_date_range_search_filter_from_input()
 
@@ -276,17 +277,12 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         start_date = self.search_frame.get_date_from_main_input()
         end_date = self.search_frame.get_date_from_extra_input()
 
-        self.curr_search_filter = lambda run_list: (
-            FILTER_ACTIONS[SearchFilterType.DATE](run_list, start_date, end_date)
-        )
+        self.curr_search_filter = build_search_filter_function((start_date, end_date), RunFilterType.DATE)
 
-    def _get_general_search_filter_from_input(self, filter_type: SearchFilterType) -> None:
+    def _get_general_search_filter_from_input(self, filter_type: RunFilterType) -> None:
         text_filter = self.search_frame.get_main_input_raw()
 
-        if len(text_filter) > 0:
-            self.curr_search_filter = lambda run_list: (
-                FILTER_ACTIONS[filter_type](run_list, text_filter)
-            )
+        self.curr_search_filter = build_search_filter_function(text_filter, filter_type)
 
 
 

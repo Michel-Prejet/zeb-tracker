@@ -4,14 +4,15 @@ import customtkinter as ctk
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 from domain.Listener import Listener
+from logic.BusFiltering.BusFilterType import BusFilterType
+from logic.BusFiltering.BusFilterer import build_search_filter_function
 from ui.Fleet.LocationInfoDialog import LocationInfoDialog
-from ui.Fleet.Search.BusSearchFilters import SearchFilterType, build_search_filter_function
-from ui.Fleet.Search.BusSearchFrame import BusSearchFrame
+from ui.Fleet.BusSearchFrame import BusSearchFrame
 from ui.Pagination.Paginatable import Paginatable
 from ui.Pagination.PaginationFrame import PaginationFrame
 from ui.UIConstants import LARGE_TITLE_FONT, PADDING_MEDIUM, APP_WIDTH, PADDING_LARGE, SMALL_TITLE_FONT, \
     WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT
-from utilities.DateTimeHelper import format_date, format_datetime
+from utilities.DateTimeHelper import format_datetime, last_run_date_to_str
 from utilities.InvariantHelper import require_not_none
 
 
@@ -377,7 +378,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         zero results.
         """
         search_filter = self.search_frame.get_input()
-        search_filter_type: SearchFilterType = self.search_frame.get_search_filter_selection()
+        search_filter_type: BusFilterType = self.search_frame.get_search_filter_selection()
         show_only_active = self.search_frame.get_show_only_active_selection()
 
         self.curr_search_filter = build_search_filter_function(
@@ -430,16 +431,5 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         if self.cancel_scan_button is not None:
             self.cancel_scan_button.pack_forget()
             self.cancel_scan_button = None
-
-def last_run_date_to_str(bus: Bus) -> str:
-    """
-    :bus: the bus for which to get the last run date as a string.
-    :return: the last run completed by the given bus as a string of the form
-    MONTH DAY, YEAR (e.g. May 2, 2026) or "never" if the given bus hasn't
-    completed any runs.
-    """
-    if bus.last_run() is None:
-        return UNKNOWN_DATE_PLACEHOLDER
-    return format_date(bus.last_run().run_date)
 
 

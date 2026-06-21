@@ -1,13 +1,13 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Callable
 import customtkinter as ctk
-from ui.Runs.Search.RunSearchFilters import SearchFilterType
+from logic.RunFiltering.RunFilterType import RunFilterType
 from ui.UIConstants import SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, MEDIUM_BUTTON_WIDTH, \
     MEDIUM_BUTTON_HEIGHT, SPLIT_INPUT_FIELD_WIDTH, REGULAR_INPUT_FIELD_WIDTH
 from utilities.InvariantHelper import require_not_none
 
 
-INITIAL_SEARCH_FILTER = SearchFilterType.DATE
+INITIAL_SEARCH_FILTER = RunFilterType.DATE
 
 class RunSearchFrame(ctk.CTkFrame):
     """
@@ -71,8 +71,8 @@ class RunSearchFrame(ctk.CTkFrame):
         date_raw = self.search_entry_extra.get().strip()
         return date.fromisoformat(date_raw)
 
-    def get_search_filter_selection(self) -> SearchFilterType:
-        return SearchFilterType(self.search_filter_menu.get())
+    def get_search_filter_selection(self) -> RunFilterType:
+        return RunFilterType(self.search_filter_menu.get())
 
     def show_error(self, message: str) -> None:
         """
@@ -110,7 +110,7 @@ class RunSearchFrame(ctk.CTkFrame):
     def _create_search_filter_menu(self) -> None:
         self.search_filter_menu = ctk.CTkOptionMenu(
             self,
-            values=[f.value for f in SearchFilterType],
+            values=[f.value for f in RunFilterType],
             command=lambda _: self._refresh_input_fields_frame()
         )
         self.search_filter_menu.grid(
@@ -125,7 +125,7 @@ class RunSearchFrame(ctk.CTkFrame):
         self.msg.grid_forget()
         self.search_inputs_frame.focus_set()
 
-        if self.search_filter_menu.get() == SearchFilterType.DATE.value:
+        if self.search_filter_menu.get() == RunFilterType.DATE.value:
             self._display_two_date_input_fields()
         else:
             self._display_one_general_input_field()

@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime
 from domain.Fleet import Fleet
 from domain.location_info.LocationInfo import LocationInfo
 from domain.location_info.Stop import Stop

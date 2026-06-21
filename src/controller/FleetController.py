@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from pefile import set_flags
-
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 import customtkinter as ctk
@@ -18,8 +16,8 @@ from ui.UIConstants import PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
 from threading import Thread
-from utilities.LocationInfoHelper import update_bus_locations
-from utilities.RunFinder import infer_runs_from_location_info
+from logic.BusLocationUpdater import update_bus_locations
+from logic.RunFinder import infer_runs_from_location_info
 from utilities.live_tracker.LiveBusTracker import LiveBusTracker
 
 

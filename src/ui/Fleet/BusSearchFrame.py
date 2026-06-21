@@ -1,11 +1,11 @@
 from typing import Callable
 import customtkinter as ctk
-from ui.Fleet.Search.BusSearchFilters import SearchFilterType
+from logic.BusFiltering.BusFilterType import BusFilterType
 from ui.UIConstants import REGULAR_INPUT_FIELD_WIDTH, SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, \
     MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
 
 
-INITIAL_SEARCH_FILTER = SearchFilterType.TRACKING_NUM
+INITIAL_SEARCH_FILTER = BusFilterType.TRACKING_NUM
 
 class BusSearchFrame(ctk.CTkFrame):
     def __init__(self, parent: ctk.CTkFrame, submit_search: Callable,
@@ -41,8 +41,8 @@ class BusSearchFrame(ctk.CTkFrame):
     def get_input(self) -> str:
         return self.search_entry.get().strip()
 
-    def get_search_filter_selection(self) -> SearchFilterType:
-        return SearchFilterType(self.search_filter_menu.get())
+    def get_search_filter_selection(self) -> BusFilterType:
+        return BusFilterType(self.search_filter_menu.get())
 
     def get_show_only_active_selection(self) -> bool:
         return bool(self.show_only_active_checkbox.get())
@@ -70,7 +70,7 @@ class BusSearchFrame(ctk.CTkFrame):
     def _create_search_filter_menu(self) -> None:
         self.search_filter_menu = ctk.CTkOptionMenu(
             self,
-            values=[f.value for f in SearchFilterType]
+            values=[f.value for f in BusFilterType]
         )
         self.search_filter_menu.grid(
             row=0,

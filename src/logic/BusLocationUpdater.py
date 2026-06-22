@@ -22,6 +22,8 @@ def update_bus_locations(fleet: Fleet, tracker: LiveBusTracker):
         location_info = tracker.get_location_info_for_bus(bus.tracking_num)
         if location_info is not None:
             bus.location_info = _create_location_info_record_from_dict(location_info)
+        else:
+            bus.location_info = None
 
 def _create_location_info_record_from_dict(location_info_raw: dict) -> LocationInfo:
     """

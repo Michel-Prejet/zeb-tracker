@@ -94,30 +94,43 @@ class FleetController:
 
         RunPersistence.delete_run(run)
 
-    def add_inferred_run_for_bus(self, tracking_num: int) -> None:
+    def add_inferred_run_to_fleet(self, run: Run, bus: Bus) -> None:
         """
-        Adds a run to the fleet from the inferred run list in response to a UI
-        event. The run is retrieved from the given bus tracking number and
-        added to the corresponding bus.
+        Adds a given run from the inferred run list to a given bus in the fleet
+        in response to a UI event.
 
-        :param tracking_num: the tracking number of the bus to which to add
-        an inferred run.
+        :param run: the run to add to the given bus from the inferred run list.
+        :param bus: the bus to which to add the run.
         """
-        require_not_none(tracking_num, "Bus tracking number should not be None.")
+        require_not_none(run, "Run should not be None.")
+        require_not_none(bus, "Bus should not be None.")
 
-        added_run = self.inferred_runs.add_to_fleet(tracking_num)
+        success = self.inferred_runs.add_to_fleet(run, bus)
 
-        if added_run is not None:
-            RunPersistence.save_run(added_run[0], added_run[1])
+        if success:
+            RunPersistence.save_run(run, bus)
 
-    def add_all_inferred_runs(self) -> None:
+    def remove_inferred_run(self, run: Run, bus: Bus) -> None:
+        """
+        Removes a given run from the inferred run list in response to a UI event
+
+        :param run:
+        :param bus:
+        :return:
+        """
+        require_not_none(run, "Run should not be None.")
+        require_not_none(bus, "Bus should not be None.")
+
+        self.inferred_runs.remove(run, bus)
+
+    def add_all_inferred_runs_to_fleet(self) -> None:
         """
         Adds all inferred runs to the fleet in response to a UI event.
         """
         added_runs = self.inferred_runs.add_all_to_fleet()
 
-        for run in added_runs:
-            RunPersistence.save_run(run[0], run[1])
+        for run, bus in added_runs:
+            RunPersistence.save_run(run, bus)
 
     def update_bus_locations(self) -> None:
         """

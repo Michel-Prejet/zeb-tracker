@@ -154,7 +154,8 @@ def _parse_raw_arrival_data(raw_data: dict, route_name: str) -> dict | None:
     :param route_name: the name of the route under which the given data was found.
     :return: a dictionary containing the tracking number of the bus ("tracking_num"),
     the route ("route"), the destination ("destination"), and the scheduled/estimated
-    departure times ("departures"); or None if the bus is cancelled.
+    departure times ("departures"); or None if the bus is cancelled or not
+    assigned.
     """
     # Return None if the bus is cancelled
     cancelled = _try_key(raw_data, "cancelled")
@@ -162,7 +163,10 @@ def _parse_raw_arrival_data(raw_data: dict, route_name: str) -> dict | None:
         return None
 
     # Get bus tracking number
-    bus = _try_key(raw_data, "bus")
+    bus = raw_data.get("bus")
+    if bus is None:
+        return None
+
     try:
         tracking_num = int(_try_key(bus, "key"))
     except (ValueError, TypeError):

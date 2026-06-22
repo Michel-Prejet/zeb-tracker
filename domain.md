@@ -56,14 +56,15 @@ classDiagram
     Bus --* Run
     
     class InferredRunList {
-        -Dictionary~int, Run~ runs
+        -Dictionary~int, set~Run~~ runs
         -Fleet fleet
+        -int size
         
-        +get(bus_tracking_num) Run
+        +get(bus_tracking_num) list~Run~
         +add(bus_tracking_num, run) void
-        +remove(bus_tracking_num) void
-        +add_to_fleet(bus_tracking_num) tuple[Run, Bus] | None
-        +add_all_to_fleet(bus_tracking_num) list[tuple[Run, Bus]]
+        +remove(run, bus, notify) void
+        +add_to_fleet(run, bus, notify) bool
+        +add_all_to_fleet() list[tuple[Run, Bus]]
     }
     
     note for InferredRunList"Invariant properties:
@@ -73,6 +74,11 @@ classDiagram
     *   key != None
     *   100 <= key <= 999
     *   runs[key] != None
+    *   runs[key].length >= 1
+    *   for run in runs[key]:
+    *       run != None
+    * size != None
+    * size >= 0
     "
     
     InferredRunList --o Run

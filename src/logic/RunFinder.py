@@ -14,4 +14,5 @@ def infer_runs_from_location_info(runs: InferredRunList) -> None:
         if (bus.location_info is not None and
                 bus.location_info.block_id is not None):
             run = Run(bus.location_info.block_id, bus.location_info.query_time.date())
+
             runs.add(bus.tracking_num, run)

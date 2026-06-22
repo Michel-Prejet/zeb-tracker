@@ -46,6 +46,8 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         self._create_add_all_button()
         self._create_scrollable_list()
 
+        self.notify()
+
     def notify(self) -> None:
         """
         Displays the current run data in the scrollable list with buttons to
@@ -60,7 +62,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         self._show_no_runs_in_list_if_empty()
 
         self.add_all_runs_button.configure(
-            command=self.controller.add_all_inferred_runs
+            command=self.controller.add_all_inferred_runs_to_fleet
         )
 
         self._create_run_list()
@@ -161,9 +163,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         start_run_index = (self.curr_page - 1) * RUNS_PER_PAGE
         end_run_index = start_run_index + RUNS_PER_PAGE
 
-        for tracking_num in self.runs[start_run_index:end_run_index]:
-            run = self.runs.get(tracking_num)
-
+        for run, bus in self.runs[start_run_index:end_run_index]:
             row = ctk.CTkFrame(self.scrollable_list)
             row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
@@ -177,20 +177,20 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
                 font=BLOCK_ID_FONT
             )
             self._add_row_data(
-                text=f"🚍 {tracking_num}", # Bus tracking number
+                text=f"🚍 {bus.tracking_num}", # Bus tracking number
                 row=row
             )
 
             self._add_row_button(
                 label="Add",
-                command=lambda b=tracking_num: self.controller.add_inferred_run_for_bus(b),
+                command=lambda r=run, b=bus: self.controller.add_inferred_run_to_fleet(r, b),
                 width=ROW_BUTTON_WIDTH,
                 height=ROW_BUTTON_HEIGHT,
                 row=row
             )
             self._add_row_button(
                 label="Remove",
-                command=lambda b=tracking_num: self.runs.remove(b),
+                command=lambda r=run, b=bus: self.controller.remove_inferred_run(r, b),
                 width=WIDE_ROW_BUTTON_WIDTH,
                 height=WIDE_ROW_BUTTON_HEIGHT,
                 row=row

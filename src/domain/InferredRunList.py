@@ -53,8 +53,8 @@ class InferredRunList:
         """
         Adds a given run to this run dictionary associated with a given bus
         tracking number. Assumes that the tracking number corresponds to a bus
-        in the fleet and has not already been assigned a run in this list. The
-        run is not added if it already exists for the given bus in the fleet.
+        in the fleet. If the bus has already been assigned a run, it will be
+        overwritten.
 
         :param bus_tracking_num: the tracking number of the bus for which to
         infer a run.
@@ -67,8 +67,6 @@ class InferredRunList:
                       "Bus tracking number should contain exactly 3 digits.")
         require_state(bus_tracking_num in self.fleet.buses,
                       "Bus tracking number should correspond to a bus in the fleet.")
-        require_state(bus_tracking_num not in self.runs,
-                      "Each bus can only be associated with one run.")
         require_not_none(run, "Run should not be None.")
 
         if not self._check_if_run_already_exists(bus_tracking_num, run):

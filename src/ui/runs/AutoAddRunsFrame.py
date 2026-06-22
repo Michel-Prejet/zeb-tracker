@@ -3,8 +3,8 @@ from typing import Callable
 import customtkinter as ctk
 from domain.InferredRunList import InferredRunList
 from domain.Listener import Listener
-from ui.Pagination.Paginatable import Paginatable
-from ui.Pagination.PaginationFrame import PaginationFrame
+from ui.pagination.Paginatable import Paginatable
+from ui.pagination.PaginationFrame import PaginationFrame
 from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, \
     FLAT_BUTTON_WIDTH, FLAT_BUTTON_HEIGHT, ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_WIDTH, ROW_BUTTON_HEIGHT, \
     WIDE_ROW_BUTTON_HEIGHT, APP_WIDTH

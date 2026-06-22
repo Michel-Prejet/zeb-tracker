@@ -1,7 +1,7 @@
 import math
 from typing import Callable, Sized
 import customtkinter as ctk
-from ui.Pagination.Paginatable import Paginatable
+from ui.pagination.Paginatable import Paginatable
 from ui.UIConstants import SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_SMALL, PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
 

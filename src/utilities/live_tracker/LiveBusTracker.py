@@ -37,7 +37,8 @@ class LiveBusTracker:
         Gathers location information for arrivals at all stops in the Winnipeg
         Transit API.
 
-        :return: True if the scan was successful, False if the scan was cancelled.
+        :return: True if the scan was successful, False if the scan was cancelled
+        or unsuccessful.
         """
         require_state(self.gtfs_read, "GTFS should have been read before scanning stops.")
 

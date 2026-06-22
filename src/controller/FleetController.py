@@ -1,17 +1,16 @@
 from datetime import datetime
-
 from domain.Bus import Bus
 from domain.Fleet import Fleet
 import customtkinter as ctk
 from domain.InferredRunList import InferredRunList
 from domain.Run import Run
-from ui.Fleet.AddBusFrame import AddBusFrame
-from ui.Fleet.ErrorLog import ErrorLog
-from ui.Runs.AddRunFrame import AddRunFrame
-from ui.CSVExport.CSVExportDialog import CSVExportDialog
+from ui.fleet.AddBusFrame import AddBusFrame
+from ui.fleet.ErrorLog import ErrorLog
+from ui.runs.AddRunFrame import AddRunFrame
+from ui.csv_export.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
-from ui.Fleet.ViewFleetFrame import ViewFleetFrame
-from ui.Runs.ViewRunsFrame import ViewRunsFrame
+from ui.fleet.ViewFleetFrame import ViewFleetFrame
+from ui.runs.ViewRunsFrame import ViewRunsFrame
 from ui.UIConstants import PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
@@ -124,11 +123,33 @@ class FleetController:
         """
         Fetches location information from the Winnipeg Transit API
         concurrently and then updates the location information of all
-        buses in this fleet for which information was found.
+        buses in this fleet for which information was found. Takes no action
+        if another location fetch is still active.
         """
+        if self.location_fetch_active:
+            return
+
+        self.location_fetch_active = True
         self.view_fleet_frame.show_fetching_location()
+
         thread = Thread(target=self._update_bus_locations_background, daemon=True)
         thread.start()
+
+    def start_polling_bus_locations(self, wait_time_minutes: int=30) -> None:
+        """
+        Fetches location information from the Winnipeg Transit API and updates
+        bus location information repeatedly until the user cancels the location
+        fetch.
+
+        :param wait_time_minutes: the number of minutes to wait between each
+        location fetch.
+        """
+        self.polling_locations = True
+        self._poll_bus_locations(wait_time_minutes)
+
+    def stop_polling_bus_locations(self) -> None:
+        self.polling_locations = False
+        self.cancel_update_bus_locations()
 
     def cancel_update_bus_locations(self) -> None:
         """
@@ -175,6 +196,8 @@ class FleetController:
     def _initialize_location_tracker(self) -> None:
         self.tracker = None
         self.inferred_runs = InferredRunList(self.fleet)
+        self.location_fetch_active = False
+        self.polling_locations = False
 
     def _create_frames(self) -> None:
         self.menu_frame = MenuFrame(self.app, self)
@@ -226,10 +249,11 @@ class FleetController:
         Creates a live bus tracker object and starts the stop scan. Catches
         any exceptions that might occur and stops the scan early.
         """
-        if self.tracker is None:
-            self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
         try:
-            self.tracker.read_gtfs()
+            if self.tracker is None:
+                self.tracker = LiveBusTracker(self.view_fleet_frame.update_location_fetch_progress)
+                self.tracker.read_gtfs()
+
             success = self.tracker.scan_stops()
             self.app.after(0, self._apply_bus_locations, success)
         except Exception as e:
@@ -256,7 +280,22 @@ class FleetController:
         if success:
             self.view_fleet_frame.update_location_fetch_query_time(datetime.now())
 
+    def _poll_bus_locations(self, wait_time_minutes: int) -> None:
+        SECONDS_PER_MINUTE = 60
+        MILLISECONDS_PER_SECOND = 1000
+
+        if not self.polling_locations:
+            return
+
+        self.update_bus_locations()
+
+        self.app.after(
+            wait_time_minutes * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
+            lambda: self._poll_bus_locations(wait_time_minutes)
+        )
+
     def _complete_location_fetch(self) -> None:
+        self.location_fetch_active = False
         self.view_fleet_frame.show_location_fetch_finished()
 
         err_messages = self.tracker.get_error_messages()

@@ -41,6 +41,8 @@ class StopScanner:
         total_stops.
         :return True if the scan was successful, False if the scan was cancelled.
         """
+        self.active = True
+
         self.observations = ObservationDict()
 
         total_stops = len(self.stops)
@@ -59,7 +61,9 @@ class StopScanner:
                 if self.cancel_scan:
                     for remaining_future in futures:
                         remaining_future.cancel()
+
                     self.cancel_scan = False
+
                     return False
 
                 try:

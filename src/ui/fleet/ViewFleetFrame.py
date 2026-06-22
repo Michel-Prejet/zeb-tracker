@@ -6,12 +6,14 @@ from domain.Fleet import Fleet
 from domain.Listener import Listener
 from logic.BusFiltering.BusFilterType import BusFilterType
 from logic.BusFiltering.BusFilterer import build_search_filter_function
-from ui.Fleet.LocationInfoDialog import LocationInfoDialog
-from ui.Fleet.BusSearchFrame import BusSearchFrame
-from ui.Pagination.Paginatable import Paginatable
-from ui.Pagination.PaginationFrame import PaginationFrame
+from ui.exceptions.InvalidPollingIntervalError import InvalidPollingIntervalException
+from ui.fleet.LocationInfoDialog import LocationInfoDialog
+from ui.fleet.BusSearchFrame import BusSearchFrame
+from ui.pagination.Paginatable import Paginatable
+from ui.pagination.PaginationFrame import PaginationFrame
 from ui.UIConstants import LARGE_TITLE_FONT, PADDING_MEDIUM, APP_WIDTH, PADDING_LARGE, SMALL_TITLE_FONT, \
-    WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT
+    WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, CHECKBOX_WIDTH, \
+    CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH, SQUARE_BUTTON_WIDTH, SQUARE_INPUT_FIELD_WIDTH
 from utilities.DateTimeHelper import format_datetime, last_run_date_to_str
 from utilities.InvariantHelper import require_not_none
 
@@ -19,10 +21,13 @@ from utilities.InvariantHelper import require_not_none
 UNKNOWN_DATE_PLACEHOLDER = "never"
 UNKNOWN_LOCATION_PLACEHOLDER = "No location information"
 
-LOCATION_INFO_FONT_SIZE = 13
-LOCATION_INFO_FONT_SIZE_HOVER = 14
+DEFAULT_POLLING_INTERVAL = 30
+MIN_POLLING_INTERVAL = 15
 
 BUSES_PER_PAGE = 15
+
+LOCATION_INFO_FONT_SIZE = 13
+LOCATION_INFO_FONT_SIZE_HOVER = 14
 
 SCROLLABLE_LIST_DIMENSIONS = (APP_WIDTH, 650)
 SCROLLABLE_LIST_WIDTH, SCROLLABLE_LIST_HEIGHT = SCROLLABLE_LIST_DIMENSIONS
@@ -34,6 +39,8 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
     button. A search function is displayed above the bus list, including
     an input field in which the user can enter a filter string, as well as
     a dropdown menu to select a filter type and a button to submit the search.
+    A location fetch frame is also included, with a button to fetch live location
+    info as well as an option to poll at a given interval.
     """
 
     def __init__(self, app: ctk.CTk, fleet: Fleet, controller):
@@ -57,6 +64,8 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         self._create_location_fetch_area()
         self._create_pagination_area()
         self._initialize_scrollable_list()
+
+        self.polling_mode = False
 
         self.notify()
 
@@ -88,6 +97,8 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         self._show_location_fetch_feedback(percentage=0)
 
         self._show_cancel_scan_button()
+
+        self._hide_polling_interval_error_message()
 
         self.notify()
 
@@ -192,6 +203,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         )
 
         self._create_location_fetch_button()
+        self._create_location_fetch_polling_area()
         self._create_location_fetch_feedback_area()
 
         self.cancel_scan_button = None
@@ -203,6 +215,55 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
             command=self.controller.update_bus_locations
         )
         self.location_fetch_button.pack(anchor="nw", side="left")
+
+    def _create_location_fetch_polling_area(self) -> None:
+        self.location_poll_frame = ctk.CTkFrame(
+            self,
+            fg_color="transparent"
+        )
+        self.location_poll_frame.pack(anchor="nw", pady=PADDING_MEDIUM)
+
+        self._create_poll_checkbox()
+        self._create_labelled_polling_interval_entry_and_feedback()
+        self._set_polling_interval_entry_to_default()
+
+    def _create_poll_checkbox(self) -> None:
+        self.poll_checkbox = ctk.CTkCheckBox(
+            self.location_poll_frame,
+            text="Poll continuously",
+            checkbox_width=CHECKBOX_WIDTH,
+            checkbox_height=CHECKBOX_HEIGHT,
+            border_width=CHECKBOX_BORDER_WIDTH,
+            command=self._toggle_polling_mode
+        )
+        self.poll_checkbox.grid(row=0, column=0, sticky="w", padx=PADDING_LARGE)
+
+    def _create_labelled_polling_interval_entry_and_feedback(self) -> None:
+        self.polling_interval_frame = ctk.CTkFrame(
+            self.location_poll_frame
+        )
+
+        ctk.CTkLabel(
+            self.polling_interval_frame,
+            text="  Interval (minutes) "
+        ).pack(anchor="nw", side="left")
+
+        self.polling_interval_entry = ctk.CTkEntry(
+            self.polling_interval_frame,
+            width=SQUARE_INPUT_FIELD_WIDTH
+        )
+        self.polling_interval_entry.pack(anchor="nw", side="left")
+
+        self.polling_interval_err_msg = ctk.CTkLabel(
+            self.polling_interval_frame,
+            text="",
+            text_color="red"
+        )
+        self.polling_interval_err_msg.pack(anchor="nw", side="left", padx=PADDING_MEDIUM)
+
+    def _set_polling_interval_entry_to_default(self) -> None:
+        self.polling_interval_entry.delete(0, "end")
+        self.polling_interval_entry.insert(0, DEFAULT_POLLING_INTERVAL)
 
     def _create_location_fetch_feedback_area(self) -> None:
         self.location_fetch_feedback = ctk.CTkLabel(
@@ -417,13 +478,18 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
             self.location_fetch_feedback.configure(text="")
 
     def _show_cancel_scan_button(self) -> None:
+        if self.polling_mode:
+            cmd = self.controller.stop_polling_bus_locations
+        else:
+            cmd = self.controller.cancel_update_bus_locations
+
         self.cancel_scan_button = ctk.CTkButton(
             self.location_fetch_frame,
             text="Cancel",
             width=MEDIUM_BUTTON_WIDTH,
             height=MEDIUM_BUTTON_HEIGHT,
             fg_color="transparent",
-            command=self.controller.cancel_update_bus_locations
+            command=cmd
         )
         self.cancel_scan_button.pack(anchor="nw", side="left")
 
@@ -431,5 +497,61 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         if self.cancel_scan_button is not None:
             self.cancel_scan_button.pack_forget()
             self.cancel_scan_button = None
+
+    def _toggle_polling_mode(self) -> None:
+        if self.poll_checkbox.get():
+            self._enter_polling_mode()
+        else:
+            self._leave_polling_mode()
+
+        self.polling_interval_err_msg.configure(text="")
+
+    def _enter_polling_mode(self) -> None:
+        self.polling_mode = True
+
+        self.polling_interval_frame.grid(row=0, column=2, sticky="w")
+
+        self.location_fetch_button.configure(
+            command=self._get_interval_and_poll
+        )
+
+    def _leave_polling_mode(self) -> None:
+        self.polling_mode = False
+
+        self.polling_interval_frame.grid_forget()
+
+        self.location_fetch_button.configure(
+            command=self.controller.update_bus_locations
+        )
+
+    def _get_interval_and_poll(self) -> None:
+        try:
+            minutes = self._get_polling_interval_entry()
+            self.controller.start_polling_bus_locations(minutes)
+        except InvalidPollingIntervalException:
+            self._show_invalid_polling_interval()
+
+    def _get_polling_interval_entry(self) -> int:
+        polling_interval_raw = self.polling_interval_entry.get().strip()
+
+        try:
+            polling_interval = int(polling_interval_raw)
+        except ValueError:
+            raise InvalidPollingIntervalException()
+
+        if polling_interval < MIN_POLLING_INTERVAL:
+            raise InvalidPollingIntervalException()
+
+        return polling_interval
+
+    def _show_invalid_polling_interval(self) -> None:
+        self.polling_interval_err_msg.configure(
+            text=f"Interval should be an integer greater than or equal to {MIN_POLLING_INTERVAL}."
+        )
+
+    def _hide_polling_interval_error_message(self) -> None:
+        self.polling_interval_err_msg.configure(text="")
+
+
 
 

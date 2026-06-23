@@ -1,4 +1,4 @@
-from domain.Bus import Bus
+from domain.bus import Bus
 from domain.validation.exceptions.BusError import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
 from utilities.InvariantHelper import require_not_none
 

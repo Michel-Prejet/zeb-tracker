@@ -1,8 +1,8 @@
 from datetime import date
 
-from domain.Bus import Bus
+from domain.bus import Bus
 from persistence.Connection import connection
-from domain.Run import Run
+from domain.run import Run
 from utilities.InvariantHelper import require_not_none
 
 

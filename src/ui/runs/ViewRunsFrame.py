@@ -1,15 +1,15 @@
 from tkinter import messagebox
 import customtkinter as ctk
-from domain.Bus import Bus
-from domain.Fleet import Fleet
-from domain.Listener import Listener
-from domain.Run import Run
+from domain.bus import Bus
+from domain.fleet import Fleet
+from domain.listener import Listener
+from domain.run import Run
 from logic.RunFiltering.RunFilterType import RunFilterType
 from logic.RunFiltering.RunFilterer import build_search_filter_function
 from ui.pagination.Paginatable import Paginatable
 from ui.pagination.PaginationFrame import PaginationFrame
 from ui.runs.RunSearchFrame import RunSearchFrame
-from ui.UIConstants import LARGE_TITLE_FONT, PADDING_LARGE, PADDING_MEDIUM, APP_WIDTH, SMALL_TITLE_FONT, \
+from constants.ui_constants import LARGE_TITLE_FONT, PADDING_LARGE, PADDING_MEDIUM, APP_WIDTH, SMALL_TITLE_FONT, \
     WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT
 from utilities.DateTimeHelper import format_date
 from utilities.InvariantHelper import require_not_none

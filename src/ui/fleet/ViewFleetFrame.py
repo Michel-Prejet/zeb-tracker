@@ -1,9 +1,9 @@
 from datetime import datetime
 from tkinter import messagebox
 import customtkinter as ctk
-from domain.Bus import Bus
-from domain.Fleet import Fleet
-from domain.Listener import Listener
+from domain.bus import Bus
+from domain.fleet import Fleet
+from domain.listener import Listener
 from logic.BusFiltering.BusFilterType import BusFilterType
 from logic.BusFiltering.BusFilterer import build_search_filter_function
 from ui.exceptions.InvalidPollingIntervalError import InvalidPollingIntervalException
@@ -11,9 +11,9 @@ from ui.fleet.LocationInfoDialog import LocationInfoDialog
 from ui.fleet.BusSearchFrame import BusSearchFrame
 from ui.pagination.Paginatable import Paginatable
 from ui.pagination.PaginationFrame import PaginationFrame
-from ui.UIConstants import LARGE_TITLE_FONT, PADDING_MEDIUM, APP_WIDTH, PADDING_LARGE, SMALL_TITLE_FONT, \
+from constants.ui_constants import LARGE_TITLE_FONT, PADDING_MEDIUM, APP_WIDTH, PADDING_LARGE, SMALL_TITLE_FONT, \
     WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, CHECKBOX_WIDTH, \
-    CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH, SQUARE_BUTTON_WIDTH, SQUARE_INPUT_FIELD_WIDTH
+    CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH, SQUARE_INPUT_FIELD_WIDTH
 from utilities.DateTimeHelper import format_datetime, last_run_date_to_str
 from utilities.InvariantHelper import require_not_none
 

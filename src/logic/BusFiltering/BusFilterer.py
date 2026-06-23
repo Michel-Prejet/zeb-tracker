@@ -1,5 +1,5 @@
 from typing import Callable
-from domain.Bus import Bus
+from domain.bus import Bus
 from logic.BusFiltering.BusFilterType import BusFilterType
 
 

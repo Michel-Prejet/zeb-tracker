@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from ui.UIConstants import LARGE_TITLE_FONT, PADDING_MEDIUM, SMALL_TITLE_FONT
+from constants.ui_constants import LARGE_TITLE_FONT, PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
 
 

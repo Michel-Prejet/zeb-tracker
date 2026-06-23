@@ -2,7 +2,7 @@ from datetime import date
 from typing import Callable
 import customtkinter as ctk
 from logic.RunFiltering.RunFilterType import RunFilterType
-from ui.UIConstants import SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, MEDIUM_BUTTON_WIDTH, \
+from constants.ui_constants import SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, MEDIUM_BUTTON_WIDTH, \
     MEDIUM_BUTTON_HEIGHT, SPLIT_INPUT_FIELD_WIDTH, REGULAR_INPUT_FIELD_WIDTH
 from utilities.InvariantHelper import require_not_none
 

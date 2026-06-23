@@ -46,7 +46,7 @@ classDiagram
     * tracking_num != None
     * 100 <= tracking_num <= 999
     * year != None
-    * year >= 2000
+    * year >= 1900
     * model != None
     * model.length >= 1
     * runs != None

@@ -1,5 +1,5 @@
 from datetime import date, timedelta, datetime
-from domain.Bus import Bus
+from domain.bus import Bus
 
 
 UNKNOWN_DATE_PLACEHOLDER = "never"

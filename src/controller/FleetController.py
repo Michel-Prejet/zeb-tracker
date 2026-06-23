@@ -1,9 +1,9 @@
 from datetime import datetime
-from domain.Bus import Bus
-from domain.Fleet import Fleet
+from domain.bus import Bus
+from domain.fleet import Fleet
 import customtkinter as ctk
-from domain.InferredRunList import InferredRunList
-from domain.Run import Run
+from domain.inferred_run_list import InferredRunList
+from domain.run import Run
 from ui.fleet.AddBusFrame import AddBusFrame
 from ui.fleet.ErrorLog import ErrorLog
 from ui.runs.AddRunFrame import AddRunFrame
@@ -11,7 +11,7 @@ from ui.csv_export.CSVExportDialog import CSVExportDialog
 from ui.MenuFrame import MenuFrame
 from ui.fleet.ViewFleetFrame import ViewFleetFrame
 from ui.runs.ViewRunsFrame import ViewRunsFrame
-from ui.UIConstants import PADDING_MEDIUM
+from constants.ui_constants import PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
 from persistence import BusPersistence, RunPersistence
 from threading import Thread

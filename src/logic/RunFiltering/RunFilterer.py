@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Callable
-from domain.Bus import Bus
-from domain.Run import Run
+from domain.bus import Bus
+from domain.run import Run
 from logic.RunFiltering.RunFilterType import RunFilterType
 
 

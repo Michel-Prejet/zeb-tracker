@@ -1,7 +1,7 @@
 from typing import Callable
 import customtkinter as ctk
 from logic.BusFiltering.BusFilterType import BusFilterType
-from ui.UIConstants import REGULAR_INPUT_FIELD_WIDTH, SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, \
+from constants.ui_constants import REGULAR_INPUT_FIELD_WIDTH, SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, \
     MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
 
 

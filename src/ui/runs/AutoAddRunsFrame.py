@@ -1,11 +1,11 @@
 from datetime import date
 from typing import Callable
 import customtkinter as ctk
-from domain.InferredRunList import InferredRunList
-from domain.Listener import Listener
+from domain.inferred_run_list import InferredRunList
+from domain.listener import Listener
 from ui.pagination.Paginatable import Paginatable
 from ui.pagination.PaginationFrame import PaginationFrame
-from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, \
+from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, \
     FLAT_BUTTON_WIDTH, FLAT_BUTTON_HEIGHT, ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_WIDTH, ROW_BUTTON_HEIGHT, \
     WIDE_ROW_BUTTON_HEIGHT, APP_WIDTH
 from utilities.InvariantHelper import require_not_none

@@ -1,9 +1,9 @@
 import csv
 from datetime import date
 
-from domain.Bus import Bus
-from domain.Fleet import Fleet
-from domain.Run import Run
+from domain.bus import Bus
+from domain.fleet import Fleet
+from domain.run import Run
 from persistence.RunPersistence import save_runs
 from utilities.InvariantHelper import require_not_none
 

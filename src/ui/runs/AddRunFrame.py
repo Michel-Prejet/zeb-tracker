@@ -1,15 +1,15 @@
 from typing import Callable
 import customtkinter as ctk
 from datetime import date, timedelta
-from domain.InferredRunList import InferredRunList
-from domain.Run import Run
+from domain.inferred_run_list import InferredRunList
+from domain.run import Run
 from domain.validation.ValidateBus import validate_tracking_number
 from domain.validation.ValidateRun import validate_date, validate_block_id
 from domain.validation.exceptions.BusError import DuplicateRunError, InvalidTrackingNumberError
 from domain.validation.exceptions.FleetError import BusNotFoundError
 from domain.validation.exceptions.RunError import InvalidRunDateError, InvalidBlockIDError
 from ui.runs.AutoAddRunsFrame import AutoAddRunsFrame
-from ui.UIConstants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, \
+from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, \
     CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
 from utilities.InvariantHelper import require_not_none
 

@@ -1,5 +1,5 @@
-from domain.InferredRunList import InferredRunList
-from domain.Run import Run
+from domain.inferred_run_list import InferredRunList
+from domain.run import Run
 
 
 def infer_runs_from_location_info(runs: InferredRunList) -> None:

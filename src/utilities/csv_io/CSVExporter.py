@@ -1,7 +1,7 @@
 import csv
 from datetime import date
 from pathlib import Path
-from domain.Fleet import Fleet
+from domain.fleet import Fleet
 from utilities.InvariantHelper import require_not_none
 
 

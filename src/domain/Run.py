@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date
 from utilities.InvariantHelper import require_not_none, require_state
 
@@ -17,6 +18,9 @@ class Run:
 
     def __eq__(self, other) -> bool:
         return isinstance(other, Run) and self.run_date == other.run_date and self.block_id == other.block_id
+
+    def __hash__(self) -> int:
+        return hash((self.block_id, self.run_date))
 
     def __lt__(self, other) -> bool:
         return self.run_date <= other.run_date

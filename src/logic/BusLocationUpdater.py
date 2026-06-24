@@ -18,12 +18,14 @@ def update_bus_locations(fleet: Fleet, tracker: LiveBusTracker):
     :param tracker: the live tracker utility used to retrieve location information.
     """
 
-    for bus in fleet.sorted_buses():
+    for bus in fleet.buses:
         location_info = tracker.get_location_info_for_bus(bus.tracking_num)
         if location_info is not None:
-            bus.location_info = _create_location_info_record_from_dict(location_info)
+            bus.set_location_info(
+                _create_location_info_record_from_dict(location_info)
+            )
         else:
-            bus.location_info = None
+            bus.reset_location_info()
 
 def _create_location_info_record_from_dict(location_info_raw: dict) -> LocationInfo:
     """

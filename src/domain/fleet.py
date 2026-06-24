@@ -1,162 +1,252 @@
+from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM
 from domain.bus import Bus
 from domain.listener import Listener
-from domain.run import Run
+from domain.location_info.LocationInfo import LocationInfo
+from domain.run_assignment import RunAssignment
 from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateBusError
 from utilities.InvariantHelper import require_not_none, require_state
 from datetime import date
 
 
-class Fleet(Listener):
+class Fleet:
     """
     Represents a ZEB fleet consisting of buses with unique tracking numbers.
-    Listens for changes in the state of its buses.
+    Coordinates changes to buses and their completed runs.
     """
 
     def __init__(self):
-        self.buses: dict[int, Bus] = {}
-        self.listeners: list[Listener] = []
+        self._buses: dict[int, Bus] = {}
+        self._listeners: list[Listener] = []
 
         self._check_fleet()
 
     def _check_fleet(self) -> None:
-        require_not_none(self.buses, "Bus dictionary should not be None.")
-        for key in self.buses.keys():
-            require_not_none(key, "Key in bus dictionary should not be None.")
-            require_state(Bus.MIN_TRACKING_NUM <= key <= Bus.MAX_TRACKING_NUM,
-                          "Key should contain exactly 3 digits.")
-            require_not_none(self.buses[key],
-                             "Bus in bus dictionary should not be None.")
+        require_not_none(self._buses, "Bus dictionary should not be None.")
 
-    def sorted_buses(self) -> list[Bus]:
-        """
-        :return: a list containing all buses in this fleet, sorted by tracking
-        number in increasing order.
-        """
-        return sorted(self.buses.values())
+        for tracking_num, bus in self._buses.items():
+            require_not_none(
+                tracking_num,
+                "Tracking number in bus dictionary should not be None."
+            )
+            require_state(
+                MIN_BUS_TRACKING_NUM <= tracking_num <= MAX_BUS_TRACKING_NUM,
+                "Tracking number should be a three-digit integer."
+            )
 
-    def sorted_runs(self) -> list[tuple[Run, Bus]]:
+            require_not_none(
+                bus,
+                "Bus in dictionary should not be None."
+            )
+            require_state(
+                tracking_num == bus.tracking_num,
+                "Key should correspond to the bus's tracking number."
+            )
+
+        require_not_none(self._listeners, "Listener list should not be None.")
+        for listener in self._listeners:
+            require_not_none(listener, "Listener in list should not be None.")
+
+    @property
+    def buses(self) -> list[Bus]:
         """
-        :return: a list of tuples containing all runs completed by buses in this fleet,
-        sorted by date in decreasing order. Each tuple is of the form RUN, BUS,
-        where the second element represents the bus that completed the run.
+        :return: a list containing all buses in this fleet, sorted by
+        increasing tracking number.
         """
-        runs: list[tuple[Run, Bus]] = []
-        for bus in self.buses.values():
+        return sorted(self._buses.values())
+
+    @property
+    def runs(self) -> list[RunAssignment]:
+        """
+        :return: a list of RunAssignment containing all runs completed by this
+        fleet along with their corresponding buses, sorted by decreasing run
+        date.
+        """
+        runs: list[RunAssignment] = []
+
+        for bus in self._buses.values():
             for run in bus.runs:
-                runs.append((run, bus))
+                runs.append(RunAssignment(run=run, bus=bus))
 
-        return sorted(runs, key=lambda r: r[0].run_date, reverse=True)
-
-    def runs_starting_at_date(self, run_date: date) -> list[tuple[Run, Bus]]:
-        """
-        :param run_date: the start date by which to filter the result.
-        :return: a list of tuples containing all runs completed by buses in this
-        fleet starting at a given date. Each tuple is of the form RUN, BUS.
-        """
-        return [r for r in self.sorted_runs() if r[0].run_date >= run_date]
+        return sorted(
+            runs,
+            key=lambda r: r.run.run_date, reverse=True
+        )
 
     def num_runs(self) -> int:
         """
         :return: the total number of runs completed by all buses in this fleet.
         """
-        total_runs = 0
-
-        for bus in self.buses.values():
-            total_runs += bus.num_runs()
-
-        return total_runs
-
-    def percent_of_runs(self, bus: Bus) -> float:
-        """
-        :param bus: the bus for which to calculate the percentage of runs
-        completed in this fleet.
-        :return: a float representing the percentage of runs completed by
-        the given bus in this fleet.
-        """
-        require_not_none(bus, "Bus should not be None.")
-
-        if self.num_runs() == 0:
-            return 0
-        return round(100 * bus.num_runs() / self.num_runs(), 2)
-
+        return sum(bus.num_runs() for bus in self._buses.values())
 
     def get_bus(self, tracking_num: int) -> Bus:
         """
         Searches for a bus in this fleet with a given 3-digit tracking number.
         Raises an exception if no such bus was found.
-
-        :param tracking_num: the 3-digit tracking number of the bus to retrieve.
-        :return: the bus in this fleet with the given tracking number.
         """
         require_not_none(tracking_num, "Tracking number should not be None.")
-        require_state(Bus.MIN_TRACKING_NUM <= tracking_num <= Bus.MAX_TRACKING_NUM,
-                      "Tracking number should contain exactly 3 digits.")
+        require_state(
+            MIN_BUS_TRACKING_NUM <= tracking_num <= MAX_BUS_TRACKING_NUM,
+            "Tracking number should be a three-digit integer."
+        )
 
-        result = self.buses.get(tracking_num)
+        bus = self._buses.get(tracking_num)
 
-        if result is None:
+        if bus is None:
             raise BusNotFoundError()
-        else:
-            return result
+
+        return bus
+
+    def get_runs_starting_from(self, run_date: date) -> list[RunAssignment]:
+        """
+        :return: a list of RunAssignment containing all runs completed by this
+        fleet along with their corresponding buses starting at a given date,
+        sorted by decreasing run date.
+        """
+        require_not_none(run_date, "Run date should not be None.")
+
+        return [r for r in self.runs if r.run.run_date >= run_date]
 
     def add_bus(self, bus: Bus) -> None:
         """
         Adds a given bus to this fleet. Raises an exception if a bus already
         exists with the same tracking number.
-
-        :param bus: the bus to add to this fleet.
         """
         require_not_none(bus, "Bus should not be None.")
 
-        if bus.tracking_num in self.buses.keys():
+        if bus.tracking_num in self._buses:
             raise DuplicateBusError()
 
-        self.buses[bus.tracking_num] = bus
+        self._buses[bus.tracking_num] = bus
 
-        require_not_none(self.buses[bus.tracking_num], "Bus should have been added.")
-
-        bus.register_listener(self)
+        require_state(bus.tracking_num in self._buses,
+                      "Bus should have been added.")
+        self._check_fleet()
         self._notify_all()
 
     def remove_bus(self, bus: Bus) -> None:
         """
-        Removes a given bus from this fleet. Assumes that the bus exists
-        in the fleet.
-
-        :param bus: the bus to remove from this fleet.
+        Removes a given bus from this fleet, assuming that it already
+        exists.
         """
         require_not_none(bus, "Bus should not be None.")
-        require_state(bus in self.buses.values(), "Bus to remove should be in fleet.")
+        require_state(
+            bus.tracking_num in self._buses,
+            "Bus to remove should be in fleet."
+        )
+        require_state(
+            bus is self.get_bus(bus.tracking_num),
+            "Bus should come from this fleet."
+        )
 
-        self.buses.pop(bus.tracking_num)
+        self._buses.pop(bus.tracking_num)
 
-        require_state(bus.tracking_num not in self.buses, "Bus should have been removed.")
-
+        require_state(
+            bus.tracking_num not in self._buses,
+            "Bus should have been removed."
+        )
+        self._check_fleet()
         self._notify_all()
 
-    def update_bus_locations(self, locations: dict[int, dict]) -> None:
+    def add_run(self, run_assignment: RunAssignment) -> None:
         """
-        Updates location information for buses in this fleet using the given
-        dictionary. If there is an entry in the dictionary corresponding to
-        a bus's tracking number, that bus will be assigned the associated
-        value (another dictionary) as its location information.
+        Adds the run to the bus in the given run assignment, assuming that the
+        bus exists in this fleet.
+        """
+        require_not_none(run_assignment, "Run assignment should not be None.")
+        require_state(run_assignment.bus.tracking_num in self._buses,
+                      "Bus should exist in this fleet.")
 
-        :param locations: a dictionary in which the keys are bus tracking
-        numbers and the values are dictionaries containing location information
-        for that bus.
-        """
-        for bus in self.buses.values():
-            if bus.tracking_num in locations:
-                bus.location_info = locations[bus.tracking_num]
+        run = run_assignment.run
+        bus = self.get_bus(run_assignment.bus.tracking_num)
+        require_state(
+            run_assignment.bus is bus,
+            "The bus in the RunAssignment should be the same object "
+                    "as the bus in this fleet."
+        )
+
+        bus.add_run(run)
+
+        self._check_fleet()
         self._notify_all()
 
-    def _notify_all(self) -> None:
-        for listener in self.listeners:
-            listener.notify()
+    def remove_run(self, run_assignment: RunAssignment) -> None:
+        """
+        Removes the run from the bus in the given run assignment, assuming that
+        the bus exists in this fleet and the run exists for that bus.
+        """
+        require_not_none(run_assignment, "Run assignment should not be None.")
+        require_state(run_assignment.bus.tracking_num in self._buses,
+                      "Bus should exist in this fleet.")
+
+        run = run_assignment.run
+        bus = self.get_bus(run_assignment.bus.tracking_num)
+        require_state(
+            run_assignment.bus is bus,
+            "The bus in the RunAssignment should be the same object "
+            "as the bus in this fleet."
+        )
+
+        bus.remove_run(run)
+
+        self._check_fleet()
+        self._notify_all()
+
+    def set_bus_location_info(self, bus_tracking_num: int, location_info: LocationInfo) -> None:
+        """
+        Assigns the given location info to the bus in this fleet with the
+        given tracking number.
+        """
+        require_not_none(
+            bus_tracking_num,
+            "Bus tracking number should not be None."
+        )
+        require_state(
+            MIN_BUS_TRACKING_NUM <= bus_tracking_num <= MAX_BUS_TRACKING_NUM,
+            "Bus tracking number should be a 3-digit integer."
+        )
+        require_state(
+            bus_tracking_num in self._buses,
+            "Bus should exist in this fleet."
+        )
+        require_not_none(location_info,"Location info should not be None.")
+
+        bus = self.get_bus(bus_tracking_num)
+        bus.set_location_info(location_info)
+
+        self._check_fleet()
+        self._notify_all()
+
+    def reset_bus_location_info(self, bus_tracking_num: int) -> None:
+        """
+        Clears the location info for the bus in this fleet with the given
+        tracking number.
+        """
+        require_not_none(
+            bus_tracking_num,
+            "Bus tracking number should not be None."
+        )
+        require_state(
+            MIN_BUS_TRACKING_NUM <= bus_tracking_num <= MAX_BUS_TRACKING_NUM,
+            "Bus tracking number should be a 3-digit integer."
+        )
+        require_state(
+            bus_tracking_num in self._buses,
+            "Bus should exist in this fleet."
+        )
+
+        bus = self.get_bus(bus_tracking_num)
+        bus.reset_location_info()
+
+        self._check_fleet()
+        self._notify_all()
 
     def register_listener(self, l: Listener) -> None:
         require_not_none(l, "Listener should not be None.")
-        self.listeners.append(l)
 
-    def notify(self):
-        self._notify_all()
+        self._listeners.append(l)
+
+        self._check_fleet()
+
+    def _notify_all(self) -> None:
+        for listener in self._listeners:
+            listener.notify()

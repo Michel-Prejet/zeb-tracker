@@ -24,7 +24,7 @@ class Bus:
         self._year = year
         self._model = model.strip()
         self._runs: list[Run] = []
-        self.location_info: LocationInfo | None = None
+        self._location_info: LocationInfo | None = None
 
         self._listeners: list[Listener] = []
 
@@ -83,6 +83,10 @@ class Bus:
         """
         return list(self._runs)
 
+    @property
+    def location_info(self) -> LocationInfo | None:
+        return self._location_info
+
     def __eq__(self, other) -> bool:
         """
         Determines whether a given object is equal to this bus. A bus is equal
@@ -128,6 +132,20 @@ class Bus:
         require_not_none(run, "Run should not be None.")
 
         return run in self._runs
+
+    def set_location_info(self, info: LocationInfo) -> None:
+        require_not_none(info, "Location info should not be None.")
+
+        self._location_info = info
+
+        self._check_bus()
+        self._notify_all()
+
+    def reset_location_info(self) -> None:
+        self._location_info = None
+
+        self._check_bus()
+        self._notify_all()
 
     def add_run(self, run: Run) -> None:
         """

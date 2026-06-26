@@ -5,41 +5,79 @@ The following is a class diagram for the ZEB tracker application.
 ```mermaid
 classDiagram
     class Fleet {
-        -Dictionary~int, Bus~ buses
+        -Dictionary[int, Bus] buses
         
-        +sorted_buses() List~Bus~
-        +sorted_runs() List~Run~
-        +runs_starting_at_date() List~Run~
+        +buses() list~Bus~
+        +runs() list~Run~
         +num_runs() int
         +get_bus(tracking_num) Bus
-        +add_bus(bus) void
-        +remove_bus(bus) void
-        +update_bus_locations(locations) void
+        +get_runs_starting_from(date) list[RunAssignment]
+        +add_bus(bus) None
+        +remove_bus(bus) None
+        +add_run(run_assignment) None
+        +remove_run(run_assignment) None
+        +set_bus_location_info(tracking_num, info) None
+        +reset_bus_location_info(tracking_num) None
     }
     
     note for Fleet"Invariant properties:
     * buses != None
-    * for key in buses.keys(): 
+    * for key, value in buses 
     *   key != None
     *   100 <= key <= 999
-    *   buses[key] != None
+    *   value != None
+    *   key == value.tracking_num
     "
     
     Fleet --* Bus
+
+    class InferredRunList {
+        -Fleet fleet
+        -Dictionary[int, list~RunAssignment~] runs
+
+        +inferred_runs() list~RunAssignment~
+        +add_inferred_run(run_assignment) None
+        +remove_inferred_run(run_assignment, notify) None
+        +commit(run_assignment, notify) bool
+        +commit_all() list~RunAssignment~
+    }
+
+    note for InferredRunList"Invariant properties:
+    * fleet != None
+    * runs != None
+    * for key, value in runs:
+    *   key != None
+    *   100 <= key <= 999
+    *   value != None
+    *   len(value) >= 1
+    *   for assigned_run in value:
+    *       assigned_run != None
+            assigned_run.tracking_num == key
+    "
+
+    InferredRunList --o Run
+    InferredRunList --o Fleet
     
     class Bus {
         -int tracking_num
         -int year
         -String model
-        -Set~Run~ runs
+        -list~Run~ runs
         -LocationInfo location_info
         
-        +add_run(run) void
-        +remove_run(run) void
+        +tracking_num() int
+        +year() int
+        +model() str
+        +runs() list~Run~
+        +location_info() LocationInfo | None
         +num_runs() int
-        +first_run() Run
-        +last_run() Run
-        +contains(run) bool
+        +first_run() Run | None
+        +last_run() Run | None
+        +contains() bool
+        +set_location_info(info) None
+        +reset_location_info() None
+        +add_run(run) None
+        +remove_run(run) None
     }
 
     note for Bus "Invariant properties:
@@ -48,52 +86,38 @@ classDiagram
     * year != None
     * year >= 1900
     * model != None
-    * model.length >= 1
+    * len(model) >= 1
     * runs != None
     * for run in runs, run != None
     "
     
     Bus --* Run
     
-    class InferredRunList {
-        -Dictionary~int, set~Run~~ runs
-        -Fleet fleet
-        -int size
-        
-        +get(bus_tracking_num) list~Run~
-        +add(bus_tracking_num, run) void
-        +remove(run, bus, notify) void
-        +add_to_fleet(run, bus, notify) bool
-        +add_all_to_fleet() list[tuple[Run, Bus]]
-    }
-    
-    note for InferredRunList"Invariant properties:
-    * fleet != None
-    * runs != None
-    * for key in runs.keys():
-    *   key != None
-    *   100 <= key <= 999
-    *   runs[key] != None
-    *   runs[key].length >= 1
-    *   for run in runs[key]:
-    *       run != None
-    * size != None
-    * size >= 0
-    "
-    
-    InferredRunList --o Run
-    InferredRunList --o Fleet
-    
     class Run {
         -String block_id
         -date run_date
+        
+        +block_id() str
+        +run_date() date
     }
     
     note for Run"Invariant properties:
     * block_id != None
-    * block_id.length >= 1
+    * len(block_id) >= 1
     * run_date != None
     "
+    
+    class RunAssignment {
+        -Run run
+        -Bus bus
+        
+        +date() date
+        +tracking_num() int
+        +block_id() str
+    }
+    
+    RunAssignment --o Run
+    RunAssignment --o Bus
     
     class LocationInfo {
         -Stop stop

@@ -1,8 +1,8 @@
-from domain.bus import Bus
+from typing import Iterator
+from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM
 from domain.fleet import Fleet
 from domain.listener import Listener
-from domain.run import Run
-from domain.validation.exceptions.BusError import DuplicateRunError
+from domain.run_assignment import RunAssignment
 from domain.validation.exceptions.FleetError import BusNotFoundError
 from utilities.InvariantHelper import require_not_none, require_state
 
@@ -11,226 +11,226 @@ class InferredRunList(Listener):
     """
     Represents a list of runs inferred from bus location information. The runs
     are stored as a dictionary mapping bus tracking numbers to their associated
-    runs. Also stores a fleet to which the inferred runs can eventually be added.
+    run assignments.
     """
 
     def __init__(self, fleet: Fleet):
-        self.fleet = fleet
-        self.runs: dict[int, set[Run]] = {}
-        self.listeners: list[Listener] = []
-        self.size = 0
+        require_not_none(fleet, "Fleet should not be None.")
 
-        self.fleet.register_listener(self)
+        self._fleet = fleet
+        self._runs: dict[int, list[RunAssignment]] = {}
+
+        self._listeners: list[Listener] = []
+        self._fleet.register_listener(self)
 
         self._check_inferred_run_list()
 
-    def __iter__(self):
-        """
-        :return: a list of RUN, BUS tuples containing every run in this
-        inferred run list along with its corresponding bus.
-        """
-        return iter(self._build_iterable_list())
+    def _check_inferred_run_list(self) -> None:
+        require_not_none(self._fleet, "Fleet should not be None.")
 
-    def __getitem__(self, index: int | slice):
-        """
-        :param index: the index or the slice to retrieve from this inferred
-        run list.
-        :return: a RUN, BUS tuple (or a list thereof) corresponding to the given
-        index or the given slice.
-        """
-        return self._build_iterable_list()[index]
+        require_not_none(self._runs, "Run dictionary should not be None.")
+        for tracking_num, run_assignments in self._runs.items():
+            require_not_none(
+                tracking_num,
+                "Bus tracking number in run dictionary should not be None."
+            )
+            require_state(
+                MIN_BUS_TRACKING_NUM <= tracking_num <= MAX_BUS_TRACKING_NUM,
+                "Bus tracking number should be a 3-digit integer."
+            )
 
-    def __len__(self):
+            require_not_none(
+                run_assignments,
+                "Run assignment list in run dictionary should not be None."
+            )
+            require_state(
+                len(run_assignments) > 0,
+                "Run assignment list in run dictionary should not be empty."
+            )
+
+            for assigned_run in run_assignments:
+                require_not_none(assigned_run, "Run assignment in list should not be None.")
+                require_state(
+                    assigned_run.bus.tracking_num == tracking_num,
+                    "Bus in run assignment should have the same tracking number as the key to the "
+                    "list of run assignments."
+                )
+
+        require_not_none(self._listeners, "Listener list should not be None.")
+        for listener in self._listeners:
+            require_not_none(listener, "Listener in list should not be None.")
+
+    @property
+    def inferred_runs(self) -> list[RunAssignment]:
+        """
+        :return: a list of run assignments containing all inferred runs,
+        sorted by increasing run date (then by increasing bus tracking
+        number, then by increasing block ID).
+        """
+        run_assignments: list[RunAssignment] = []
+
+        for run_assignments in self._runs.values():
+            for assigned_run in run_assignments:
+                run_assignments.append(assigned_run)
+
+        return sorted(
+            run_assignments,
+            key=lambda assigned_run: (
+                assigned_run.date,
+                assigned_run.tracking_num,
+                assigned_run.block_id
+            )
+        )
+
+    def __len__(self) -> int:
         """
         :return: the total number of runs in this inferred run list.
         """
-        return self.size
+        return sum(len(run_list) for run_list in self._runs.values())
 
-    def _check_inferred_run_list(self) -> None:
-        require_not_none(self.fleet, "Fleet should not be None.")
-        require_not_none(self.runs, "Run dictionary should not be None.")
-        for key in self.runs.keys():
-            require_not_none(key, "Key in run dictionary should not be None.")
-            require_state(Bus.MIN_TRACKING_NUM <= key <= Bus.MAX_TRACKING_NUM,
-                          "Key should contain exactly 3 digits.")
-            require_not_none(self.runs[key],
-                             "Run list in run dictionary should not be None.")
-            require_state(len(self.runs[key]) > 0,
-                          "Run list in run dictionary should not be empty.")
-            for run in self.runs[key]:
-                require_not_none(run, "Run in run list in run dictionary should not be None.")
-        require_not_none(self.size, "Size should not be None.")
-        require_state(self.size >= 0, "Size should not be negative.")
-
-    def get(self, bus_tracking_num: int) -> set[Run]:
+    def __iter__(self) -> Iterator[RunAssignment]:
         """
-        :param bus_tracking_num: the bus tracking number for which to retrieve
-        the associated run in this dictionary.
-        :return: the set of runs associated with the given bus tracking number.
+        :return: an iterator over run assignments, sorted by increasing run
+        date, then tracking number, then block ID.
         """
-        require_state(bus_tracking_num in self.runs,
-                      "Bus tracking number should exist in the run dictionary.")
-        return self.runs[bus_tracking_num].copy()
+        return iter(self.inferred_runs)
 
-    def add(self, bus_tracking_num: int, run: Run) -> None:
+    def __getitem__(self, index: int | slice) -> RunAssignment | list[RunAssignment]:
         """
-        Adds a given run to this run dictionary associated with a given bus
-        tracking number. Assumes that the tracking number corresponds to a bus
-        in the fleet.
-
-        :param bus_tracking_num: the tracking number of the bus for which to
-        infer a run.
-        :param run: the run to add to this run dictionary under the given
-        bus tracking number.
+        :param index: the index or the slice to retrieve from this inferred
+        run list.
+        :return: a RunAssignment (or a list thereof) corresponding to the
+        given index or the given slice.
         """
-        require_not_none(bus_tracking_num,
-                         "Bus tracking number should not be None.")
-        require_state(Bus.MIN_TRACKING_NUM <= bus_tracking_num <= Bus.MAX_TRACKING_NUM,
-                      "Bus tracking number should contain exactly 3 digits.")
-        require_state(bus_tracking_num in self.fleet.buses,
-                      "Bus tracking number should correspond to a bus in the fleet.")
-        require_not_none(run, "Run should not be None.")
+        return self.inferred_runs[index]
 
-        if not self._check_if_run_already_exists(bus_tracking_num, run):
-            if bus_tracking_num not in self.runs:
-                self.runs[bus_tracking_num] = set()
-
-            if run in self.runs[bus_tracking_num]:
-                return
-
-            self.runs[bus_tracking_num].add(run)
-            self.size += 1
-
-            self._notify_all()
-
-        self._check_inferred_run_list()
-
-    def remove(self, run: Run, bus: Bus, notify: bool=True) -> None:
+    def add_inferred_run(self, run_assignment: RunAssignment) -> None:
         """
-        Removes the given run stored under the given bus's tracking number.
-        Assumes that the run exists for the given bus in this dictionary.
-
-        :param run: the run to remove from the dictionary.
-        :param bus: the bus under which the given run is found.
-        :param notify: whether to notify listeners of changes.
+        Adds a given run assignment to this inferred run list, or takes no
+        action if the given run assignment already exists.
         """
-        require_not_none(run, "Run should not be None.")
-        require_not_none(bus, "Bus should not be None.")
-        require_state(bus.tracking_num in self.runs,
-                      "The bus tracking number for the run to remove "
-                      "should exist in the run dictionary.")
-        require_state(run in self.runs[bus.tracking_num],
-                      "The run to remove should exist in the run dictionary.")
+        require_not_none(run_assignment, "Run assignment should not be None.")
+        require_state(
+            run_assignment.bus is self._fleet.get_bus(run_assignment.tracking_num),
+            "The bus in the run assignment should be the same object "
+            "as the bus in the fleet."
+        )
 
-        self.runs[bus.tracking_num].remove(run)
+        tracking_num = run_assignment.tracking_num
+        if tracking_num not in self._runs:
+            self._runs[tracking_num] = []
 
-        if len(self.runs[bus.tracking_num]) == 0:
-            self.runs.pop(bus.tracking_num)
+        if run_assignment in self._runs[tracking_num]:
+            return
 
-        self.size -= 1
-
-        if notify:
-            self._notify_all()
-
-        self._check_inferred_run_list()
-
-    def add_to_fleet(self, run: Run, bus: Bus, notify: bool=True) -> bool:
-        """
-        Adds the given run to the given bus and removes it from this inferred
-        run list. Assumes that the given run exists for the given bus in this
-        dictionary.
-
-        :param run: the run to add to the fleet from this inferred run list.
-        :param bus: the bus to which to add the given run.
-        :param notify: whether to notify listeners of changes.
-        :return: True if the run was successfully added, False otherwise.
-        """
-        require_not_none(run, "Run should not be None.")
-        require_not_none(bus, "Bus should not be None.")
-        require_state(bus.tracking_num in self.runs,
-                      "The bus tracking number for the run to add to the fleet "
-                      "should exist in the run dictionary.")
-        require_state(run in self.runs[bus.tracking_num],
-                      "The run to add to the fleet should exist in the run dictionary.")
-
-        try:
-            bus.add_run(run)
-        except DuplicateRunError:
-            return False
-
-        self.remove(run, bus, False)
-
-        self._check_inferred_run_list()
-        if notify:
-            self._notify_all()
-        return True
-
-    def add_all_to_fleet(self) -> list[tuple[Run, Bus]]:
-        """
-        Adds all runs in the dictionary to their associated buses in the fleet.
-
-        :return: a list of tuples of the form (RUN, BUS) where RUN is the run
-        that was successfully added to BUS.
-        """
-        added_runs: list[tuple[Run, Bus]] = []
-
-        for tracking_num, runs in list(self.runs.items()):
-            bus = self.fleet.get_bus(tracking_num)
-
-            for run in list(runs):
-                success = self.add_to_fleet(run, bus, notify=False)
-
-                if success:
-                    added_runs.append((run, bus))
+        self._runs[tracking_num].append(run_assignment)
 
         self._check_inferred_run_list()
         self._notify_all()
+
+    def remove_inferred_run(self, run_assignment: RunAssignment,
+                            notify: bool=True) -> None:
+        """
+        Removes a given run assignment from this inferred run list, assuming
+        that it exists.
+        """
+        require_not_none(run_assignment, "Run assignment should not be None.")
+        require_state(
+            run_assignment in self.inferred_runs,
+            "Run assignment to remove should exist in this inferred run list."
+        )
+        require_state(
+            run_assignment.bus is self._fleet.get_bus(run_assignment.tracking_num),
+            "The bus in the run assignment should be the same object "
+            "as the bus in the fleet."
+        )
+
+        self._runs[run_assignment.tracking_num].remove(run_assignment)
+
+        if len(self._runs[run_assignment.tracking_num]) == 0:
+            self._runs.pop(run_assignment.tracking_num)
+
+        self._check_inferred_run_list()
+        if notify:
+            self._notify_all()
+
+    def commit(self, run_assignment: RunAssignment, notify: bool=True) -> bool:
+        """
+        Adds the run to the corresponding bus in the given run assignment if it
+        doesn't already exist, then removes the run assignment from this
+        inferred run list.
+
+        :return: True if the run was successfully added to the bus; False
+        otherwise (if it already existed).
+        """
+        require_not_none(run_assignment, "Run assignment should not be None.")
+        require_state(
+            run_assignment in self.inferred_runs,
+            "Run assignment to commit should exist in this inferred run list.")
+        require_state(
+            run_assignment.bus is self._fleet.get_bus(run_assignment.tracking_num),
+            "The bus in the run assignment should be the same object "
+            "as the bus in the fleet."
+        )
+
+        run, bus = run_assignment.run, run_assignment.bus
+        run_already_exists = run in bus.runs
+
+        if not run_already_exists:
+            self._fleet.add_run(run_assignment)
+
+        self.remove_inferred_run(run_assignment, notify=False)
+
+        self._check_inferred_run_list()
+        if notify:
+            self._notify_all()
+
+        return not run_already_exists
+
+    def commit_all(self) -> list[RunAssignment]:
+        """
+        Adds all run assignments in this inferred run list to the fleet,
+        except for those that already exist.
+
+        :return: a list of RunAssignment containing all run assignments added
+        to the fleet.
+        """
+        added_runs: list[RunAssignment] = []
+
+        for assigned_run in self.inferred_runs:
+            if self.commit(assigned_run, notify=False):
+                added_runs.append(assigned_run)
+
+        self._check_inferred_run_list()
+        self._notify_all()
+
         return added_runs
 
     def notify(self) -> None:
         """
         Removes any runs associated with buses that are no longer in the fleet.
         """
-        for tracking_num in list(self.runs.keys()):
+        changed = False
+
+        for tracking_num in list(self._runs.keys()):
             try:
-                self.fleet.get_bus(tracking_num)
+                self._fleet.get_bus(tracking_num)
+                changed = True
             except BusNotFoundError:
-                num_removed = len(self.runs[tracking_num])
-                self.runs.pop(tracking_num)
-                self.size -= num_removed
+                self._runs.pop(tracking_num)
 
         self._check_inferred_run_list()
-        self._notify_all()
+        if changed:
+            self._notify_all()
 
     def register_listener(self, l: Listener) -> None:
-        self.listeners.append(l)
+        require_not_none(l, "Listener should not be None.")
+
+        self._listeners.append(l)
+
+        self._check_inferred_run_list()
 
     def _notify_all(self) -> None:
-        for l in self.listeners:
+        for l in self._listeners:
             l.notify()
-
-    def _check_if_run_already_exists(self, bus_tracking_num: int, run: Run) -> bool:
-        bus = self.fleet.get_bus(bus_tracking_num)
-        require_not_none(bus,
-                         "Bus tracking number should correspond to a bus in the fleet.")
-
-        return bus.contains(run)
-
-    def _build_iterable_list(self) -> list[tuple[Run, Bus]]:
-        iterable_list: list[tuple[Run, Bus]] = []
-
-        for tracking_num in self.runs.keys():
-            bus = self.fleet.get_bus(tracking_num)
-
-            for run in self.runs[tracking_num]:
-                iterable_list.append((run, bus))
-
-        return sorted(
-            iterable_list,
-            key=lambda pair: (
-                pair[0].run_date,
-                pair[1].tracking_num,
-                pair[0].block_id
-            )
-        )
 

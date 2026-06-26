@@ -69,7 +69,7 @@ class Fleet:
 
         return sorted(
             runs,
-            key=lambda r: r.run.run_date, reverse=True
+            key=lambda r: r.date, reverse=True
         )
 
     def num_runs(self) -> int:
@@ -104,7 +104,7 @@ class Fleet:
         """
         require_not_none(run_date, "Run date should not be None.")
 
-        return [r for r in self.runs if r.run.run_date >= run_date]
+        return [r for r in self.runs if r.date >= run_date]
 
     def add_bus(self, bus: Bus) -> None:
         """
@@ -153,11 +153,11 @@ class Fleet:
         bus exists in this fleet.
         """
         require_not_none(run_assignment, "Run assignment should not be None.")
-        require_state(run_assignment.bus.tracking_num in self._buses,
+        require_state(run_assignment.tracking_num in self._buses,
                       "Bus should exist in this fleet.")
 
         run = run_assignment.run
-        bus = self.get_bus(run_assignment.bus.tracking_num)
+        bus = self.get_bus(run_assignment.tracking_num)
         require_state(
             run_assignment.bus is bus,
             "The bus in the RunAssignment should be the same object "
@@ -175,11 +175,11 @@ class Fleet:
         the bus exists in this fleet and the run exists for that bus.
         """
         require_not_none(run_assignment, "Run assignment should not be None.")
-        require_state(run_assignment.bus.tracking_num in self._buses,
+        require_state(run_assignment.tracking_num in self._buses,
                       "Bus should exist in this fleet.")
 
         run = run_assignment.run
-        bus = self.get_bus(run_assignment.bus.tracking_num)
+        bus = self.get_bus(run_assignment.tracking_num)
         require_state(
             run_assignment.bus is bus,
             "The bus in the RunAssignment should be the same object "

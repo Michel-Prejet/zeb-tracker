@@ -111,6 +111,8 @@ classDiagram
         -Run run
         -Bus bus
         
+        +run() Run
+        +bus() Bus
         +date() date
         +tracking_num() int
         +block_id() str
@@ -126,6 +128,15 @@ classDiagram
         -string block_id
         -timedelta scheduled_departure
         -timedelta scheduled_arrival
+        -datetime query_time
+        
+        +stop() Stop
+        +route() str
+        +destination() str
+        +block_id() str
+        +scheduled_departure() timedelta
+        +scheduled_arrival() timedelta
+        +query_time() datetime
     }
     
     Bus --* LocationInfo
@@ -133,18 +144,23 @@ classDiagram
     note for LocationInfo"Invariant properties:
     * stop != None
     * route != None
-    * route.length >= 1
+    * len(route) >= 1
     * destination != None
-    * destination.length >= 1
+    * len(destination) >= 1
     * if block_id is not None: len(block_id) >= 1
     * scheduled_departure != None
     * scheduled_arrival != None
+    * query_time != None
     "
     
     class Stop {
         -string name
         -int stop_id
         -Coordinates coordinates
+        
+        +name() str
+        +stop_id() int
+        +coordinates() Coordinates
     }
     
     LocationInfo --* Stop
@@ -159,6 +175,9 @@ classDiagram
     class Coordinates {
         -float latitude
         -float longitude
+        
+        +latitude() float
+        +longitude() float
     }
     
     Stop --* Coordinates

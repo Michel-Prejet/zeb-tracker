@@ -14,20 +14,28 @@ class RunAssignment:
         require_not_none(run, "Run should not be None.")
         require_not_none(bus, "Bus should not be None.")
 
-        self.run = run
-        self.bus = bus
+        self._run = run
+        self._bus = bus
+
+    @property
+    def run(self) -> Run:
+        return self._run
+
+    @property
+    def bus(self) -> Bus:
+        return self._bus
 
     @property
     def date(self) -> date:
-        return self.run.run_date
+        return self._run.run_date
 
     @property
     def tracking_num(self) -> int:
-        return self.bus.tracking_num
+        return self._bus.tracking_num
 
     @property
     def block_id(self) -> str:
-        return self.run.block_id
+        return self._run.block_id
 
     def __eq__(self, other) -> bool:
         """
@@ -37,6 +45,6 @@ class RunAssignment:
         """
         return (
             isinstance(other, RunAssignment)
-            and self.run == other.run
-            and self.bus == other.bus
+            and self._run == other._run
+            and self._bus == other._bus
         )

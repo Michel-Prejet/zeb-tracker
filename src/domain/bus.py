@@ -1,8 +1,8 @@
 from constants.app_constants import MIN_BUS_YEAR, MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM
 from domain.listener import Listener
 from domain.run import Run
-from domain.location_info.LocationInfo import LocationInfo
-from domain.validation.exceptions.BusError import DuplicateRunError
+from domain.location_info.location_info import LocationInfo
+from domain.validation.exceptions.bus_error import DuplicateRunError
 from utilities.InvariantHelper import require_not_none, require_state
 import bisect
 

@@ -1,9 +1,8 @@
+from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM, MIN_BUS_YEAR
 from domain.bus import Bus
-from domain.validation.exceptions.BusError import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
+from domain.validation.exceptions.bus_error import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
 from utilities.InvariantHelper import require_not_none
 
-
-TRACKING_NUMBER_LENGTH = 3
 
 def validate_tracking_number(raw: str) -> int:
     """"
@@ -19,19 +18,21 @@ def validate_tracking_number(raw: str) -> int:
 
     raw = raw.strip()
 
-    if len(raw) != TRACKING_NUMBER_LENGTH:
-        raise InvalidTrackingNumberError()
-
     try:
-        return int(raw)
+        tracking_num = int(raw)
     except ValueError:
         raise InvalidTrackingNumberError()
+
+    if tracking_num < MIN_BUS_TRACKING_NUM or tracking_num > MAX_BUS_TRACKING_NUM:
+        raise InvalidTrackingNumberError()
+
+    return tracking_num
 
 def validate_year(raw: str) -> int:
     """"
     Validates a given year and raises an exception if it is invalid.
     To be valid, a year must only contain digits and should be at least
-    2000.
+    1900.
 
     :param raw: the year to validate.
     :return: the validated year, with all leading/trailing whitespace removed.
@@ -41,13 +42,14 @@ def validate_year(raw: str) -> int:
     raw = raw.strip()
 
     try:
-        result = int(raw)
-        if result < Bus.MIN_YEAR:
-            raise InvalidYearError()
-        else:
-            return result
+        year = int(raw)
     except ValueError:
         raise InvalidYearError()
+
+    if year < MIN_BUS_YEAR:
+        raise InvalidYearError()
+
+    return year
 
 def validate_model(raw: str) -> str:
     """"

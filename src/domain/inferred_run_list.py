@@ -3,7 +3,7 @@ from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM
 from domain.fleet import Fleet
 from domain.listener import Listener
 from domain.run_assignment import RunAssignment
-from domain.validation.exceptions.FleetError import BusNotFoundError
+from domain.validation.exceptions.fleet_error import BusNotFoundError
 from utilities.InvariantHelper import require_not_none, require_state
 
 

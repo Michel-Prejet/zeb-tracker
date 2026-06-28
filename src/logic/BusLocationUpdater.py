@@ -1,6 +1,6 @@
 from datetime import datetime
 from domain.fleet import Fleet
-from domain.location_info.LocationInfo import LocationInfo
+from domain.location_info.location_info import LocationInfo
 from domain.location_info.stop import Stop
 from utilities.live_tracker.LiveBusTracker import LiveBusTracker
 from utilities.live_tracker.domain.Coordinates import Coordinates

@@ -1,9 +1,9 @@
 from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM
 from domain.bus import Bus
 from domain.listener import Listener
-from domain.location_info.LocationInfo import LocationInfo
+from domain.location_info.location_info import LocationInfo
 from domain.run_assignment import RunAssignment
-from domain.validation.exceptions.FleetError import BusNotFoundError, DuplicateBusError
+from domain.validation.exceptions.fleet_error import BusNotFoundError, DuplicateBusError
 from utilities.InvariantHelper import require_not_none, require_state
 from datetime import date
 

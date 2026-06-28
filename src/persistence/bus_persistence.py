@@ -1,7 +1,7 @@
-from persistence.Connection import connection
+from persistence.connection import connection
 from domain.bus import Bus
 from utilities.InvariantHelper import require_not_none
-from persistence.RunPersistence import load_runs_for_bus
+from persistence.run_persistence import load_runs_for_bus
 
 
 def save_bus(bus: Bus) -> None:

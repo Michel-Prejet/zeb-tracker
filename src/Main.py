@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from controller.FleetController import FleetController
-from persistence.Connection import initialize_database, connection
+from persistence.connection import initialize_database, connection
 from dotenv import load_dotenv
 from constants.ui_constants import APP_HEIGHT, APP_WIDTH
 

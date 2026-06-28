@@ -13,7 +13,7 @@ from ui.fleet.ViewFleetFrame import ViewFleetFrame
 from ui.runs.ViewRunsFrame import ViewRunsFrame
 from constants.ui_constants import PADDING_MEDIUM
 from utilities.InvariantHelper import require_not_none, require_state
-from persistence import BusPersistence, RunPersistence
+from persistence import bus_persistence, run_persistence
 from threading import Thread
 from logic.BusLocationUpdater import update_bus_locations
 from logic.RunFinder import infer_runs_from_location_info

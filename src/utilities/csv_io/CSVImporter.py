@@ -4,7 +4,7 @@ from datetime import date
 from domain.bus import Bus
 from domain.fleet import Fleet
 from domain.run import Run
-from persistence.RunPersistence import save_runs
+from persistence.run_persistence import save_runs
 from utilities.InvariantHelper import require_not_none
 
 RUN_DATE_INDEX = 0

@@ -3,7 +3,7 @@ from typing import Callable
 import customtkinter as ctk
 from ui.pagination.Paginatable import Paginatable
 from constants.ui_constants import SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_SMALL, PADDING_MEDIUM
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 
 
 class PaginationFrame(ctk.CTkFrame):

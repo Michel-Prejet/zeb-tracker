@@ -1,6 +1,6 @@
 from constants.app_constants import NUM_BLOCK_ID_TOKENS
 from domain.validation.exceptions.run_error import InvalidBlockIDError, InvalidRunDateError
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 from datetime import date
 
 

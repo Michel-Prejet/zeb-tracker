@@ -2,5 +2,7 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/8fec9812-5781-4d22-8164-43517180a552/console.sql" value="8fec9812-5781-4d22-8164-43517180a552" />
+    <file url="file://$PROJECT_DIR$/sql/create-tables.ddl" value="8fec9812-5781-4d22-8164-43517180a552" />
+    <file url="file://$PROJECT_DIR$/src/persistence/bus_persistence.py" value="8fec9812-5781-4d22-8164-43517180a552" />
   </component>
 </project>

@@ -3,7 +3,7 @@ from domain.bus import Bus
 from domain.run_assignment import RunAssignment
 from persistence.connection import connection
 from domain.run import Run
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 
 
 def save_run(run_assignment: RunAssignment) -> None:

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from domain.bus import Bus
 from domain.run import Run
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 from datetime import date
 
 

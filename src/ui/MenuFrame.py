@@ -1,7 +1,7 @@
 from typing import Callable
 import customtkinter as ctk
 from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 
 
 class MenuFrame(ctk.CTkFrame):

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from constants.ui_constants import LARGE_TITLE_FONT, PADDING_MEDIUM
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 
 
 MAX_ERROR_MESSAGES = 100

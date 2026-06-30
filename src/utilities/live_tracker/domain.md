@@ -18,6 +18,13 @@ classDiagram
         -int tracking_num
         -timedelta scheduled_arrival
         -timedelta estimated_arrival
+
+        +stop() Stop
+        +route() string
+        +destination() string
+        +tracking_num() int
+        +scheduled_arrival() timedelta
+        +estimated_arrival() timedelta
     }
     
     BusObservation --o Stop
@@ -38,6 +45,10 @@ classDiagram
         -string name
         -int stop_id
         -Coordinate coordinates
+        
+        +name() string
+        +stop_id() int
+        +coordinates() Coordinate
     }
     
     Stop --* Coordinate
@@ -46,13 +57,16 @@ classDiagram
     * name != None
     * len(name) >= 1
     * stop_id != None
-    * len(stop_id) == 5
+    * 1000 <= stop_id <= 9999
     * coordinates != None
     "
     
     class Coordinate {
         -float latitude
         -float longitude
+        
+        +latitude() float
+        +longitude() float
     }
     
     note for Coordinate"Invariant properties:

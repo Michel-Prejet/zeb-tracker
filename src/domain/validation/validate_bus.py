@@ -1,7 +1,7 @@
 from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM, MIN_BUS_YEAR
 from domain.bus import Bus
 from domain.validation.exceptions.bus_error import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 
 
 def validate_tracking_number(raw: str) -> int:

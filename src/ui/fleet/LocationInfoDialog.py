@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from domain.bus import Bus
 from constants.ui_constants import PADDING_MEDIUM
-from utilities.DateTimeHelper import format_timedelta
-from utilities.InvariantHelper import require_not_none
+from utilities.datetime_formatting import format_timedelta
+from utilities.invariant_helper import require_not_none
 import webbrowser
 
 

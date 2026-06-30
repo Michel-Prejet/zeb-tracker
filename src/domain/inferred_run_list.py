@@ -1,10 +1,11 @@
 from typing import Iterator
 from constants.app_constants import MIN_BUS_TRACKING_NUM, MAX_BUS_TRACKING_NUM
+from domain.bus import Bus
 from domain.fleet import Fleet
 from domain.listener import Listener
 from domain.run_assignment import RunAssignment
 from domain.validation.exceptions.fleet_error import BusNotFoundError
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 
 
 class InferredRunList(Listener):
@@ -81,6 +82,13 @@ class InferredRunList(Listener):
                 assigned_run.block_id
             )
         )
+
+    @property
+    def buses(self) -> list[Bus]:
+        """
+        :return: the buses in the fleet for this inferred run list.
+        """
+        return self._fleet.buses
 
     def __len__(self) -> int:
         """

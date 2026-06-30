@@ -36,6 +36,7 @@ classDiagram
         -Dictionary[int, list~RunAssignment~] runs
 
         +inferred_runs() list~RunAssignment~
+        +buses() list~Bus~
         +add_inferred_run(run_assignment) None
         +remove_inferred_run(run_assignment, notify) None
         +commit(run_assignment, notify) bool
@@ -168,7 +169,7 @@ classDiagram
     note for Stop"Invariant properties:
     * name != None
     * len(name) >= 1
-    * len(stop_id) == 5
+    * 1000 <= stop_id <= 9999
     * coordinates != None    
     "
     

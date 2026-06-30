@@ -8,7 +8,7 @@ from ui.pagination.PaginationFrame import PaginationFrame
 from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, \
     FLAT_BUTTON_WIDTH, FLAT_BUTTON_HEIGHT, ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_WIDTH, ROW_BUTTON_HEIGHT, \
     WIDE_ROW_BUTTON_HEIGHT, APP_WIDTH
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 
 
 RUNS_PER_PAGE = 10

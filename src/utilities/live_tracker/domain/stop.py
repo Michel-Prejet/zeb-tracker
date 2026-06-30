@@ -1,18 +1,18 @@
+from constants.app_constants import MIN_STOP_ID, MAX_STOP_ID
 from utilities.invariant_helper import require_not_none, require_state
 from utilities.live_tracker.domain.coordinates import Coordinates
-from constants.app_constants import MIN_STOP_ID, MAX_STOP_ID
 
 
 class Stop:
     """
-    Stores information for a stop including its name, 5-digit ID, and
-    coordinates.
+    Represents a stop in the Winnipeg Transit API. Stores static information
+    such as the name, ID, and coordinates of the stop.
     """
 
     def __init__(self, name: str, stop_id: int, coordinates: Coordinates):
         require_not_none(name, "Stop name should not be None.")
         require_not_none(stop_id, "Stop ID should not be None.")
-        require_not_none(coordinates, "Stop coordinates should not be None.")
+        require_not_none(coordinates, "Coordinates should not be None.")
 
         self._name = name
         self._stop_id = stop_id
@@ -33,10 +33,7 @@ class Stop:
             f"Stop ID should be a 5-digit integer."
         )
 
-        require_not_none(
-            self._coordinates,
-            "Stop coordinates should not be None."
-        )
+        require_not_none(self._coordinates, "Stop coordinates should not be None.")
 
     @property
     def name(self) -> str:
@@ -49,3 +46,13 @@ class Stop:
     @property
     def coordinates(self) -> Coordinates:
         return self._coordinates
+
+    def __eq__(self, other) -> bool:
+        """
+        Determines whether a given stop is equal to this stop. Two stops
+        are equal if they have the same 5-digit stop ID.
+        """
+        return (
+            isinstance(other, Stop)
+            and self._stop_id == other._stop_id
+        )

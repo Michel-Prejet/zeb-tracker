@@ -1,6 +1,6 @@
 from domain.bus import Bus
 from domain.fleet import Fleet
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 
 
 def bus_run_percentage(fleet: Fleet, bus: Bus) -> float:

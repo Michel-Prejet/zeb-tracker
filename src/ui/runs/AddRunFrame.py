@@ -11,7 +11,7 @@ from domain.validation.exceptions.run_error import InvalidRunDateError, InvalidB
 from ui.runs.AutoAddRunsFrame import AutoAddRunsFrame
 from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, \
     CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 
 
 LABEL_COL = 0

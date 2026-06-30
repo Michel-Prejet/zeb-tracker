@@ -4,7 +4,7 @@ from domain.listener import Listener
 from domain.location_info.location_info import LocationInfo
 from domain.run_assignment import RunAssignment
 from domain.validation.exceptions.fleet_error import BusNotFoundError, DuplicateBusError
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 from datetime import date
 
 
@@ -121,7 +121,7 @@ class Fleet:
         require_state(bus.tracking_num in self._buses,
                       "Bus should have been added.")
         self._check_fleet()
-        self._notify_all()
+        self.notify_all()
 
     def remove_bus(self, bus: Bus) -> None:
         """
@@ -145,9 +145,9 @@ class Fleet:
             "Bus should have been removed."
         )
         self._check_fleet()
-        self._notify_all()
+        self.notify_all()
 
-    def add_run(self, run_assignment: RunAssignment) -> None:
+    def add_run(self, run_assignment: RunAssignment, notify: bool=True) -> None:
         """
         Adds the run to the bus in the given run assignment, assuming that the
         bus exists in this fleet.
@@ -167,7 +167,8 @@ class Fleet:
         bus.add_run(run)
 
         self._check_fleet()
-        self._notify_all()
+        if notify:
+            self.notify_all()
 
     def remove_run(self, run_assignment: RunAssignment) -> None:
         """
@@ -189,9 +190,11 @@ class Fleet:
         bus.remove_run(run)
 
         self._check_fleet()
-        self._notify_all()
+        self.notify_all()
 
-    def set_bus_location_info(self, bus_tracking_num: int, location_info: LocationInfo) -> None:
+    def set_bus_location_info(self, bus_tracking_num: int,
+                              location_info: LocationInfo,
+                              notify: bool=True) -> None:
         """
         Assigns the given location info to the bus in this fleet with the
         given tracking number.
@@ -214,9 +217,11 @@ class Fleet:
         bus.set_location_info(location_info)
 
         self._check_fleet()
-        self._notify_all()
+        if notify:
+            self.notify_all()
 
-    def reset_bus_location_info(self, bus_tracking_num: int) -> None:
+    def reset_bus_location_info(self, bus_tracking_num: int,
+                                notify: bool=True) -> None:
         """
         Clears the location info for the bus in this fleet with the given
         tracking number.
@@ -238,7 +243,8 @@ class Fleet:
         bus.reset_location_info()
 
         self._check_fleet()
-        self._notify_all()
+        if notify:
+            self.notify_all()
 
     def register_listener(self, l: Listener) -> None:
         require_not_none(l, "Listener should not be None.")
@@ -247,6 +253,6 @@ class Fleet:
 
         self._check_fleet()
 
-    def _notify_all(self) -> None:
+    def notify_all(self) -> None:
         for listener in self._listeners:
             listener.notify()

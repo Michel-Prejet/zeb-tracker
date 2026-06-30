@@ -1,6 +1,6 @@
 from persistence.connection import connection
 from domain.bus import Bus
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 from persistence.run_persistence import load_runs_for_bus
 
 

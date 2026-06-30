@@ -5,7 +5,7 @@ from domain.validation.exceptions.bus_error import InvalidTrackingNumberError, I
 from domain.validation.exceptions.fleet_error import DuplicateBusError
 from ui.runs.AddRunFrame import LARGE_TITLE_FONT
 from constants.ui_constants import PADDING_LARGE
-from utilities.InvariantHelper import require_not_none
+from utilities.invariant_helper import require_not_none
 
 
 LABEL_COL = 0

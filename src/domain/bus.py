@@ -3,7 +3,7 @@ from domain.listener import Listener
 from domain.run import Run
 from domain.location_info.location_info import LocationInfo
 from domain.validation.exceptions.bus_error import DuplicateRunError
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 import bisect
 
 

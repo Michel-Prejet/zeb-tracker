@@ -1,5 +1,5 @@
-from utilities.invariant_helper import require_not_none, require_state
 from constants.app_constants import MIN_LATITUDE, MAX_LATITUDE, MIN_LONGITUDE, MAX_LONGITUDE
+from utilities.invariant_helper import require_not_none, require_state
 
 
 class Coordinates:

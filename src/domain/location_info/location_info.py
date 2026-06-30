@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 from domain.location_info.stop import Stop
-from utilities.InvariantHelper import require_not_none, require_state
+from utilities.invariant_helper import require_not_none, require_state
 
 
 class LocationInfo:

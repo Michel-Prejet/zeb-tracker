@@ -3,10 +3,11 @@ from pathlib import Path
 from tkinter import filedialog
 import customtkinter as ctk
 from domain.fleet import Fleet
-from ui.exceptions.CSVExportDialogErrors import InvalidFolderPathError, EmptyFileNameError, InvalidRunDataStartDateError
+from ui.exceptions.csv_export_dialog_errors import InvalidFolderPathError, EmptyFileNameError, \
+    InvalidRunDataStartDateError, InvalidFileNameError
 from constants.ui_constants import LARGE_TITLE_FONT, PADDING_LARGE, PADDING_MEDIUM, SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT
 from utilities.invariant_helper import require_not_none
-from persistence.csv.csv_exporter import create_csv_from_fleet
+from persistence.csv.csv_exporter import export_fleet_runs_to_csv
 
 
 WINDOW_TITLE = "Export to CSV"
@@ -20,6 +21,7 @@ INPUT_FIELD_COL = 1
 ERR_MESSAGES = {
     InvalidFolderPathError: "Invalid folder path. Try using the browse feature.",
     EmptyFileNameError: "File name cannot be empty.",
+    InvalidFileNameError: "File name should not be a path.",
     InvalidRunDataStartDateError: "Invalid start date. Any non-empty input should be of the form YYYY-MM-DD."
 }
 
@@ -58,7 +60,7 @@ class CSVExportDialog(ctk.CTkToplevel):
             file_path = self._get_output_file_path(filename)
             start_date = self._get_start_date_input()
 
-            create_csv_from_fleet(file_path, self.fleet, start_date)
+            export_fleet_runs_to_csv(file_path, self.fleet, start_date)
 
             self._show_success(
                 f"Run data successfully exported to {filename}."
@@ -88,7 +90,7 @@ class CSVExportDialog(ctk.CTkToplevel):
             label="File path",
             row=1
         )
-        self._add_browse_file_explorer_button()
+        self._add_browse_folder_button()
 
         self.output_file_name_entry = self._add_labelled_input_field(
             label="Output file name",
@@ -127,7 +129,7 @@ class CSVExportDialog(ctk.CTkToplevel):
 
         return entry
 
-    def _add_browse_file_explorer_button(self) -> None:
+    def _add_browse_folder_button(self) -> None:
         ctk.CTkButton(
             self.inputs_frame,
             text="📂",
@@ -137,7 +139,7 @@ class CSVExportDialog(ctk.CTkToplevel):
         ).grid(row=1, column=2, sticky="w", padx=PADDING_MEDIUM)
 
     def _browse_for_folder_path(self) -> None:
-        folder_path = filedialog.askdirectory()
+        folder_path = filedialog.askdirectory(parent=self)
 
         if folder_path:
             self.folder_path_entry.delete(0, "end")
@@ -158,10 +160,14 @@ class CSVExportDialog(ctk.CTkToplevel):
 
         filename_input = self.output_file_name_entry.get().strip()
 
-        if len(filename_input) == 0:
+        if not filename_input:
             raise EmptyFileNameError()
 
-        if not filename_input.endswith(FILE_EXTENSION):
+        filename_path = Path(filename_input)
+        if filename_path.name != filename_input:
+            raise InvalidFileNameError()
+
+        if not filename_input.lower().endswith(FILE_EXTENSION):
             filename_input += FILE_EXTENSION
 
         return filename_input
@@ -169,7 +175,7 @@ class CSVExportDialog(ctk.CTkToplevel):
     def _get_output_file_path(self, filename: str) -> Path:
         folder_path_input = self.folder_path_entry.get().strip()
 
-        if len(folder_path_input) == 0:
+        if not folder_path_input:
             raise InvalidFolderPathError()
 
         folder_path = Path(folder_path_input)
@@ -182,13 +188,13 @@ class CSVExportDialog(ctk.CTkToplevel):
     def _get_start_date_input(self) -> date | None:
         start_date_input = self.start_date_entry.get().strip()
 
-        if len(start_date_input) == 0:
+        if not start_date_input:
             return None
 
         try:
             start_date = date.fromisoformat(start_date_input)
         except ValueError:
-            raise InvalidRunDataStartDateError()
+            raise InvalidRunDataStartDateError() from None
 
         return start_date
 
@@ -198,7 +204,7 @@ class CSVExportDialog(ctk.CTkToplevel):
         if message is not None:
             self._show_error(message)
         else:
-            print("Unexpected error: " + str(e))
+            raise e
 
     def _show_success(self, message: str) -> None:
         self.msg.configure(text=message, text_color="green")

@@ -3,6 +3,7 @@ import customtkinter as ctk
 from logic.bus_filtering.bus_filter_type import BusFilterType
 from constants.ui_constants import REGULAR_INPUT_FIELD_WIDTH, SQUARE_BUTTON_WIDTH, SQUARE_BUTTON_HEIGHT, PADDING_MEDIUM, \
     MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
+from utilities.invariant_helper import require_not_none
 
 
 INITIAL_SEARCH_FILTER = BusFilterType.TRACKING_NUM
@@ -10,6 +11,11 @@ INITIAL_SEARCH_FILTER = BusFilterType.TRACKING_NUM
 class BusSearchFrame(ctk.CTkFrame):
     def __init__(self, parent: ctk.CTkFrame, submit_search: Callable,
                  reset_search: Callable, show_only_active: Callable):
+        require_not_none(parent, "Parent frame should not be None.")
+        require_not_none(submit_search, "Submit search function should not be None.")
+        require_not_none(reset_search, "Reset search function should not be None.")
+        require_not_none(show_only_active, "Show only active function should not be None.")
+
         super().__init__(parent)
 
         self.submit_search = submit_search

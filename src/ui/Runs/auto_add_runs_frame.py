@@ -1,13 +1,13 @@
-from datetime import date
 from typing import Callable
 import customtkinter as ctk
 from domain.inferred_run_list import InferredRunList
 from domain.listener import Listener
-from ui.pagination.Paginatable import Paginatable
-from ui.pagination.PaginationFrame import PaginationFrame
+from ui.pagination.paginatable import Paginatable
+from ui.pagination.pagination_frame import PaginationFrame
 from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, \
     FLAT_BUTTON_WIDTH, FLAT_BUTTON_HEIGHT, ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_WIDTH, ROW_BUTTON_HEIGHT, \
     WIDE_ROW_BUTTON_HEIGHT, APP_WIDTH
+from utilities.datetime_formatting import format_date
 from utilities.invariant_helper import require_not_none
 
 
@@ -168,7 +168,7 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
             row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
             self._add_row_data(
-                text=_format_run_date(run.run_date), # Run date
+                text=format_date(run.run_date), # Run date
                 row=row
             )
             self._add_row_data(
@@ -213,6 +213,3 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
             width=width,
             command=command
         ).pack(side="right", padx=PADDING_MEDIUM)
-
-def _format_run_date(run_date: date) -> str:
-    return f"{run_date.strftime('%B')} {run_date.day}, {run_date.year}"

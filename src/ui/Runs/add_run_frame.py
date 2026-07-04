@@ -8,7 +8,7 @@ from domain.validation.validate_run import validate_date, validate_block_id
 from domain.validation.exceptions.bus_error import DuplicateRunError, InvalidTrackingNumberError
 from domain.validation.exceptions.fleet_error import BusNotFoundError
 from domain.validation.exceptions.run_error import InvalidRunDateError, InvalidBlockIDError
-from ui.runs.AutoAddRunsFrame import AutoAddRunsFrame
+from ui.runs.auto_add_runs_frame import AutoAddRunsFrame
 from constants.ui_constants import PADDING_MEDIUM, PADDING_LARGE, LARGE_TITLE_FONT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, \
     CHECKBOX_WIDTH, CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH
 from utilities.invariant_helper import require_not_none
@@ -189,7 +189,7 @@ class AddRunFrame(ctk.CTkFrame):
         if message is not None:
             self._show_error(message)
         else:
-            print("Unexpected error: " + str(e))
+            raise e
 
     def _show_success(self, message: str) -> None:
         self.msg.configure(text=message, text_color="green")

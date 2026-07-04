@@ -1,14 +1,13 @@
 from tkinter import messagebox
 import customtkinter as ctk
-from domain.bus import Bus
 from domain.fleet import Fleet
 from domain.listener import Listener
-from domain.run import Run
+from domain.run_assignment import RunAssignment
 from logic.run_filtering.run_filter_type import RunFilterType
 from logic.run_filtering.run_filterer import build_search_filter_function
-from ui.pagination.Paginatable import Paginatable
-from ui.pagination.PaginationFrame import PaginationFrame
-from ui.runs.RunSearchFrame import RunSearchFrame
+from ui.pagination.paginatable import Paginatable
+from ui.pagination.pagination_frame import PaginationFrame
+from ui.runs.run_search_frame import RunSearchFrame
 from constants.ui_constants import LARGE_TITLE_FONT, PADDING_LARGE, PADDING_MEDIUM, APP_WIDTH, SMALL_TITLE_FONT, \
     WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT
 from utilities.datetime_formatting import format_date
@@ -44,7 +43,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         self.controller = controller
         fleet.register_listener(self)
 
-        self.runs = fleet.sorted_runs()
+        self.runs = fleet.runs
         self.curr_search_filter = lambda run_list: run_list
         self.curr_page = 1
 
@@ -157,7 +156,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
             child.destroy()
 
     def _apply_search_filter(self) -> None:
-        all_runs = self.fleet.sorted_runs()
+        all_runs = self.fleet.runs
         self.runs = self.curr_search_filter(all_runs)
 
     def _show_no_runs_in_list_if_empty(self) -> None:
@@ -203,34 +202,33 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
             font=font or ctk.CTkFont()
         ).pack(anchor="nw", side="left", padx=PADDING_LARGE)
 
-    def _add_remove_button_to_row(self, data: tuple[Run, Bus], row: ctk.CTkFrame) -> None:
+    def _add_remove_button_to_row(self, assigned_run: RunAssignment, row: ctk.CTkFrame) -> None:
         ctk.CTkButton(
             row,
             text="Remove",
             width=WIDE_ROW_BUTTON_WIDTH,
             height=WIDE_ROW_BUTTON_HEIGHT,
-            command=lambda d=data: self._confirm_remove_run(d)
+            command=lambda r=assigned_run: self._confirm_remove_run(r)
         ).pack(side="right", padx=PADDING_MEDIUM)
 
-    def _confirm_remove_run(self, data: tuple[Run, Bus]) -> None:
+    def _confirm_remove_run(self, assigned_run: RunAssignment) -> None:
         """
         Displays a pop-up window asking the user to confirm that they would
         like to remove a run for a bus in the fleet. Removes the run if the user
         selects Yes.
 
-        :param data: a RUN, BUS tuple containing the run to remove and the bus
+        :param assigned_run: a run assignment containing the run to remove and the bus
         to remove it from if the user selects Yes.
         """
-        run, bus = data
-
         confirmed = messagebox.askyesno(
             title="Remove run",
             message=f"Are you sure you want to remove this run?\n"
-                    f"{format_date(run.run_date)} | Block {run.block_id} | Bus {bus.tracking_num}"
+                    f"{format_date(assigned_run.date)} | Block {assigned_run.block_id} "
+                    f"| Bus {assigned_run.tracking_num}"
         )
 
         if confirmed:
-            self.controller.remove_run_from_bus(bus, run)
+            self.controller.remove_run_from_bus(assigned_run.bus, assigned_run.run)
 
     def _reset_search(self) -> None:
         """

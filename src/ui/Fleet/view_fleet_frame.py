@@ -1,25 +1,23 @@
 from datetime import datetime
 from tkinter import messagebox
 import customtkinter as ctk
+from constants.app_constants import NO_LOCATION_INFO_PLACEHOLDER
 from domain.bus import Bus
 from domain.fleet import Fleet
 from domain.listener import Listener
 from logic.bus_filtering.bus_filter_type import BusFilterType
 from logic.bus_filtering.BusFilterer import build_search_filter_function
-from ui.exceptions.InvalidPollingIntervalError import InvalidPollingIntervalException
-from ui.fleet.LocationInfoDialog import LocationInfoDialog
-from ui.fleet.BusSearchFrame import BusSearchFrame
-from ui.pagination.Paginatable import Paginatable
-from ui.pagination.PaginationFrame import PaginationFrame
+from ui.exceptions.invalid_polling_interval_error import InvalidPollingIntervalException
+from ui.fleet.location_info_dialog import LocationInfoDialog
+from ui.fleet.bus_search_frame import BusSearchFrame
+from ui.pagination.paginatable import Paginatable
+from ui.pagination.pagination_frame import PaginationFrame
 from constants.ui_constants import LARGE_TITLE_FONT, PADDING_MEDIUM, APP_WIDTH, PADDING_LARGE, SMALL_TITLE_FONT, \
     WIDE_ROW_BUTTON_WIDTH, WIDE_ROW_BUTTON_HEIGHT, MEDIUM_BUTTON_WIDTH, MEDIUM_BUTTON_HEIGHT, CHECKBOX_WIDTH, \
     CHECKBOX_HEIGHT, CHECKBOX_BORDER_WIDTH, SQUARE_INPUT_FIELD_WIDTH
-from utilities.datetime_formatting import format_datetime, last_run_date_to_str
+from utilities.datetime_formatting import format_datetime, format_last_run_date
 from utilities.invariant_helper import require_not_none
 
-
-UNKNOWN_DATE_PLACEHOLDER = "never"
-UNKNOWN_LOCATION_PLACEHOLDER = "No location information"
 
 DEFAULT_POLLING_INTERVAL = 30
 MIN_POLLING_INTERVAL = 15
@@ -55,7 +53,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         self.fleet = fleet
         self.fleet.register_listener(self)
 
-        self.buses = fleet.sorted_buses()
+        self.buses = fleet.buses
         self.curr_search_filter = lambda bus_list: bus_list
         self.curr_page = 1
 
@@ -302,7 +300,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
             child.destroy()
 
     def _apply_search_filter(self) -> None:
-        all_buses = self.fleet.sorted_buses()
+        all_buses = self.fleet.buses
         self.buses = self.curr_search_filter(all_buses)
 
     def _show_no_buses_in_list_if_empty(self) -> None:
@@ -337,7 +335,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
         )
 
         self._add_row_data(
-            text=f"Last seen: {last_run_date_to_str(bus)}",
+            text=f"Last seen: {format_last_run_date(bus)}",
             row=row
         )
 
@@ -352,7 +350,7 @@ class ViewFleetFrame(ctk.CTkFrame, Listener, Paginatable):
     def _add_bus_location_info_to_row(self, bus: Bus, row: ctk.CTkFrame) -> None:
         info = ctk.CTkLabel(
             row,
-            text=UNKNOWN_LOCATION_PLACEHOLDER,
+            text=NO_LOCATION_INFO_PLACEHOLDER,
             text_color="grey"
         )
 

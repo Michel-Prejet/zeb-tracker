@@ -4,6 +4,11 @@ class EmptyFileNameError(Exception):
     """
     pass
 
+class InvalidFileNameError(Exception):
+    """
+    Exception thrown when a file name is a path.
+    """
+
 class InvalidFolderPathError(Exception):
     """
     Exception thrown when a folder path is left empty or blank in an input field.

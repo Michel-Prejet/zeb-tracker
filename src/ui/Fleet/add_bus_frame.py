@@ -3,7 +3,7 @@ from domain.bus import Bus
 from domain.validation.validate_bus import validate_tracking_number, validate_model, validate_year
 from domain.validation.exceptions.bus_error import InvalidTrackingNumberError, InvalidYearError, EmptyModelError
 from domain.validation.exceptions.fleet_error import DuplicateBusError
-from ui.runs.AddRunFrame import LARGE_TITLE_FONT
+from constants.ui_constants import LARGE_TITLE_FONT
 from constants.ui_constants import PADDING_LARGE
 from utilities.invariant_helper import require_not_none
 
@@ -126,7 +126,7 @@ class AddBusFrame(ctk.CTkFrame):
         if message is not None:
             self._show_error(message)
         else:
-            print("Unexpected error: " + str(e))
+            raise e
 
     def _show_success(self, message: str) -> None:
         self.msg.configure(text=message, text_color="green")

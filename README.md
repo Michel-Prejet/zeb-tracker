@@ -24,15 +24,24 @@ myself.
 
 ---
 
-## Running
+## Usage
 
-With Python installed (version 3.13 or later), navigate to the root directory
-(src) from the command line and type the following:
+### Prerequisites
 
+- Python 3.13+
+- Winnipeg Transit API Key
+
+### Installations
+
+1. From the command line, navigate to the directory in which you would like to
+clone the project and type the following:
 ```bash
-python Main.py
+git clone https://github.com/Michel-Prejet/zeb-tracker
 ```
+2. Install the required dependencies from the command line as follows:
+```bash
 
+```
 ---
 
 ## Technologies

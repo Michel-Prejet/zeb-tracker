@@ -7,14 +7,14 @@ cool statistics and graphs. However, as the rollout gained traction in the sprin
 of 2026, manually entering each run in a spreadsheet became very time-consuming.
 
 I started building this Python program in order to automate
-my bus-tracking habit. It includes a live traker that uses the Winnipeg
-Transit API and GTFS archive to find all active ZEB runs, after which they can
-all be added to the database in a few clicks. From there, you can view and 
+my bus-tracking habit. It includes a live tracker that uses the Winnipeg
+Transit API and GTFS data to identify active ZEB runs, which can then be reviewed 
+and added to the database in a few clicks. From there, you can view and 
 search/filter all runs and buses in the system, and export the run data to
 a CSV file.
 
-As for the technical side, the app uses an MCV architecture with listeners in
-the domain model, SQLite persistence, and a Custom Tkinter GUI. It also makes
+As for the technical side, the app uses an MVC architecture with listeners in
+the domain model, SQLite persistence, and a CustomTkinter GUI. It also makes
 use of concurrency for the location scan (via Python's threading module).
 
 I've always been fascinated by Python's elegance and wanted to get more comfortable
@@ -33,27 +33,30 @@ myself.
 
 ### Installations
 
-1. From the command line, navigate to the directory in which you would like to
-clone the project and type the following:
+1. Clone the repository and navigate to the source directory:
+
 ```bash
 git clone https://github.com/Michel-Prejet/zeb-tracker
-```
-2. Install the required dependencies from the command line as follows:
-```bash
 cd zeb-tracker/src
+```
+
+2. Install the required dependencies:
+
+```bash
 python -m pip install -r requirements.txt
 ```
 
 3. Add your Winnipeg Transit API key to the environment.
-    * Create a file named `.env` in the project root directory, beside `requirements.txt`.
+    * Create a file named `.env` in the `src` directory, beside `requirements.txt`.
     * Add your API key using the following format:
     ```bash
    API_KEY=your_api_key_here
     ```
+   * The `.env` file is excluded from Git and should not be committed.
 
 ### Running
 
-From the project root directory, type the following to start the program:
+From the `src` directory, start the application:
 ```bash
 python main.py
 ```
@@ -99,17 +102,25 @@ model.
 
 ## Screenshots
 ![screenshot1.jpg](screenshots/screenshot1.jpg)
+
 ![screenshot2.jpg](screenshots/screenshot2.jpg)
+
 ![screenshot3.jpg](screenshots/screenshot3.jpg)
+
 ![screenshot4.jpg](screenshots/screenshot4.jpg)
+
 ![screenshot5.jpg](screenshots/screenshot5.jpg)
+
 ---
 
 ## Technologies
 
-- App built with Python 3.13.3 in IntelliJ IDEA
-- GUI built with Custom Tkinter library
-- SQLite3 2.6.0 database
+- Python 3.13
+- CustomTkinter
+- SQLite
+- Winnipeg Transit API
+- General Transit Feed Specification (GTFS)
+- Thread-based concurrency
 
 ---
 

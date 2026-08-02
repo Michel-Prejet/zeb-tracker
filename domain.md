@@ -10,6 +10,7 @@ classDiagram
         +buses() list~Bus~
         +runs() list~Run~
         +num_runs() int
+        +contains(bus) bool
         +get_bus(tracking_num) Bus
         +get_runs_starting_from(date) list[RunAssignment]
         +add_bus(bus) None

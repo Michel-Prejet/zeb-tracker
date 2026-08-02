@@ -1,6 +1,5 @@
-from constants.app_constants import MIN_STOP_ID, MAX_STOP_ID
-from utilities.live_tracker.domain.coordinates import MIN_LATITUDE, MAX_LATITUDE, MAX_LONGITUDE, MIN_LONGITUDE, \
-    Coordinates
+from constants.app_constants import MIN_STOP_ID, MAX_STOP_ID, MIN_LATITUDE, MAX_LATITUDE, MIN_LONGITUDE, MAX_LONGITUDE
+from domain.location_info.coordinates import Coordinates
 from utilities.live_tracker.domain.stop import Stop
 from utilities.live_tracker.winnipeg_transit_gtfs.gtfs_file_paths import GTFS_PATH, STOPS_INPUT_FILE
 from utilities.live_tracker.winnipeg_transit_gtfs.exceptions.transit_gtfs_error import GTFSFileNotFoundError, \

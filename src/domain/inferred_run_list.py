@@ -68,14 +68,14 @@ class InferredRunList(Listener):
         sorted by increasing run date (then by increasing bus tracking
         number, then by increasing block ID).
         """
-        run_assignments: list[RunAssignment] = []
+        all_run_assignments: list[RunAssignment] = []
 
         for run_assignments in self._runs.values():
             for assigned_run in run_assignments:
-                run_assignments.append(assigned_run)
+                all_run_assignments.append(assigned_run)
 
         return sorted(
-            run_assignments,
+            all_run_assignments,
             key=lambda assigned_run: (
                 assigned_run.date,
                 assigned_run.tracking_num,
@@ -129,6 +129,7 @@ class InferredRunList(Listener):
             self._runs[tracking_num] = []
 
         if run_assignment in self._runs[tracking_num]:
+
             return
 
         self._runs[tracking_num].append(run_assignment)

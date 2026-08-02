@@ -78,6 +78,17 @@ class Fleet:
         """
         return sum(bus.num_runs() for bus in self._buses.values())
 
+    def contains(self, bus: Bus) -> bool:
+        """
+        :return: True if the given bus is in this fleet, False otherwise.
+        """
+        require_not_none(bus, "Bus should not be None.")
+
+        if bus in self._buses.values():
+            return True
+
+        return False
+
     def get_bus(self, tracking_num: int) -> Bus:
         """
         Searches for a bus in this fleet with a given 3-digit tracking number.

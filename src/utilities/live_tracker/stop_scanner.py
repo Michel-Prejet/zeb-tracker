@@ -63,6 +63,7 @@ class StopScanner:
                         remaining_future.cancel()
 
                     self.cancel_scan = False
+                    self.active = False
 
                     return False
 
@@ -70,9 +71,6 @@ class StopScanner:
                     stop_info = future.result()
                     self._add_observations_from_stop_api_data(stop_info)
                 except Exception as e:
-                    import traceback
-                    traceback.print_exc()
-
                     err_msg = get_tracker_error_message(e)
                     self.err_messages.append(err_msg)
                     continue
@@ -82,6 +80,7 @@ class StopScanner:
                 if progress_callback is not None:
                     progress_callback(completed_stops, total_stops)
 
+        self.active = False
         return True
 
     def cancel_stop_scan(self) -> None:

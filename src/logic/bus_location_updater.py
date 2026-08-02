@@ -1,10 +1,10 @@
 from datetime import datetime
 from domain.fleet import Fleet
+from domain.location_info.coordinates import Coordinates
 from domain.location_info.location_info import LocationInfo
 from domain.location_info.stop import Stop
 from utilities.invariant_helper import require_not_none
 from utilities.live_tracker.live_bus_tracker import LiveBusTracker
-from utilities.live_tracker.domain.coordinates import Coordinates
 
 
 def update_bus_locations(fleet: Fleet, tracker: LiveBusTracker) -> None:

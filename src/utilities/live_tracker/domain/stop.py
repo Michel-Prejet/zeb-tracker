@@ -1,6 +1,6 @@
 from constants.app_constants import MIN_STOP_ID, MAX_STOP_ID
 from utilities.invariant_helper import require_not_none, require_state
-from utilities.live_tracker.domain.coordinates import Coordinates
+from utilities.live_tracker.domain.Coordinates import Coordinates
 
 
 class Stop:

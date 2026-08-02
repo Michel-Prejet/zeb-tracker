@@ -1,9 +1,10 @@
 from datetime import timedelta
+
+from constants.app_constants import MIN_STOP_ID, MAX_STOP_ID
 from utilities.live_tracker.time_helper import parse_gtfs_time
 from utilities.live_tracker.winnipeg_transit_gtfs.exceptions.transit_gtfs_error import MissingColumnError, \
     GTFSFileNotFoundError, MissingTokenError, MalformedTokenError
 from utilities.live_tracker.winnipeg_transit_gtfs.gtfs_file_paths import GTFS_PATH, STOP_TIMES_INPUT_FILE
-from utilities.live_tracker.domain.stop import STOP_NUMBER_LENGTH
 
 
 STOP_ID_COLUMN_HEADER = "stop_id"
@@ -100,7 +101,11 @@ class StopTimesReader:
         if "_" in stop_id_raw:
             stop_id_raw = stop_id_raw.split("_")[0]
 
-        if not stop_id_raw.isdigit() or len(stop_id_raw) != STOP_NUMBER_LENGTH:
+        if not stop_id_raw.isdigit():
+            raise MalformedTokenError(STOP_TIMES_INPUT_FILE, self.curr_row, STOP_ID_COLUMN_HEADER)
+
+        stop_id = int(stop_id_raw)
+        if MIN_STOP_ID > stop_id or MAX_STOP_ID < stop_id:
             raise MalformedTokenError(STOP_TIMES_INPUT_FILE, self.curr_row, STOP_ID_COLUMN_HEADER)
 
         departure_time = parse_gtfs_time(departure_time_raw,

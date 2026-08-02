@@ -170,29 +170,27 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         start_run_index = (self.curr_page - 1) * RUNS_PER_PAGE
         end_run_index = start_run_index + RUNS_PER_PAGE
 
-        for entry in self.runs[start_run_index:end_run_index]:
-            run, bus = entry
-
+        for run_assignment in self.runs[start_run_index:end_run_index]:
             row = ctk.CTkFrame(self.scrollable_list)
             row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
             self._add_row_data(
-                text=f"{format_date(run.run_date)}",
+                text=f"{format_date(run_assignment.date)}",
                 row=row
             )
 
             self._add_row_data(
-                text=f"Block {run.block_id}",
+                text=f"Block {run_assignment.block_id}",
                 row=row,
                 font=SMALL_TITLE_FONT
             )
 
             self._add_row_data(
-                text=f"🚍 {bus.tracking_num}",
+                text=f"🚍 {run_assignment.tracking_num}",
                 row=row
             )
 
-            self._add_remove_button_to_row(entry, row)
+            self._add_remove_button_to_row(run_assignment, row)
 
     def _add_row_data(self, text: str, row: ctk.CTkFrame,
                       font: ctk.CTkFont | tuple | None = None) -> None:
@@ -228,7 +226,7 @@ class ViewRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         )
 
         if confirmed:
-            self.controller.remove_run_from_bus(assigned_run.bus, assigned_run.run)
+            self.controller.remove_run_from_bus(assigned_run)
 
     def _reset_search(self) -> None:
         """

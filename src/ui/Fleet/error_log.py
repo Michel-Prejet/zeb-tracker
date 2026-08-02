@@ -19,20 +19,18 @@ class ErrorLog(ctk.CTkToplevel):
     fetch. A maximum of 100 error messages can be displayed.
     """
 
-    def __init__(self, app: ctk.CTk, error_messages: list[str], controller):
+    def __init__(self, app: ctk.CTk, error_messages: list[str]):
         require_not_none(app, "App should not be None.")
         require_not_none(error_messages, "Error message list should not be None.")
         for msg in error_messages:
             require_not_none(msg, "Error message in list should not be None.")
             require_state(len(msg.strip()) > 0, "Error message in list should not be empty or only whitespace.")
-        require_not_none(controller, "Controller should not be None.")
 
         super().__init__(app)
 
         self.app = app
         self.num_errors = len(error_messages)
         self.error_messages = error_messages
-        self.controller = controller
 
         if self.num_errors > MAX_ERROR_MESSAGES:
             self.error_messages = self.error_messages[:MAX_ERROR_MESSAGES]

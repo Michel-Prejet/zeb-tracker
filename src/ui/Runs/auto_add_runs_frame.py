@@ -163,34 +163,34 @@ class AutoAddRunsFrame(ctk.CTkFrame, Listener, Paginatable):
         start_run_index = (self.curr_page - 1) * RUNS_PER_PAGE
         end_run_index = start_run_index + RUNS_PER_PAGE
 
-        for run, bus in self.runs[start_run_index:end_run_index]:
+        for run_assignment in self.runs[start_run_index:end_run_index]:
             row = ctk.CTkFrame(self.scrollable_list)
             row.pack(fill="x", padx=PADDING_MEDIUM, pady=PADDING_MEDIUM)
 
             self._add_row_data(
-                text=format_date(run.run_date), # Run date
+                text=format_date(run_assignment.date), # Run date
                 row=row
             )
             self._add_row_data(
-                text=f"Block {run.block_id}", # Block ID
+                text=f"Block {run_assignment.block_id}", # Block ID
                 row=row,
                 font=BLOCK_ID_FONT
             )
             self._add_row_data(
-                text=f"🚍 {bus.tracking_num}", # Bus tracking number
+                text=f"🚍 {run_assignment.tracking_num}", # Bus tracking number
                 row=row
             )
 
             self._add_row_button(
                 label="Add",
-                command=lambda r=run, b=bus: self.controller.add_inferred_run_to_fleet(r, b),
+                command=lambda r=run_assignment: self.controller.add_inferred_run_to_fleet(r),
                 width=ROW_BUTTON_WIDTH,
                 height=ROW_BUTTON_HEIGHT,
                 row=row
             )
             self._add_row_button(
                 label="Remove",
-                command=lambda r=run, b=bus: self.controller.remove_inferred_run(r, b),
+                command=lambda r=run_assignment: self.controller.remove_inferred_run(r),
                 width=WIDE_ROW_BUTTON_WIDTH,
                 height=WIDE_ROW_BUTTON_HEIGHT,
                 row=row
